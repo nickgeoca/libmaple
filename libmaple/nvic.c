@@ -66,7 +66,7 @@ void nvic_init(uint32 address, uint32 offset) {
      * Lower priority level for all peripheral interrupts to lowest
      * possible.
      */
-    for (i = 0; i < STM32_NR_INTERRUPTS; i++) {
+    for (i = 0; i < NVIC_NUM_OF_PERIPHERALS_; i++) {
         nvic_irq_set_priority((nvic_irq_num)i, 0xF);
     }
 
@@ -95,9 +95,7 @@ void nvic_set_vector_table(uint32 address, uint32 offset) {
  * Resets all major system components, excluding debug.
  */
 void nvic_sys_reset() {
-    uint32 prigroup = SCB_BASE->AIRCR & SCB_AIRCR_PRIGROUP;
-    SCB_BASE->AIRCR = SCB_AIRCR_VECTKEY | SCB_AIRCR_SYSRESETREQ | prigroup;
-    asm volatile("dsb");
-    while (1)
-        ;
+    void nvic_set_vector_table(uint32 address, uint32 offset) {
+        SCB_BASE->VTOR = address | (offset & 0x1FFFFF80);
+    }
 }

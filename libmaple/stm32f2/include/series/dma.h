@@ -532,7 +532,7 @@ typedef enum dma_request_src {
      *
      * Bits 0--2: Channel associated with request source
      *
-     * Bits 3--9: rcc_clk_id of DMA controller associated with request source
+     * Bits 3--9: clk_dev_id of DMA controller associated with request source
      *
      * Bits 10--17: Bit mask of streams which can handle that request
      *              source.  (E.g., bit 10 set means stream 0 can

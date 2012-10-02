@@ -214,29 +214,19 @@ static inline void usb_set_ep_rx_stat(uint8 ep, uint32 status) {
 }
 
 static inline void usb_set_ep_tx_stat(uint8 ep, uint32 status) {
-    uint32 epr = USB_BASE->EP[ep];
-    epr &= ~(USB_EP_STAT_RX | USB_EP_DTOG_RX | USB_EP_DTOG_TX);
-    epr |= __EP_CTR_NOP;
-    epr ^= status;
-    USB_BASE->EP[ep] = epr;
+
 }
 
 static inline void usb_set_ep_type(uint8 ep, uint32 type) {
-    uint32 epr = USB_BASE->EP[ep];
-    epr &= ~USB_EP_EP_TYPE & __EP_NONTOGGLE;
-    epr |= type;
-    USB_BASE->EP[ep] = epr;
+
 }
 
 static inline void usb_set_ep_kind(uint8 ep, uint32 kind) {
-    uint32 epr = USB_BASE->EP[ep];
-    epr &= ~USB_EP_EP_KIND & __EP_NONTOGGLE;
-    epr |= kind;
-    USB_BASE->EP[ep] = epr;
+
 }
 
 static inline void usb_clear_status_out(uint8 ep) {
-    usb_set_ep_kind(ep, 0);
+
 }
 
 /*
@@ -258,7 +248,7 @@ void usb_copy_to_pma(const uint8 *buf, uint16 len, uint16 pma_offset);
 void usb_copy_from_pma(uint8 *buf, uint16 len, uint16 pma_offset);
 
 static inline void* usb_pma_ptr(uint32 offset) {
-    return (void*)(USB_PMA_BASE + 2 * offset);
+    return NULL;
 }
 
 /*
@@ -333,68 +323,65 @@ typedef union usb_btable_ent {
  * values.  */
 
 static inline uint32* usb_btable_ptr(uint32 offset) {
-    return (uint32*)usb_pma_ptr(USB_BASE->BTABLE + offset);
+    return NULL;
 }
 
 static inline usb_btable_ent *usb_btable(void) {
-    return (usb_btable_ent*)usb_btable_ptr(0);
+    return NULL;
 }
 
 /* TX address */
 
 static inline uint32* usb_ep_tx_addr_ptr(uint8 ep) {
-    return usb_btable_ptr(ep * 8);
+    return NULL;
 }
 
 static inline uint16 usb_get_ep_tx_addr(uint8 ep) {
-    return (uint16)*usb_ep_tx_addr_ptr(ep);
+    return 0;
 }
 
 static inline void usb_set_ep_tx_addr(uint8 ep, uint16 addr) {
-    uint32 *tx_addr = usb_ep_tx_addr_ptr(ep);
-    *tx_addr = addr & ~0x1;
+    return;
 }
 
 /* RX address */
 
 static inline uint32* usb_ep_rx_addr_ptr(uint8 ep) {
-    return usb_btable_ptr(ep * 8 + 4);
+    return NULL;
 }
 
 static inline uint16 usb_get_ep_rx_addr(uint8 ep) {
-    return (uint16)*usb_ep_rx_addr_ptr(ep);
+    return 0;
 }
 
 static inline void usb_set_ep_rx_addr(uint8 ep, uint16 addr) {
-    uint32 *rx_addr = usb_ep_rx_addr_ptr(ep);
-    *rx_addr = addr & ~0x1;
+    return;
 }
 
 /* TX count (doesn't cover double-buffered and isochronous in) */
 
 static inline uint32* usb_ep_tx_count_ptr(uint8 ep) {
-    return usb_btable_ptr(ep * 8 + 2);
+    return NULL;
 }
 
 static inline uint16 usb_get_ep_tx_count(uint8 ep) {
     /* FIXME: this is broken somehow; calling it seems to
      * confuse/crash the chip. */
-    return (uint16)(*usb_ep_tx_count_ptr(ep) & 0x3FF);
+    return 0;
 }
 
 static inline void usb_set_ep_tx_count(uint8 ep, uint16 count) {
-    uint32 *txc = usb_ep_tx_count_ptr(ep);
-    *txc = count;
+    return;
 }
 
 /* RX count */
 
 static inline uint32* usb_ep_rx_count_ptr(uint8 ep) {
-    return usb_btable_ptr(ep * 8 + 6);
+    return NULL;
 }
 
 static inline uint16 usb_get_ep_rx_count(uint8 ep) {
-    return (uint16)*usb_ep_rx_count_ptr(ep) & 0x3FF;
+    return 0;
 }
 
 void usb_set_ep_rx_count(uint8 ep, uint16 count);

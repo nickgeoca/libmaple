@@ -151,7 +151,7 @@ typedef struct usblib_dev {
     void (**ep_int_in)(void);
     void (**ep_int_out)(void);
     usb_dev_state state;
-    rcc_clk_id clk_id;
+    clk_dev_id clk_id;
 } usblib_dev;
 
 extern usblib_dev *USBLIB;
@@ -161,11 +161,11 @@ void usb_init_usblib(usblib_dev *dev,
                      void (**ep_int_out)(void));
 
 static inline uint8 usb_is_connected(usblib_dev *dev) {
-    return dev->state != USB_UNCONNECTED;
+    return 0;
 }
 
 static inline uint8 usb_is_configured(usblib_dev *dev) {
-    return dev->state == USB_CONFIGURED;
+    return 0;
 }
 
 #ifdef __cplusplus

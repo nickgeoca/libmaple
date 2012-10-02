@@ -52,6 +52,7 @@ extern "C"{
 
 #include <libmaple/libmaple_types.h>
 #include <libmaple/util.h>
+#include <libmaple/../arch/arch.h>
 
 /** NVIC register map type. */
 typedef struct nvic_reg_map {
@@ -127,6 +128,17 @@ static inline void nvic_irq_enable(nvic_irq_num irq_num) {
         return;
     }
     NVIC_BASE->ISER[irq_num / 32] = BIT(irq_num % 32);
+}
+
+/**
+ * @brief Clear pending irq_num
+ * @param irq_num Interrupt pending to clear
+ */
+static inline void nvic_clr_pending_irq(nvic_irq_num irq_num) {
+    if (irq_num < 0) {
+        return;
+    }
+    NVIC_BASE->ICPR[irq_num / 32] = BIT((uint32)irq_num & 0x1F);
 }
 
 /**

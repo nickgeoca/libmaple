@@ -114,8 +114,10 @@ bool boardUsesPin(uint8 pin);
  * Derived and default board definitions
  */
 
+// TODO [silabs]: Consolidate clocking in one header
 #define CLOCK_SPEED_MHZ                 CYCLES_PER_MICROSECOND
 #define CLOCK_SPEED_HZ                  (CLOCK_SPEED_MHZ * 1000000UL)
+
 
 #ifndef SYSTICK_RELOAD_VAL
 #define SYSTICK_RELOAD_VAL              (1000 * CYCLES_PER_MICROSECOND - 1)

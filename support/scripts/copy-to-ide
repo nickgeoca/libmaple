@@ -10,7 +10,7 @@ DEST_CORES=$DEST/hardware/leaflabs/cores/maple
 DEST_LIBS=$DEST/libraries
 
 LMAPLE_SRC="LICENSE
-    ./libmaple/*.h
+    ./libmaple/include/libmaple/*.h
     ./libmaple/*.c
     ./libmaple/*.S
     ./libmaple/usb/*.h

@@ -56,85 +56,48 @@ void WireBase::beginTransmission(uint8 slave_address) {
 }
 
 void WireBase::beginTransmission(int slave_address) {
-    beginTransmission((uint8)slave_address);
+
 }
 
 uint8 WireBase::endTransmission(void) {
-    if (tx_buf_overflow) {
-        return EDATA;
-    }
-    process();
-    tx_buf_idx = 0;
-    tx_buf_overflow = false;
-    return SUCCESS;
+    return 0;
 }
 
 //TODO: Add the ability to queue messages (adding a boolean to end of function
 // call, allows for the Arduino style to stay while also giving the flexibility
 // to bulk send
 uint8 WireBase::requestFrom(uint8 address, int num_bytes) {
-    if (num_bytes > WIRE_BUFSIZ) {
-        num_bytes = WIRE_BUFSIZ;
-    }
-    itc_msg.addr = address;
-    itc_msg.flags = I2C_MSG_READ;
-    itc_msg.length = num_bytes;
-    itc_msg.data = &rx_buf[rx_buf_idx];
-    process();
-    rx_buf_len += itc_msg.xferred;
-    itc_msg.flags = 0;
-    return rx_buf_len;
+    return 0;
 }
 
 uint8 WireBase::requestFrom(int address, int numBytes) {
-    return WireBase::requestFrom((uint8)address, numBytes);
+    return 0;
 }
 
 void WireBase::send(uint8 value) {
-    if (tx_buf_idx == WIRE_BUFSIZ) {
-        tx_buf_overflow = true;
-        return;
-    }
-    tx_buf[tx_buf_idx++] = value;
-    itc_msg.length++;
+
 }
 
 void WireBase::send(uint8* buf, int len) {
-    for (uint8 i = 0; i < len; i++) {
-        send(buf[i]);
-    }
+
 }
 
 void WireBase::send(int value) {
-    send((uint8)value);
+
 }
 
 void WireBase::send(int* buf, int len) {
-    send((uint8*)buf, (uint8)len);
+
 }
 
 void WireBase::send(char* buf) {
-    uint8 *ptr = (uint8*)buf;
-    while (*ptr) {
-        send(*ptr);
-        ptr++;
-    }
+
 }
 
 uint8 WireBase::available() {
-    return rx_buf_len - rx_buf_idx;
+    return 0;
 }
 
 uint8 WireBase::receive() {
-    if (rx_buf_idx == rx_buf_len) {
-        rx_buf_idx = 0;
-        rx_buf_len = 0;
-        return 0;
-    } else if (rx_buf_idx == (rx_buf_len-1)) {
-        uint8 temp = rx_buf[rx_buf_idx];
-        rx_buf_idx = 0;
-        rx_buf_len = 0;
-        return temp;
-    }
-    return rx_buf[rx_buf_idx++];
+    return 0;
 }

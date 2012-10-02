@@ -40,7 +40,12 @@
 #ifdef __cplusplus
 extern "C"{
 #endif
+#include <libmaple/libmaple_types.h>
 
+typedef struct dma_dev {
+    void *tmp;
+}dma_dev;
+#if 0
 /* <series/dma.h> provides:
  *
  * - An opaque dma_tube type, and predefined rvalues for each tube
@@ -436,6 +441,8 @@ static inline uint8 dma_get_isr_bits(dma_dev *dev, dma_tube tube);
  * @see dma_get_irq_cause()
  */
 static inline void dma_clear_isr_bits(dma_dev *dev, dma_tube tube);
+
+#endif
 
 #ifdef __cplusplus
 } // extern "C"

@@ -84,7 +84,7 @@ typedef struct i2c_dev {
     uint16 msgs_left;           /**< Messages left */
     uint8 sda_pin;              /**< SDA bit on gpio_port */
     uint8 scl_pin;              /**< SCL bit on gpio_port */
-    rcc_clk_id clk_id;          /**< RCC clock information */
+    clk_dev_id clk_id;          /**< RCC clock information */
     nvic_irq_num ev_nvic_line;  /**< Event IRQ number */
     nvic_irq_num er_nvic_line;  /**< Error IRQ number */
     volatile i2c_state state;   /**< Device state */

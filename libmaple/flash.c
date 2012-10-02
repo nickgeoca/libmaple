@@ -33,23 +33,4 @@
 #include <libmaple/libmaple_types.h>
 #include <libmaple/flash.h>
 
-/**
- * @brief Set flash wait states
- *
- * Note that not all wait states are available on every MCU. See the
- * Flash programming manual for your MCU for restrictions on the
- * allowed value of wait_states for a given system clock (SYSCLK)
- * frequency.
- *
- * @param wait_states number of wait states (one of
- *                    FLASH_WAIT_STATE_0, FLASH_WAIT_STATE_1,
- *                    ..., FLASH_WAIT_STATE_7).
- */
-void flash_set_latency(uint32 wait_states) {
-    uint32 val = FLASH_BASE->ACR;
 
-    val &= ~FLASH_ACR_LATENCY;
-    val |= wait_states;
-
-    FLASH_BASE->ACR = val;
-}

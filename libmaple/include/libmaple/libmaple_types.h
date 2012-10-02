@@ -57,7 +57,7 @@ typedef void (*voidArgumentFuncPtr)(void *);
 #define __weak __attribute__((weak))
 #define __always_inline inline __attribute__((always_inline))
 #define __unused __attribute__((unused))
-
+#define REG_WRITE_SET_CLR(base, set_true, mask) (*(__io uint32*)((uint32)&(base) + (4 << !(set_true)))) = (mask)
 #ifndef NULL
 #define NULL 0
 #endif

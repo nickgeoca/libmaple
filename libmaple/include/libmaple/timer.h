@@ -48,65 +48,81 @@ extern "C"{
  */
 
 /** Advanced control timer register map type */
-typedef struct timer_adv_reg_map {
-    __io uint32 CR1;            /**< Control register 1 */
-    __io uint32 CR2;            /**< Control register 2 */
-    __io uint32 SMCR;           /**< Slave mode control register */
-    __io uint32 DIER;           /**< DMA/interrupt enable register */
-    __io uint32 SR;             /**< Status register */
-    __io uint32 EGR;            /**< Event generation register  */
-    __io uint32 CCMR1;          /**< Capture/compare mode register 1 */
-    __io uint32 CCMR2;          /**< Capture/compare mode register 2 */
-    __io uint32 CCER;           /**< Capture/compare enable register */
-    __io uint32 CNT;            /**< Counter */
-    __io uint32 PSC;            /**< Prescaler */
-    __io uint32 ARR;            /**< Auto-reload register */
-    __io uint32 RCR;            /**< Repetition counter register */
-    __io uint32 CCR1;           /**< Capture/compare register 1 */
-    __io uint32 CCR2;           /**< Capture/compare register 2 */
-    __io uint32 CCR3;           /**< Capture/compare register 3 */
-    __io uint32 CCR4;           /**< Capture/compare register 4 */
-    __io uint32 BDTR;           /**< Break and dead-time register */
-    __io uint32 DCR;            /**< DMA control register */
-    __io uint32 DMAR;           /**< DMA address for full transfer */
-} timer_adv_reg_map;
-
-/* General purpose timer register map type: intentionally omitted.
- *
- * General purpose timers differ slightly across series, so leave it
- * up to the series header to define struct timer_gen_reg_map. */
-
-/** Basic timer register map type */
-typedef struct timer_bas_reg_map {
-    __io uint32 CR1;            /**< Control register 1 */
-    __io uint32 CR2;            /**< Control register 2 */
-    const uint32 RESERVED1;     /**< Reserved */
-    __io uint32 DIER;           /**< DMA/interrupt enable register */
-    __io uint32 SR;             /**< Status register */
-    __io uint32 EGR;            /**< Event generation register  */
-    const uint32 RESERVED2;     /**< Reserved */
-    const uint32 RESERVED3;     /**< Reserved */
-    const uint32 RESERVED4;     /**< Reserved */
-    __io uint32 CNT;            /**< Counter */
-    __io uint32 PSC;            /**< Prescaler */
-    __io uint32 ARR;            /**< Auto-reload register */
-} timer_bas_reg_map;
-
-/*
- * Timer devices
- */
-
-/**
- * @brief Timer register map type.
- *
- * Just holds a pointer to the correct type of register map, based on
- * the timer's type.
- */
-typedef union timer_reg_map {
-    timer_adv_reg_map *adv;     /**< Advanced register map */
-    timer_gen_reg_map *gen;     /**< General purpose register map */
-    timer_bas_reg_map *bas;     /**< Basic register map */
+typedef struct timer_reg_map {
+    __io uint32 MODE; // Base Address + 0x0
+    uint32      reserved0;
+    uint32      reserved1;
+    uint32      reserved2;
+    __io uint32 CONTROL; // Base Address + 0x10
+    __io uint32 CONTROL_SET;
+    __io uint32 CONTROL_CLR;
+    uint32      reserved3;
+    __io uint32 STATUS; // Base Address + 0x20
+    __io uint32 STATUS_SET;
+    __io uint32 STATUS_CLR;
+    uint32      reserved4;
+    __io uint32 COUNTER; // Base Address + 0x30
+    uint32      reserved5;
+    uint32      reserved6;
+    uint32      reserved7;
+    __io uint32 LIMIT; // Base Address + 0x40
+    uint32      reserved8;
+    uint32      reserved9;
+    union {
+        struct {
+            uint32      reserved10;
+            __io uint32 LIMITUPD; // Base Address + 0x50
+            uint32      reserved11;
+            uint32      reserved12;
+            uint32      reserved13;
+            __io uint32 DTIME; // Base Address + 0x60
+            uint32      reserved14;
+            uint32      reserved15;
+            uint32      reserved16;
+            uint32      reserved17[4];
+            __io uint32 DTARGET; // Base Address + 0x80
+            uint32      reserved18;
+            uint32      reserved19;
+            uint32      reserved20;
+        } adv;
+        struct {
+            uint32      reserved10;
+        } gen;
+    };
 } timer_reg_map;
+
+
+
+
+typedef struct timer_chnl_reg_map {
+   __io uint32 MODE; // Base Address + 0x0
+   uint32      reserved0;
+   uint32      reserved1;
+   uint32      reserved2;
+   __io uint32 CONTROL; // Base Address + 0x10
+   __io uint32 CONTROL_SET;
+   __io uint32 CONTROL_CLR;
+   uint32      reserved3;
+   __io uint32 CCAPV; // Base Address + 0x20
+   uint32      reserved4;
+   uint32      reserved5;
+   uint32      reserved6;
+   __io uint32 CCAPVUPD; // Base Address + 0x30
+   uint32      reserved7;
+   uint32      reserved8;
+   uint32      reserved9;
+} timer_chnl_reg_map;
+
+#define TIMER1_CH0 ((timer_chnl_reg_map*)0x4000E000)
+#define TIMER1_CH1 ((timer_chnl_reg_map*)0x4000E040)
+#define TIMER1_CH2 ((timer_chnl_reg_map*)0x4000E080)
+#define TIMER1_CH3 ((timer_chnl_reg_map*)0x4000E0C0)
+#define TIMER1_CH4 ((timer_chnl_reg_map*)0x4000E100)
+#define TIMER1_CH5 ((timer_chnl_reg_map*)0x4000E140)
+#define TIMER2_CH0 ((timer_chnl_reg_map*)0x4000F000)
+#define TIMER2_CH1 ((timer_chnl_reg_map*)0x4000F040)
+#define TIMER3_CH0 ((timer_chnl_reg_map*)0x40010000)
+#define TIMER3_CH1 ((timer_chnl_reg_map*)0x40010040)
 
 /**
  * @brief Timer type
@@ -118,411 +134,290 @@ typedef union timer_reg_map {
 typedef enum timer_type {
     TIMER_ADVANCED,             /**< Advanced type */
     TIMER_GENERAL,              /**< General purpose type */
-    TIMER_BASIC,                /**< Basic type */
 } timer_type;
 
 /** Timer device type */
 typedef struct timer_dev {
-    timer_reg_map regs;         /**< Register map */
-    rcc_clk_id clk_id;          /**< RCC clock information */
+    timer_reg_map *regs;         /**< Register map */
+    clk_dev_id clk_id;          /**< RCC clock information */
     timer_type type;            /**< Timer's type */
-    voidFuncPtr handlers[];     /**<
-                                 * Don't touch these. Use these instead:
-                                 * @see timer_attach_interrupt()
-                                 * @see timer_detach_interrupt() */
 } timer_dev;
 
-#if STM32_HAVE_TIMER(1)
 extern timer_dev *TIMER1;
-#endif
-#if STM32_HAVE_TIMER(2)
-extern timer_dev *TIMER2;
-#endif
-#if STM32_HAVE_TIMER(3)
-extern timer_dev *TIMER3;
-#endif
-#if STM32_HAVE_TIMER(4)
-extern timer_dev *TIMER4;
-#endif
-#if STM32_HAVE_TIMER(5)
-extern timer_dev *TIMER5;
-#endif
-#if STM32_HAVE_TIMER(6)
-extern timer_dev *TIMER6;
-#endif
-#if STM32_HAVE_TIMER(7)
-extern timer_dev *TIMER7;
-#endif
-#if STM32_HAVE_TIMER(8)
-extern timer_dev *TIMER8;
-#endif
-#if STM32_HAVE_TIMER(9)
-extern timer_dev *TIMER9;
-#endif
-#if STM32_HAVE_TIMER(10)
-extern timer_dev *TIMER10;
-#endif
-#if STM32_HAVE_TIMER(11)
-extern timer_dev *TIMER11;
-#endif
-#if STM32_HAVE_TIMER(12)
-extern timer_dev *TIMER12;
-#endif
-#if STM32_HAVE_TIMER(13)
-extern timer_dev *TIMER13;
-#endif
-#if STM32_HAVE_TIMER(14)
-extern timer_dev *TIMER14;
-#endif
-
 /*
  * Register bit definitions
  */
+#define EPCA_MODE_CLKDIV_MASK              0x000003FF
+#define EPCA_MODE_CLKSEL_MASK              0x00001C00
+#define EPCA_MODE_HDOSEL_MASK              0x0000C000
+#define EPCA_MODE_DEND_MASK                0x00070000
+#define EPCA_MODE_DPTR_MASK                0x00380000
+#define EPCA_MODE_DSTART_MASK              0x01C00000
+#define EPCA_MODE_DBUSYF_MASK              0x02000000
+#define EPCA_MODE_STDOSEL_MASK             0x18000000
+#define EPCA_MODE_CLKDIV_BIT               0  /* CLKDIV<9:0>: Input Clock Divider.              */
+#define EPCA_MODE_CLKSEL_BIT               10 /* CLKSEL<12:10>: Input Clock (FCLKIN) Select.    */
+#define EPCA_MODE_HDOSEL_BIT               14 /* HDOSEL<15:14>: High Drive Port Bank Output Select. */
+#define EPCA_MODE_DEND_BIT                 16 /* DEND<18:16>: DMA Write End Index.              */
+#define EPCA_MODE_DPTR_BIT                 19 /* DPTR<21:19>: DMA Write Transfer Pointer.       */
+#define EPCA_MODE_DSTART_BIT               22 /* DSTART<24:22>: DMA Target Start Index.         */
+#define EPCA_MODE_DBUSYF_BIT               25 /* DBUSYF<25>: DMA Busy Flag.                     */
+#define EPCA_MODE_STDOSEL_BIT              27 /* STDOSEL<28:27>: Standard Port Bank Output Select. */
+#define EPCA_MODE_CLKSEL_APB               (0 << EPCA_MODE_CLKSEL_BIT)
+#define EPCA_MODE_CLKSEL_TIMER0            (1 << EPCA_MODE_CLKSEL_BIT)
+#define EPCA_MODE_CLKSEL_HL_ECI            (2 << EPCA_MODE_CLKSEL_BIT)
+#define EPCA_MODE_CLKSEL_EXTOSCN           (3 << EPCA_MODE_CLKSEL_BIT)
+#define EPCA_MODE_CLKSEL_ECI               (4 << EPCA_MODE_CLKSEL_BIT)
+#define EPCA_MODE_HDOSEL_THREE_DIFF        (0 << EPCA_MODE_HDOSEL_BIT)
+#define EPCA_MODE_HDOSEL_TWO_DIFF          (1 << EPCA_MODE_HDOSEL_BIT)
+#define EPCA_MODE_HDOSEL_ONE_DIFF          (2 << EPCA_MODE_HDOSEL_BIT)
+#define EPCA_MODE_HDOSEL_NO_DIFF           (3 << EPCA_MODE_HDOSEL_BIT)
+#define EPCA_MODE_DEND_LIMIT               (0 << EPCA_MODE_DEND_BIT)
+#define EPCA_MODE_DEND_CH0                 (1 << EPCA_MODE_DEND_BIT)
+#define EPCA_MODE_DEND_CH1                 (2 << EPCA_MODE_DEND_BIT)
+#define EPCA_MODE_DEND_CH2                 (3 << EPCA_MODE_DEND_BIT)
+#define EPCA_MODE_DEND_CH3                 (4 << EPCA_MODE_DEND_BIT)
+#define EPCA_MODE_DEND_CH4                 (5 << EPCA_MODE_DEND_BIT)
+#define EPCA_MODE_DEND_CH5                 (6 << EPCA_MODE_DEND_BIT)
+#define EPCA_MODE_DEND_EMPTY               (7 << EPCA_MODE_DEND_BIT)
+#define EPCA_MODE_DPTR_LIMIT               (0 << EPCA_MODE_DPTR_BIT)
+#define EPCA_MODE_DPTR_CH0                 (1 << EPCA_MODE_DPTR_BIT)
+#define EPCA_MODE_DPTR_CH1                 (2 << EPCA_MODE_DPTR_BIT)
+#define EPCA_MODE_DPTR_CH2                 (3 << EPCA_MODE_DPTR_BIT)
+#define EPCA_MODE_DPTR_CH3                 (4 << EPCA_MODE_DPTR_BIT)
+#define EPCA_MODE_DPTR_CH4                 (5 << EPCA_MODE_DPTR_BIT)
+#define EPCA_MODE_DPTR_CH5                 (6 << EPCA_MODE_DPTR_BIT)
+#define EPCA_MODE_DPTR_EMPTY               (7 << EPCA_MODE_DPTR_BIT)
+#define EPCA_MODE_DSTART_LIMIT             (0 << EPCA_MODE_DSTART_BIT)
+#define EPCA_MODE_DSTART_CH0               (1 << EPCA_MODE_DSTART_BIT)
+#define EPCA_MODE_DSTART_CH1               (2 << EPCA_MODE_DSTART_BIT)
+#define EPCA_MODE_DSTART_CH2               (3 << EPCA_MODE_DSTART_BIT)
+#define EPCA_MODE_DSTART_CH3               (4 << EPCA_MODE_DSTART_BIT)
+#define EPCA_MODE_DSTART_CH4               (5 << EPCA_MODE_DSTART_BIT)
+#define EPCA_MODE_DSTART_CH5               (6 << EPCA_MODE_DSTART_BIT)
+#define EPCA_MODE_DSTART_EMPTY             (7 << EPCA_MODE_DSTART_BIT)
+#define EPCA_MODE_DBUSYF_IDLE              (0 << EPCA_MODE_DBUSYF_BIT)
+#define EPCA_MODE_DBUSYF_BUSY              (1 << EPCA_MODE_DBUSYF_BIT)
+#define EPCA_MODE_STDOSEL_NO_DIFF          (0 << EPCA_MODE_STDOSEL_BIT)
+#define EPCA_MODE_STDOSEL_ONE_DIFF         (1 << EPCA_MODE_STDOSEL_BIT)
+#define EPCA_MODE_STDOSEL_TWO_DIFF         (2 << EPCA_MODE_STDOSEL_BIT)
+#define EPCA_MODE_STDOSEL_THREE_DIFF       (3 << EPCA_MODE_STDOSEL_BIT)
 
-/* Control register 1 (CR1) */
+#define EPCA_CR_OVFIEN_MASK                0x00000001
+#define EPCA_CR_OVFDEN_MASK                0x00000002
+#define EPCA_CR_OVFSEN_MASK                0x00000004
+#define EPCA_CR_HALTIEN_MASK               0x00000008
+#define EPCA_CR_NOUPD_MASK                 0x00000010
+#define EPCA_CR_IDLEBEN_MASK               0x00000020
+#define EPCA_CR_DBGMD_MASK                 0x00000040
+#define EPCA_CR_HALTEN_MASK                0x00000200
+#define EPCA_CR_STSEL_MASK                 0x00001800
+#define EPCA_CR_STESEL_MASK                0x00002000
+#define EPCA_CR_STEN_MASK                  0x00004000
+#define EPCA_CR_DIVST_MASK                 0x00200000
+#define EPCA_CR_DIV_MASK                   0xFFC00000
+#define EPCA_CR_OVFIEN_BIT                 0  /* OVFIEN<0>: EPCA Counter Overflow/Limit Interrupt Enable. */
+#define EPCA_CR_OVFDEN_BIT                 1  /* OVFDEN<1>: EPCA Counter Overflow/Limit DMA Request Enable. */
+#define EPCA_CR_OVFSEN_BIT                 2  /* OVFSEN<2>: EPCA Counter Overflow/Limit Synchronization Signal Enable. */
+#define EPCA_CR_HALTIEN_BIT                3  /* HALTIEN<3>: EPCA Halt Input Interrupt Enable.  */
+#define EPCA_CR_NOUPD_BIT                  4  /* NOUPD<4>: Internal Register Update Inhibit.    */
+#define EPCA_CR_IDLEBEN_BIT                5  /* IDLEBEN<5>: Idle Bypass Enable.                */
+#define EPCA_CR_DBGMD_BIT                  6  /* DBGMD<6>: EPCA Debug Mode.                     */
+#define EPCA_CR_HALTEN_BIT                 9  /* HALTEN<9>: Halt Input Enable.                  */
+#define EPCA_CR_STSEL_BIT                  11 /* STSEL<12:11>: Synchronous Input Trigger Select. */
+#define EPCA_CR_STESEL_BIT                 13 /* STESEL<13>: Synchronous Input Trigger Edge Select. */
+#define EPCA_CR_STEN_BIT                   14 /* STEN<14>: Synchronous Input Trigger Enable.    */
+#define EPCA_CR_DIVST_BIT                  21 /* DIVST<21>: Clock Divider Output State.         */
+#define EPCA_CR_DIV_BIT                    22 /* DIV<31:22>: Current Clock Divider Count.       */
+#define EPCA_CR_OVFIEN_DS                  (0 << EPCA_CR_OVFIEN_BIT)
+#define EPCA_CR_OVFIEN_EN                  (1 << EPCA_CR_OVFIEN_BIT)
+#define EPCA_CR_OVFDEN_DS                  (0 << EPCA_CR_OVFDEN_BIT)
+#define EPCA_CR_OVFDEN_EN                  (1 << EPCA_CR_OVFDEN_BIT)
+#define EPCA_CR_OVFSEN_DS                  (0 << EPCA_CR_OVFSEN_BIT)
+#define EPCA_CR_OVFSEN_EN                  (1 << EPCA_CR_OVFSEN_BIT)
+#define EPCA_CR_HALTIEN_DS                 (0 << EPCA_CR_HALTIEN_BIT)
+#define EPCA_CR_HALTIEN_EN                 (1 << EPCA_CR_HALTIEN_BIT)
+#define EPCA_CR_NOUPD_INACTV               (0 << EPCA_CR_NOUPD_BIT)
+#define EPCA_CR_NOUPD_ACTV                 (1 << EPCA_CR_NOUPD_BIT)
+#define EPCA_CR_IDLEBEN_DS                 (0 << EPCA_CR_IDLEBEN_BIT)
+#define EPCA_CR_IDLEBEN_EN                 (1 << EPCA_CR_IDLEBEN_BIT)
+#define EPCA_CR_DBGMD_HALT                 (0 << EPCA_CR_DBGMD_BIT)
+#define EPCA_CR_DBGMD_RUN                  (1 << EPCA_CR_DBGMD_BIT)
+#define EPCA_CR_HALTEN_DS                  (0 << EPCA_CR_HALTEN_BIT)
+#define EPCA_CR_HALTEN_EN                  (1 << EPCA_CR_HALTEN_BIT)
+#define EPCA_CR_STSEL_EPCANT0              (0 << EPCA_CR_STSEL_BIT)
+#define EPCA_CR_STSEL_EPCANT1              (1 << EPCA_CR_STSEL_BIT)
+#define EPCA_CR_STSEL_EPCANT2              (2 << EPCA_CR_STSEL_BIT)
+#define EPCA_CR_STSEL_EPCANT3              (3 << EPCA_CR_STSEL_BIT)
+#define EPCA_CR_STESEL_FALLING             (0 << EPCA_CR_STESEL_BIT)
+#define EPCA_CR_STESEL_RISING              (1 << EPCA_CR_STESEL_BIT)
+#define EPCA_CR_STEN_DS                    (0 << EPCA_CR_STEN_BIT)
+#define EPCA_CR_STEN_EN                    (1 << EPCA_CR_STEN_BIT)
+#define EPCA_CR_DIVST_OUTPUT_HIGH          (0 << EPCA_CR_DIVST_BIT)
+#define EPCA_CR_DIVST_OUTPUT_LOW           (1 << EPCA_CR_DIVST_BIT)
 
-#define TIMER_CR1_ARPE_BIT              7
-#define TIMER_CR1_DIR_BIT               4
-#define TIMER_CR1_OPM_BIT               3
-#define TIMER_CR1_URS_BIT               2
-#define TIMER_CR1_UDIS_BIT              1
-#define TIMER_CR1_CEN_BIT               0
+#define EPCA_STATUS_C0CCI_MASK             0x00000001
+#define EPCA_STATUS_C1CCI_MASK             0x00000002
+#define EPCA_STATUS_C2CCI_MASK             0x00000004
+#define EPCA_STATUS_C3CCI_MASK             0x00000008
+#define EPCA_STATUS_C4CCI_MASK             0x00000010
+#define EPCA_STATUS_C5CCI_MASK             0x00000020
+#define EPCA_STATUS_RUN_MASK               0x00000040
+#define EPCA_STATUS_OVFI_MASK              0x00000080
+#define EPCA_STATUS_UPDCF_MASK             0x00000100
+#define EPCA_STATUS_HALTI_MASK             0x00000200
+#define EPCA_STATUS_C0IOVFI_MASK           0x00000400
+#define EPCA_STATUS_C1IOVFI_MASK           0x00000800
+#define EPCA_STATUS_C2IOVFI_MASK           0x00001000
+#define EPCA_STATUS_C3IOVFI_MASK           0x00002000
+#define EPCA_STATUS_C4IOVFI_MASK           0x00004000
+#define EPCA_STATUS_C5IOVFI_MASK           0x00008000
+#define EPCA_STATUS_C0CCI_BIT              0  /* C0CCI<0>: Channel 0 Capture/Compare Interrupt Flag. */
+#define EPCA_STATUS_C1CCI_BIT              1  /* C1CCI<1>: Channel 1 Capture/Compare Interrupt Flag. */
+#define EPCA_STATUS_C2CCI_BIT              2  /* C2CCI<2>: Channel 2 Capture/Compare Interrupt Flag. */
+#define EPCA_STATUS_C3CCI_BIT              3  /* C3CCI<3>: Channel 3 Capture/Compare Interrupt Flag. */
+#define EPCA_STATUS_C4CCI_BIT              4  /* C4CCI<4>: Channel 4 Capture/Compare Interrupt Flag. */
+#define EPCA_STATUS_C5CCI_BIT              5  /* C5CCI<5>: Channel 5 Capture/Compare Interrupt Flag. */
+#define EPCA_STATUS_RUN_BIT                6  /* RUN<6>: Counter/Timer Run.                     */
+#define EPCA_STATUS_OVFI_BIT               7  /* OVFI<7>: Counter/Timer Overflow/Limit Interrupt Flag. */
+#define EPCA_STATUS_UPDCF_BIT              8  /* UPDCF<8>: Register Update Complete Flag.       */
+#define EPCA_STATUS_HALTI_BIT              9  /* HALTI<9>: Halt Input Interrupt Flag.           */
+#define EPCA_STATUS_C0IOVFI_BIT            10 /* C0IOVFI<10>: Channel 0 Intermediate Overflow Interrupt Flag. */
+#define EPCA_STATUS_C1IOVFI_BIT            11 /* C1IOVFI<11>: Channel 1 Intermediate Overflow Interrupt Flag. */
+#define EPCA_STATUS_C2IOVFI_BIT            12 /* C2IOVFI<12>: Channel 2 Intermediate Overflow Interrupt Flag. */
+#define EPCA_STATUS_C3IOVFI_BIT            13 /* C3IOVFI<13>: Channel 3 Intermediate Overflow Interrupt Flag. */
+#define EPCA_STATUS_C4IOVFI_BIT            14 /* C4IOVFI<14>: Channel 4 Intermediate Overflow Interrupt Flag. */
+#define EPCA_STATUS_C5IOVFI_BIT            15 /* C5IOVFI<15>: Channel 5 Intermediate Overflow Interrupt Flag. */
+#define EPCA_STATUS_C0CCI_NOT_SET          (0 << EPCA_STATUS_C0CCI_BIT)
+#define EPCA_STATUS_C0CCI_SET              (1 << EPCA_STATUS_C0CCI_BIT)
+#define EPCA_STATUS_C1CCI_NOT_SET          (0 << EPCA_STATUS_C1CCI_BIT)
+#define EPCA_STATUS_C1CCI_SET              (1 << EPCA_STATUS_C1CCI_BIT)
+#define EPCA_STATUS_C2CCI_NOT_SET          (0 << EPCA_STATUS_C2CCI_BIT)
+#define EPCA_STATUS_C2CCI_SET              (1 << EPCA_STATUS_C2CCI_BIT)
+#define EPCA_STATUS_C3CCI_NOT_SET          (0 << EPCA_STATUS_C3CCI_BIT)
+#define EPCA_STATUS_C3CCI_SET              (1 << EPCA_STATUS_C3CCI_BIT)
+#define EPCA_STATUS_C4CCI_NOT_SET          (0 << EPCA_STATUS_C4CCI_BIT)
+#define EPCA_STATUS_C4CCI_SET              (1 << EPCA_STATUS_C4CCI_BIT)
+#define EPCA_STATUS_C5CCI_NOT_SET          (0 << EPCA_STATUS_C5CCI_BIT)
+#define EPCA_STATUS_C5CCI_SET              (1 << EPCA_STATUS_C5CCI_BIT)
+#define EPCA_STATUS_RUN_STOP               (0 << EPCA_STATUS_RUN_BIT)
+#define EPCA_STATUS_RUN_START              (1 << EPCA_STATUS_RUN_BIT)
+#define EPCA_STATUS_OVFI_NOT_SET           (0 << EPCA_STATUS_OVFI_BIT)
+#define EPCA_STATUS_OVFI_SET               (1 << EPCA_STATUS_OVFI_BIT)
+#define EPCA_STATUS_UPDCF_EMPTY            (0 << EPCA_STATUS_UPDCF_BIT)
+#define EPCA_STATUS_UPDCF_FULL             (1 << EPCA_STATUS_UPDCF_BIT)
+#define EPCA_STATUS_HALTI_NOT_SET          (0 << EPCA_STATUS_HALTI_BIT)
+#define EPCA_STATUS_HALTI_SET              (1 << EPCA_STATUS_HALTI_BIT)
+#define EPCA_STATUS_C0IOVFI_NOT_SET        (0 << EPCA_STATUS_C0IOVFI_BIT)
+#define EPCA_STATUS_C0IOVFI_SET            (1 << EPCA_STATUS_C0IOVFI_BIT)
+#define EPCA_STATUS_C1IOVFI_NOT_SET        (0 << EPCA_STATUS_C1IOVFI_BIT)
+#define EPCA_STATUS_C1IOVFI_SET            (1 << EPCA_STATUS_C1IOVFI_BIT)
+#define EPCA_STATUS_C2IOVFI_NOT_SET        (0 << EPCA_STATUS_C2IOVFI_BIT)
+#define EPCA_STATUS_C2IOVFI_SET            (1 << EPCA_STATUS_C2IOVFI_BIT)
+#define EPCA_STATUS_C3IOVFI_NOT_SET        (0 << EPCA_STATUS_C3IOVFI_BIT)
+#define EPCA_STATUS_C3IOVFI_SET            (1 << EPCA_STATUS_C3IOVFI_BIT)
+#define EPCA_STATUS_C4IOVFI_NOT_SET        (0 << EPCA_STATUS_C4IOVFI_BIT)
+#define EPCA_STATUS_C4IOVFI_SET            (1 << EPCA_STATUS_C4IOVFI_BIT)
+#define EPCA_STATUS_C5IOVFI_NOT_SET        (0 << EPCA_STATUS_C5IOVFI_BIT)
+#define EPCA_STATUS_C5IOVFI_SET            (1 << EPCA_STATUS_C5IOVFI_BIT)
 
-#define TIMER_CR1_CKD                   (0x3 << 8)
-#define TIMER_CR1_CKD_1TCKINT           (0x0 << 8)
-#define TIMER_CR1_CKD_2TCKINT           (0x1 << 8)
-#define TIMER_CR1_CKD_4TICKINT          (0x2 << 8)
-#define TIMER_CR1_ARPE                  (1U << TIMER_CR1_ARPE_BIT)
-#define TIMER_CR1_CKD_CMS               (0x3 << 5)
-#define TIMER_CR1_CKD_CMS_EDGE          (0x0 << 5)
-#define TIMER_CR1_CKD_CMS_CENTER1       (0x1 << 5)
-#define TIMER_CR1_CKD_CMS_CENTER2       (0x2 << 5)
-#define TIMER_CR1_CKD_CMS_CENTER3       (0x3 << 5)
-#define TIMER_CR1_DIR                   (1U << TIMER_CR1_DIR_BIT)
-#define TIMER_CR1_OPM                   (1U << TIMER_CR1_OPM_BIT)
-#define TIMER_CR1_URS                   (1U << TIMER_CR1_URS_BIT)
-#define TIMER_CR1_UDIS                  (1U << TIMER_CR1_UDIS_BIT)
-#define TIMER_CR1_CEN                   (1U << TIMER_CR1_CEN_BIT)
+#define EPCA_COUNTER_MASK                  0x0000FFFF
+#define EPCA_COUNTER_BIT                   0  /* COUNTER<15:0>: Counter/Timer.                  */
 
-/* Control register 2 (CR2) */
+#define EPCA_LIMIT_MASK                    0x0000FFFF
+#define EPCA_LIMIT_BIT                     0  /* LIMIT<15:0>: Upper Limit.                      */
 
-#define TIMER_CR2_OIS4_BIT              14
-#define TIMER_CR2_OIS3N_BIT             13
-#define TIMER_CR2_OIS3_BIT              12
-#define TIMER_CR2_OIS2N_BIT             11
-#define TIMER_CR2_OIS2_BIT              10
-#define TIMER_CR2_OIS1N_BIT             9
-#define TIMER_CR2_OIS1_BIT              8
-#define TIMER_CR2_TI1S_BIT              7
-#define TIMER_CR2_CCDS_BIT              3
-#define TIMER_CR2_CCUS_BIT              2
-#define TIMER_CR2_CCPC_BIT              0
 
-#define TIMER_CR2_OIS4                  (1U << TIMER_CR2_OIS4_BIT)
-#define TIMER_CR2_OIS3N                 (1U << TIMER_CR2_OIS3N_BIT)
-#define TIMER_CR2_OIS3                  (1U << TIMER_CR2_OIS3_BIT)
-#define TIMER_CR2_OIS2N                 (1U << TIMER_CR2_OIS2N_BIT)
-#define TIMER_CR2_OIS2                  (1U << TIMER_CR2_OIS2_BIT)
-#define TIMER_CR2_OIS1N                 (1U << TIMER_CR2_OIS1N_BIT)
-#define TIMER_CR2_OIS1                  (1U << TIMER_CR2_OIS1_BIT)
-#define TIMER_CR2_TI1S                  (1U << TIMER_CR2_TI1S_BIT)
-#define TIMER_CR2_MMS                   (0x7 << 4)
-#define TIMER_CR2_MMS_RESET             (0x0 << 4)
-#define TIMER_CR2_MMS_ENABLE            (0x1 << 4)
-#define TIMER_CR2_MMS_UPDATE            (0x2 << 4)
-#define TIMER_CR2_MMS_COMPARE_PULSE     (0x3 << 4)
-#define TIMER_CR2_MMS_COMPARE_OC1REF    (0x4 << 4)
-#define TIMER_CR2_MMS_COMPARE_OC2REF    (0x5 << 4)
-#define TIMER_CR2_MMS_COMPARE_OC3REF    (0x6 << 4)
-#define TIMER_CR2_MMS_COMPARE_OC4REF    (0x7 << 4)
-#define TIMER_CR2_CCDS                  (1U << TIMER_CR2_CCDS_BIT)
-#define TIMER_CR2_CCUS                  (1U << TIMER_CR2_CCUS_BIT)
-#define TIMER_CR2_CCPC                  (1U << TIMER_CR2_CCPC_BIT)
+#define EPCA_LIMITUPD_MASK                 0x0000FFFF
+#define EPCA_LIMITUPD_BIT                  0  /* LIMITUPD<15:0>: Module Upper Limit Update Value. */
 
-/* Slave mode control register (SMCR) */
+#define EPCA_DTIME_DTIMEX_MASK             0x000000FF
+#define EPCA_DTIME_DTIMEY_MASK             0x0000FF00
+#define EPCA_DTIME_DTIMEX_BIT              0  /* DTIMEX<7:0>: X Phase Delay Time.               */
+#define EPCA_DTIME_DTIMEY_BIT              8  /* DTIMEY<15:8>: Y Phase Delay Time.              */
 
-#define TIMER_SMCR_ETP_BIT              15
-#define TIMER_SMCR_ECE_BIT              14
-#define TIMER_SMCR_MSM_BIT              7
+#define EPCA_DTARGET_MASK                  0xFFFFFFFF
+#define EPCA_DTARGET_BIT                   0  /* DTARGET<31:0>: DMA Transfer Target.            */
 
-#define TIMER_SMCR_ETP                  (1U << TIMER_SMCR_ETP_BIT)
-#define TIMER_SMCR_ECE                  (1U << TIMER_SMCR_ECE_BIT)
-#define TIMER_SMCR_ETPS                 (0x3 << 12)
-#define TIMER_SMCR_ETPS_OFF             (0x0 << 12)
-#define TIMER_SMCR_ETPS_DIV2            (0x1 << 12)
-#define TIMER_SMCR_ETPS_DIV4            (0x2 << 12)
-#define TIMER_SMCR_ETPS_DIV8            (0x3 << 12)
-#define TIMER_SMCR_ETF                  (0xF << 12)
-#define TIMER_SMCR_MSM                  (1U << TIMER_SMCR_MSM_BIT)
-#define TIMER_SMCR_TS                   (0x3 << 4)
-#define TIMER_SMCR_TS_ITR0              (0x0 << 4)
-#define TIMER_SMCR_TS_ITR1              (0x1 << 4)
-#define TIMER_SMCR_TS_ITR2              (0x2 << 4)
-#define TIMER_SMCR_TS_ITR3              (0x3 << 4)
-#define TIMER_SMCR_TS_TI1F_ED           (0x4 << 4)
-#define TIMER_SMCR_TS_TI1FP1            (0x5 << 4)
-#define TIMER_SMCR_TS_TI2FP2            (0x6 << 4)
-#define TIMER_SMCR_TS_ETRF              (0x7 << 4)
-#define TIMER_SMCR_SMS                  0x3
-#define TIMER_SMCR_SMS_DISABLED         0x0
-#define TIMER_SMCR_SMS_ENCODER1         0x1
-#define TIMER_SMCR_SMS_ENCODER2         0x2
-#define TIMER_SMCR_SMS_ENCODER3         0x3
-#define TIMER_SMCR_SMS_RESET            0x4
-#define TIMER_SMCR_SMS_GATED            0x5
-#define TIMER_SMCR_SMS_TRIGGER          0x6
-#define TIMER_SMCR_SMS_EXTERNAL         0x7
 
-/* DMA/Interrupt enable register (DIER) */
+#define EPCACH_MODE_COSEL_MASK             0x00000003
+#define EPCACH_MODE_PWMMD_MASK             0x0000003C
+#define EPCACH_MODE_DIFGEN_MASK            0x00000040
+#define EPCACH_MODE_CMD_MASK               0x00000700
+#define EPCACH_MODE_COSEL_BIT              0
+#define EPCACH_MODE_PWMMD_BIT              2
+#define EPCACH_MODE_DIFGEN_BIT             6
+#define EPCACH_MODE_CMD_BIT                8
+#define EPCACH_MODE_COSEL_TOGGLE_OUTPUT    (0 << EPCACH_MODE_COSEL_BIT)
+#define EPCACH_MODE_COSEL_SET_OUTPUT       (1 << EPCACH_MODE_COSEL_BIT)
+#define EPCACH_MODE_COSEL_CLEAR_OUTPUT     (2 << EPCACH_MODE_COSEL_BIT)
+#define EPCACH_MODE_COSEL_NO_CHANGE        (3 << EPCACH_MODE_COSEL_BIT)
+#define EPCACH_MODE_DIFGEN_DS              (0 << EPCACH_MODE_DIFGEN_BIT)
+#define EPCACH_MODE_DIFGEN_EN              (1 << EPCACH_MODE_DIFGEN_BIT)
+#define EPCACH_MODE_CMD_EDGE_PWM           (0 << EPCACH_MODE_CMD_BIT)
+#define EPCACH_MODE_CMD_CENTER_ALIGNED_PWM (1 << EPCACH_MODE_CMD_BIT)
+#define EPCACH_MODE_CMD_HF_SQUARE_WAVE     (2 << EPCACH_MODE_CMD_BIT)
+#define EPCACH_MODE_CMD_TIMER_CAPTURE      (3 << EPCACH_MODE_CMD_BIT)
+#define EPCACH_MODE_CMD_N_BIT_PWM          (4 << EPCACH_MODE_CMD_BIT)
 
-#define TIMER_DIER_TDE_BIT              14
-#define TIMER_DIER_COMDE_BIT            13
-#define TIMER_DIER_CC4DE_BIT            12
-#define TIMER_DIER_CC3DE_BIT            11
-#define TIMER_DIER_CC2DE_BIT            10
-#define TIMER_DIER_CC1DE_BIT            9
-#define TIMER_DIER_UDE_BIT              8
-#define TIMER_DIER_BIE_BIT              7
-#define TIMER_DIER_TIE_BIT              6
-#define TIMER_DIER_COMIE_BIT            5
-#define TIMER_DIER_CC4IE_BIT            4
-#define TIMER_DIER_CC3IE_BIT            3
-#define TIMER_DIER_CC2IE_BIT            2
-#define TIMER_DIER_CC1IE_BIT            1
-#define TIMER_DIER_UIE_BIT              0
+#define EPCACH_CR_COUTST_MASK              0x00000001
+#define EPCACH_CR_CPCAPEN_MASK             0x00000002
+#define EPCACH_CR_CNCAPEN_MASK             0x00000004
+#define EPCACH_CR_CUPDCF_MASK              0x00000008
+#define EPCACH_CR_YPHST_MASK               0x00000020
+#define EPCACH_CR_ACTVPH_MASK              0x00000040
+#define EPCACH_CR_XPHST_MASK               0x00000080
+#define EPCACH_CR_CCIEN_MASK               0x00000100
+#define EPCACH_CR_CCDEN_MASK               0x00000200
+#define EPCACH_CR_CCSEN_MASK               0x00000400
+#define EPCACH_CR_CIOVFIEN_MASK            0x00000800
+#define EPCACH_CR_CIOVFDEN_MASK            0x00001000
+#define EPCACH_CR_CIOVFSEN_MASK            0x00002000
+#define EPCACH_CR_COUTST_BIT               0
+#define EPCACH_CR_CPCAPEN_BIT              1
+#define EPCACH_CR_CNCAPEN_BIT              2
+#define EPCACH_CR_CUPDCF_BIT               3
+#define EPCACH_CR_YPHST_BIT                5
+#define EPCACH_CR_ACTVPH_BIT               6
+#define EPCACH_CR_XPHST_BIT                7
+#define EPCACH_CR_CCIEN_BIT                8
+#define EPCACH_CR_CCDEN_BIT                9
+#define EPCACH_CR_CCSEN_BIT                10
+#define EPCACH_CR_CIOVFIEN_BIT             11
+#define EPCACH_CR_CIOVFDEN_BIT             12
+#define EPCACH_CR_CIOVFSEN_BIT             13
+#define EPCACH_CR_COUTST_LOW               (0 << EPCACH_CR_COUTST_BIT)
+#define EPCACH_CR_COUTST_HIGH              (1 << EPCACH_CR_COUTST_BIT)
+#define EPCACH_CR_CPCAPEN_DS               (0 << EPCACH_CR_CPCAPEN_BIT)
+#define EPCACH_CR_CPCAPEN_EN               (1 << EPCACH_CR_CPCAPEN_BIT)
+#define EPCACH_CR_CNCAPEN_DS               (0 << EPCACH_CR_CNCAPEN_BIT)
+#define EPCACH_CR_CNCAPEN_EN               (1 << EPCACH_CR_CNCAPEN_BIT)
+#define EPCACH_CR_CUPDCF_NOT_SET           (0 << EPCACH_CR_CUPDCF_BIT)
+#define EPCACH_CR_CUPDCF_SET               (1 << EPCACH_CR_CUPDCF_BIT)
+#define EPCACH_CR_YPHST_LOW                (0 << EPCACH_CR_YPHST_BIT)
+#define EPCACH_CR_YPHST_HIGH               (1 << EPCACH_CR_YPHST_BIT)
+#define EPCACH_CR_ACTVPH_YACTIVE           (0 << EPCACH_CR_ACTVPH_BIT)
+#define EPCACH_CR_ACTVPH_XACTIVE           (1 << EPCACH_CR_ACTVPH_BIT)
+#define EPCACH_CR_XPHST_LOW                (0 << EPCACH_CR_XPHST_BIT)
+#define EPCACH_CR_XPHST_HIGH               (1 << EPCACH_CR_XPHST_BIT)
+#define EPCACH_CR_CCIEN_DS                 (0 << EPCACH_CR_CCIEN_BIT)
+#define EPCACH_CR_CCIEN_EN                 (1 << EPCACH_CR_CCIEN_BIT)
+#define EPCACH_CR_CCDEN_DS                 (0 << EPCACH_CR_CCDEN_BIT)
+#define EPCACH_CR_CCDEN_EN                 (1 << EPCACH_CR_CCDEN_BIT)
+#define EPCACH_CR_CCSEN_DS                 (0 << EPCACH_CR_CCSEN_BIT)
+#define EPCACH_CR_CCSEN_EN                 (1 << EPCACH_CR_CCSEN_BIT)
+#define EPCACH_CR_CIOVFIEN_DS              (0 << EPCACH_CR_CIOVFIEN_BIT)
+#define EPCACH_CR_CIOVFIEN_EN              (1 << EPCACH_CR_CIOVFIEN_BIT)
+#define EPCACH_CR_CIOVFDEN_DS              (0 << EPCACH_CR_CIOVFDEN_BIT)
+#define EPCACH_CR_CIOVFDEN_EN              (1 << EPCACH_CR_CIOVFDEN_BIT)
+#define EPCACH_CR_CIOVFSEN_DS              (0 << EPCACH_CR_CIOVFSEN_BIT)
+#define EPCACH_CR_CIOVFSEN_EN              (1 << EPCACH_CR_CIOVFSEN_BIT)
 
-#define TIMER_DIER_TDE                  (1U << TIMER_DIER_TDE_BIT)
-#define TIMER_DIER_COMDE                (1U << TIMER_DIER_COMDE_BIT)
-#define TIMER_DIER_CC4DE                (1U << TIMER_DIER_CC4DE_BIT)
-#define TIMER_DIER_CC3DE                (1U << TIMER_DIER_CC3DE_BIT)
-#define TIMER_DIER_CC2DE                (1U << TIMER_DIER_CC2DE_BIT)
-#define TIMER_DIER_CC1DE                (1U << TIMER_DIER_CC1DE_BIT)
-#define TIMER_DIER_UDE                  (1U << TIMER_DIER_UDE_BIT)
-#define TIMER_DIER_BIE                  (1U << TIMER_DIER_BIE_BIT)
-#define TIMER_DIER_TIE                  (1U << TIMER_DIER_TIE_BIT)
-#define TIMER_DIER_COMIE                (1U << TIMER_DIER_COMIE_BIT)
-#define TIMER_DIER_CC4IE                (1U << TIMER_DIER_CC4IE_BIT)
-#define TIMER_DIER_CC3IE                (1U << TIMER_DIER_CC3IE_BIT)
-#define TIMER_DIER_CC2IE                (1U << TIMER_DIER_CC2IE_BIT)
-#define TIMER_DIER_CC1IE                (1U << TIMER_DIER_CC1IE_BIT)
-#define TIMER_DIER_UIE                  (1U << TIMER_DIER_UIE_BIT)
+#define EPCACH_CCAPV_MASK                  0x0003FFFF
+#define EPCACH_CCAPV_BIT                   0
 
-/* Status register (SR) */
-
-#define TIMER_SR_CC4OF_BIT              12
-#define TIMER_SR_CC3OF_BIT              11
-#define TIMER_SR_CC2OF_BIT              10
-#define TIMER_SR_CC1OF_BIT              9
-#define TIMER_SR_BIF_BIT                7
-#define TIMER_SR_TIF_BIT                6
-#define TIMER_SR_COMIF_BIT              5
-#define TIMER_SR_CC4IF_BIT              4
-#define TIMER_SR_CC3IF_BIT              3
-#define TIMER_SR_CC2IF_BIT              2
-#define TIMER_SR_CC1IF_BIT              1
-#define TIMER_SR_UIF_BIT                0
-
-#define TIMER_SR_CC4OF                  (1U << TIMER_SR_CC4OF_BIT)
-#define TIMER_SR_CC3OF                  (1U << TIMER_SR_CC3OF_BIT)
-#define TIMER_SR_CC2OF                  (1U << TIMER_SR_CC2OF_BIT)
-#define TIMER_SR_CC1OF                  (1U << TIMER_SR_CC1OF_BIT)
-#define TIMER_SR_BIF                    (1U << TIMER_SR_BIF_BIT)
-#define TIMER_SR_TIF                    (1U << TIMER_SR_TIF_BIT)
-#define TIMER_SR_COMIF                  (1U << TIMER_SR_COMIF_BIT)
-#define TIMER_SR_CC4IF                  (1U << TIMER_SR_CC4IF_BIT)
-#define TIMER_SR_CC3IF                  (1U << TIMER_SR_CC3IF_BIT)
-#define TIMER_SR_CC2IF                  (1U << TIMER_SR_CC2IF_BIT)
-#define TIMER_SR_CC1IF                  (1U << TIMER_SR_CC1IF_BIT)
-#define TIMER_SR_UIF                    (1U << TIMER_SR_UIF_BIT)
-
-/* Event generation register (EGR) */
-
-#define TIMER_EGR_BG_BIT                7
-#define TIMER_EGR_TG_BIT                6
-#define TIMER_EGR_COMG_BIT              5
-#define TIMER_EGR_CC4G_BIT              4
-#define TIMER_EGR_CC3G_BIT              3
-#define TIMER_EGR_CC2G_BIT              2
-#define TIMER_EGR_CC1G_BIT              1
-#define TIMER_EGR_UG_BIT                0
-
-#define TIMER_EGR_BG                    (1U << TIMER_EGR_BG_BIT)
-#define TIMER_EGR_TG                    (1U << TIMER_EGR_TG_BIT)
-#define TIMER_EGR_COMG                  (1U << TIMER_EGR_COMG_BIT)
-#define TIMER_EGR_CC4G                  (1U << TIMER_EGR_CC4G_BIT)
-#define TIMER_EGR_CC3G                  (1U << TIMER_EGR_CC3G_BIT)
-#define TIMER_EGR_CC2G                  (1U << TIMER_EGR_CC2G_BIT)
-#define TIMER_EGR_CC1G                  (1U << TIMER_EGR_CC1G_BIT)
-#define TIMER_EGR_UG                    (1U << TIMER_EGR_UG_BIT)
-
-/* Capture/compare mode registers, common values */
-
-#define TIMER_CCMR_CCS_OUTPUT           0x0
-#define TIMER_CCMR_CCS_INPUT_TI1        0x1
-#define TIMER_CCMR_CCS_INPUT_TI2        0x2
-#define TIMER_CCMR_CCS_INPUT_TRC        0x3
-
-/* Capture/compare mode register 1 (CCMR1) */
-
-#define TIMER_CCMR1_OC2CE_BIT           15
-#define TIMER_CCMR1_OC2PE_BIT           11
-#define TIMER_CCMR1_OC2FE_BIT           10
-#define TIMER_CCMR1_OC1CE_BIT           7
-#define TIMER_CCMR1_OC1PE_BIT           3
-#define TIMER_CCMR1_OC1FE_BIT           2
-
-#define TIMER_CCMR1_OC2CE               (1U << TIMER_CCMR1_OC2CE_BIT)
-#define TIMER_CCMR1_OC2M                (0x3 << 12)
-#define TIMER_CCMR1_IC2F                (0xF << 12)
-#define TIMER_CCMR1_OC2PE               (1U << TIMER_CCMR1_OC2PE_BIT)
-#define TIMER_CCMR1_OC2FE               (1U << TIMER_CCMR1_OC2FE_BIT)
-#define TIMER_CCMR1_IC2PSC              (0x3 << 10)
-#define TIMER_CCMR1_CC2S                (0x3 << 8)
-#define TIMER_CCMR1_CC2S_OUTPUT         (TIMER_CCMR_CCS_OUTPUT << 8)
-#define TIMER_CCMR1_CC2S_INPUT_TI1      (TIMER_CCMR_CCS_INPUT_TI1 << 8)
-#define TIMER_CCMR1_CC2S_INPUT_TI2      (TIMER_CCMR_CCS_INPUT_TI2 << 8)
-#define TIMER_CCMR1_CC2S_INPUT_TRC      (TIMER_CCMR_CCS_INPUT_TRC << 8)
-#define TIMER_CCMR1_OC1CE               (1U << TIMER_CCMR1_OC1CE_BIT)
-#define TIMER_CCMR1_OC1M                (0x3 << 4)
-#define TIMER_CCMR1_IC1F                (0xF << 4)
-#define TIMER_CCMR1_OC1PE               (1U << TIMER_CCMR1_OC1PE_BIT)
-#define TIMER_CCMR1_OC1FE               (1U << TIMER_CCMR1_OC1FE_BIT)
-#define TIMER_CCMR1_IC1PSC              (0x3 << 2)
-#define TIMER_CCMR1_CC1S                0x3
-#define TIMER_CCMR1_CC1S_OUTPUT         TIMER_CCMR_CCS_OUTPUT
-#define TIMER_CCMR1_CC1S_INPUT_TI1      TIMER_CCMR_CCS_INPUT_TI1
-#define TIMER_CCMR1_CC1S_INPUT_TI2      TIMER_CCMR_CCS_INPUT_TI2
-#define TIMER_CCMR1_CC1S_INPUT_TRC      TIMER_CCMR_CCS_INPUT_TRC
-
-/* Capture/compare mode register 2 (CCMR2) */
-
-#define TIMER_CCMR2_OC4CE_BIT           15
-#define TIMER_CCMR2_OC4PE_BIT           11
-#define TIMER_CCMR2_OC4FE_BIT           10
-#define TIMER_CCMR2_OC3CE_BIT           7
-#define TIMER_CCMR2_OC3PE_BIT           3
-#define TIMER_CCMR2_OC3FE_BIT           2
-
-#define TIMER_CCMR2_OC4CE               (1U << TIMER_CCMR2_OC4CE_BIT)
-#define TIMER_CCMR2_OC4M                (0x3 << 12)
-#define TIMER_CCMR2_IC4F                (0xF << 12)
-#define TIMER_CCMR2_OC4PE               (1U << TIMER_CCMR2_OC4PE_BIT)
-#define TIMER_CCMR2_OC4FE               (1U << TIMER_CCMR2_OC4FE_BIT)
-#define TIMER_CCMR2_IC4PSC              (0x3 << 10)
-#define TIMER_CCMR2_CC4S                (0x3 << 8)
-#define TIMER_CCMR2_CC4S_OUTPUT         (TIMER_CCMR_CCS_OUTPUT << 8)
-#define TIMER_CCMR2_CC4S_INPUT_TI1      (TIMER_CCMR_CCS_INPUT_TI1 << 8)
-#define TIMER_CCMR2_CC4S_INPUT_TI2      (TIMER_CCMR_CCS_INPUT_TI2 << 8)
-#define TIMER_CCMR2_CC4S_INPUT_TRC      (TIMER_CCMR_CCS_INPUT_TRC << 8)
-#define TIMER_CCMR2_OC3CE               (1U << TIMER_CCMR2_OC3CE_BIT)
-#define TIMER_CCMR2_OC3M                (0x3 << 4)
-#define TIMER_CCMR2_IC3F                (0xF << 4)
-#define TIMER_CCMR2_OC3PE               (1U << TIMER_CCMR2_OC3PE_BIT)
-#define TIMER_CCMR2_OC3FE               (1U << TIMER_CCMR2_OC3FE_BIT)
-#define TIMER_CCMR2_IC3PSC              (0x3 << 2)
-#define TIMER_CCMR2_CC3S                0x3
-#define TIMER_CCMR2_CC3S_OUTPUT         TIMER_CCMR_CCS_OUTPUT
-#define TIMER_CCMR2_CC3S_INPUT_TI1      TIMER_CCMR_CCS_INPUT_TI1
-#define TIMER_CCMR2_CC3S_INPUT_TI2      TIMER_CCMR_CCS_INPUT_TI2
-#define TIMER_CCMR2_CC3S_INPUT_TRC      TIMER_CCMR_CCS_INPUT_TRC
-
-/* Capture/compare enable register (CCER) */
-
-#define TIMER_CCER_CC4P_BIT             13
-#define TIMER_CCER_CC4E_BIT             12
-#define TIMER_CCER_CC3NP_BIT            11
-#define TIMER_CCER_CC3NE_BIT            10
-#define TIMER_CCER_CC3P_BIT             9
-#define TIMER_CCER_CC3E_BIT             8
-#define TIMER_CCER_CC2NP_BIT            7
-#define TIMER_CCER_CC2NE_BIT            6
-#define TIMER_CCER_CC2P_BIT             5
-#define TIMER_CCER_CC2E_BIT             4
-#define TIMER_CCER_CC1NP_BIT            3
-#define TIMER_CCER_CC1NE_BIT            2
-#define TIMER_CCER_CC1P_BIT             1
-#define TIMER_CCER_CC1E_BIT             0
-
-#define TIMER_CCER_CC4P                 (1U << TIMER_CCER_CC4P_BIT)
-#define TIMER_CCER_CC4E                 (1U << TIMER_CCER_CC4E_BIT)
-#define TIMER_CCER_CC3NP                (1U << TIMER_CCER_CC3NP_BIT)
-#define TIMER_CCER_CC3NE                (1U << TIMER_CCER_CC3NE_BIT)
-#define TIMER_CCER_CC3P                 (1U << TIMER_CCER_CC3P_BIT)
-#define TIMER_CCER_CC3E                 (1U << TIMER_CCER_CC3E_BIT)
-#define TIMER_CCER_CC2NP                (1U << TIMER_CCER_CC2NP_BIT)
-#define TIMER_CCER_CC2NE                (1U << TIMER_CCER_CC2NE_BIT)
-#define TIMER_CCER_CC2P                 (1U << TIMER_CCER_CC2P_BIT)
-#define TIMER_CCER_CC2E                 (1U << TIMER_CCER_CC2E_BIT)
-#define TIMER_CCER_CC1NP                (1U << TIMER_CCER_CC1NP_BIT)
-#define TIMER_CCER_CC1NE                (1U << TIMER_CCER_CC1NE_BIT)
-#define TIMER_CCER_CC1P                 (1U << TIMER_CCER_CC1P_BIT)
-#define TIMER_CCER_CC1E                 (1U << TIMER_CCER_CC1E_BIT)
-
-/* Break and dead-time register (BDTR) */
-
-#define TIMER_BDTR_MOE_BIT              15
-#define TIMER_BDTR_AOE_BIT              14
-#define TIMER_BDTR_BKP_BIT              13
-#define TIMER_BDTR_BKE_BIT              12
-#define TIMER_BDTR_OSSR_BIT             11
-#define TIMER_BDTR_OSSI_BIT             10
-
-#define TIMER_BDTR_MOE                  (1U << TIMER_BDTR_MOE_BIT)
-#define TIMER_BDTR_AOE                  (1U << TIMER_BDTR_AOE_BIT)
-#define TIMER_BDTR_BKP                  (1U << TIMER_BDTR_BKP_BIT)
-#define TIMER_BDTR_BKE                  (1U << TIMER_BDTR_BKE_BIT)
-#define TIMER_BDTR_OSSR                 (1U << TIMER_BDTR_OSSR_BIT)
-#define TIMER_BDTR_OSSI                 (1U << TIMER_BDTR_OSSI_BIT)
-#define TIMER_BDTR_LOCK                 (0x3 << 8)
-#define TIMER_BDTR_LOCK_OFF             (0x0 << 8)
-#define TIMER_BDTR_LOCK_LEVEL1          (0x1 << 8)
-#define TIMER_BDTR_LOCK_LEVEL2          (0x2 << 8)
-#define TIMER_BDTR_LOCK_LEVEL3          (0x3 << 8)
-#define TIMER_BDTR_DTG                  0xFF
-
-/* DMA control register (DCR) */
-
-#define TIMER_DCR_DBL                   (0x1F << 8)
-#define TIMER_DCR_DBL_1_XFER            (0x0 << 8)
-#define TIMER_DCR_DBL_2_XFER            (0x1 << 8)
-#define TIMER_DCR_DBL_3_XFER            (0x2 << 8)
-#define TIMER_DCR_DBL_4_XFER            (0x3 << 8)
-#define TIMER_DCR_DBL_5_XFER            (0x4 << 8)
-#define TIMER_DCR_DBL_6_XFER            (0x5 << 8)
-#define TIMER_DCR_DBL_7_XFER            (0x6 << 8)
-#define TIMER_DCR_DBL_8_XFER            (0x7 << 8)
-#define TIMER_DCR_DBL_9_XFER            (0x8 << 8)
-#define TIMER_DCR_DBL_10_XFER           (0x9 << 8)
-#define TIMER_DCR_DBL_11_XFER           (0xA << 8)
-#define TIMER_DCR_DBL_12_XFER           (0xB << 8)
-#define TIMER_DCR_DBL_13_XFER           (0xC << 8)
-#define TIMER_DCR_DBL_14_XFER           (0xD << 8)
-#define TIMER_DCR_DBL_15_XFER           (0xE << 8)
-#define TIMER_DCR_DBL_16_XFER           (0xF << 8)
-#define TIMER_DCR_DBL_17_XFER           (0x10 << 8)
-#define TIMER_DCR_DBL_18_XFER           (0x11 << 8)
-#define TIMER_DCR_DBA                   0x1F
-#define TIMER_DCR_DBA_CR1               0x0
-#define TIMER_DCR_DBA_CR2               0x1
-#define TIMER_DCR_DBA_SMCR              0x2
-#define TIMER_DCR_DBA_DIER              0x3
-#define TIMER_DCR_DBA_SR                0x4
-#define TIMER_DCR_DBA_EGR               0x5
-#define TIMER_DCR_DBA_CCMR1             0x6
-#define TIMER_DCR_DBA_CCMR2             0x7
-#define TIMER_DCR_DBA_CCER              0x8
-#define TIMER_DCR_DBA_CNT               0x9
-#define TIMER_DCR_DBA_PSC               0xA
-#define TIMER_DCR_DBA_ARR               0xB
-#define TIMER_DCR_DBA_RCR               0xC
-#define TIMER_DCR_DBA_CCR1              0xD
-#define TIMER_DCR_DBA_CCR2              0xE
-#define TIMER_DCR_DBA_CCR3              0xF
-#define TIMER_DCR_DBA_CCR4              0x10
-#define TIMER_DCR_DBA_BDTR              0x11
-#define TIMER_DCR_DBA_DCR               0x12
-#define TIMER_DCR_DBA_DMAR              0x13
-
+#define EPCACH_CCAPVUPD_MASK               0x0003FFFF
+#define EPCACH_CCAPVUPD_BIT                0
 /*
  * Convenience routines
  */
@@ -561,7 +456,9 @@ typedef enum timer_channel {
     TIMER_CH1 = 1, /**< Channel 1 */
     TIMER_CH2 = 2, /**< Channel 2 */
     TIMER_CH3 = 3, /**< Channel 3 */
-    TIMER_CH4 = 4  /**< Channel 4 */
+    TIMER_CH4 = 4, /**< Channel 4 */
+    TIMER_CH5 = 5, /**< Channel 4 */
+    TIMER_CH6 = 6, /**< Channel 4 */
 } timer_channel;
 
 /*
@@ -609,14 +506,14 @@ void timer_detach_interrupt(timer_dev *dev, uint8 interrupt);
  * Initialize all timer devices on the chip.
  */
 static inline void timer_init_all(void) {
-    timer_foreach(timer_init);
+
 }
 
 /**
  * Disables all timers on the device.
  */
 static inline void timer_disable_all(void) {
-    timer_foreach(timer_disable);
+
 }
 
 /**
@@ -627,7 +524,7 @@ static inline void timer_disable_all(void) {
  * @param dev Device whose counter to pause.
  */
 static inline void timer_pause(timer_dev *dev) {
-    *bb_perip(&(dev->regs).bas->CR1, TIMER_CR1_CEN_BIT) = 0;
+    REG_WRITE_SET_CLR(dev->regs->STATUS, EPCA_STATUS_RUN_STOP, EPCA_STATUS_RUN_START);
 }
 
 /**
@@ -638,7 +535,7 @@ static inline void timer_pause(timer_dev *dev) {
  * @param dev Device whose counter to resume
  */
 static inline void timer_resume(timer_dev *dev) {
-    *bb_perip(&(dev->regs).bas->CR1, TIMER_CR1_CEN_BIT) = 1;
+    REG_WRITE_SET_CLR(dev->regs->STATUS, 1, EPCA_STATUS_RUN_START);
 }
 
 /**
@@ -650,7 +547,7 @@ static inline void timer_resume(timer_dev *dev) {
  * @param dev Timer whose counter to return
  */
 static inline uint16 timer_get_count(timer_dev *dev) {
-    return (uint16)(dev->regs).bas->CNT;
+    return 0;
 }
 
 /**
@@ -659,7 +556,7 @@ static inline uint16 timer_get_count(timer_dev *dev) {
  * @param value New counter value
  */
 static inline void timer_set_count(timer_dev *dev, uint16 value) {
-    (dev->regs).bas->CNT = value;
+
 }
 
 /**
@@ -675,7 +572,7 @@ static inline void timer_set_count(timer_dev *dev, uint16 value) {
  * @see timer_generate_update()
  */
 static inline uint16 timer_get_prescaler(timer_dev *dev) {
-    return (uint16)(dev->regs).bas->PSC;
+    return 0;
 }
 
 /**
@@ -689,7 +586,7 @@ static inline uint16 timer_get_prescaler(timer_dev *dev) {
  * @see timer_generate_update()
  */
 static inline void timer_set_prescaler(timer_dev *dev, uint16 psc) {
-    (dev->regs).bas->PSC = psc;
+
 }
 
 /**
@@ -697,7 +594,7 @@ static inline void timer_set_prescaler(timer_dev *dev, uint16 psc) {
  * @param dev Timer whose reload value to return
  */
 static inline uint16 timer_get_reload(timer_dev *dev) {
-    return (uint16)(dev->regs).bas->ARR;
+    return 0;
 }
 
 /**
@@ -707,7 +604,7 @@ static inline uint16 timer_get_reload(timer_dev *dev) {
  * @see timer_generate_update()
  */
 static inline void timer_set_reload(timer_dev *dev, uint16 arr) {
-    (dev->regs).bas->ARR = arr;
+
 }
 
 /**
@@ -716,8 +613,7 @@ static inline void timer_set_reload(timer_dev *dev, uint16 arr) {
  * @param channel Channel whose compare value to get.
  */
 static inline uint16 timer_get_compare(timer_dev *dev, uint8 channel) {
-    __io uint32 *ccr = &(dev->regs).gen->CCR1 + (channel - 1);
-    return *ccr;
+    return 0;
 }
 
 /**
@@ -729,8 +625,7 @@ static inline uint16 timer_get_compare(timer_dev *dev, uint8 channel) {
 static inline void timer_set_compare(timer_dev *dev,
                                      uint8 channel,
                                      uint16 value) {
-    __io uint32 *ccr = &(dev->regs).gen->CCR1 + (channel - 1);
-    *ccr = value;
+
 }
 
 /**
@@ -744,7 +639,7 @@ static inline void timer_set_compare(timer_dev *dev,
  * @param dev Timer device to generate an update for.
  */
 static inline void timer_generate_update(timer_dev *dev) {
-    *bb_perip(&(dev->regs).bas->EGR, TIMER_EGR_UG_BIT) = 1;
+
 }
 
 /**
@@ -752,7 +647,7 @@ static inline void timer_generate_update(timer_dev *dev) {
  * @param dev Timer device, must have type TIMER_ADVANCED or TIMER_GENERAL
  */
 static inline void timer_dma_enable_trg_req(timer_dev *dev) {
-    *bb_perip(&(dev->regs).gen->DIER, TIMER_DIER_TDE_BIT) = 1;
+
 }
 
 /**
@@ -760,7 +655,7 @@ static inline void timer_dma_enable_trg_req(timer_dev *dev) {
  * @param dev Timer device, must have type TIMER_ADVANCED or TIMER_GENERAL
  */
 static inline void timer_dma_disable_trg_req(timer_dev *dev) {
-    *bb_perip(&(dev->regs).gen->DIER, TIMER_DIER_TDE_BIT) = 0;
+
 }
 
 /**
@@ -769,7 +664,7 @@ static inline void timer_dma_disable_trg_req(timer_dev *dev) {
  * @param channel Channel whose DMA request to enable.
  */
 static inline void timer_dma_enable_req(timer_dev *dev, uint8 channel) {
-    *bb_perip(&(dev->regs).gen->DIER, channel + 8) = 1;
+
 }
 
 /**
@@ -778,7 +673,7 @@ static inline void timer_dma_enable_req(timer_dev *dev, uint8 channel) {
  * @param channel Channel whose DMA request to disable.
  */
 static inline void timer_dma_disable_req(timer_dev *dev, uint8 channel) {
-    *bb_perip(&(dev->regs).gen->DIER, channel + 8) = 0;
+
 }
 
 /**
@@ -790,7 +685,7 @@ static inline void timer_dma_disable_req(timer_dev *dev, uint8 channel) {
  * @see timer_channel
  */
 static inline void timer_enable_irq(timer_dev *dev, uint8 interrupt) {
-    *bb_perip(&(dev->regs).adv->DIER, interrupt) = 1;
+
 }
 
 /**
@@ -802,7 +697,7 @@ static inline void timer_enable_irq(timer_dev *dev, uint8 interrupt) {
  * @see timer_channel
  */
 static inline void timer_disable_irq(timer_dev *dev, uint8 interrupt) {
-    *bb_perip(&(dev->regs).adv->DIER, interrupt) = 0;
+
 }
 
 /**
@@ -817,7 +712,7 @@ static inline void timer_disable_irq(timer_dev *dev, uint8 interrupt) {
  * @param channel Channel to enable, from 1 to 4.
  */
 static inline void timer_cc_enable(timer_dev *dev, uint8 channel) {
-    *bb_perip(&(dev->regs).gen->CCER, 4 * (channel - 1)) = 1;
+
 }
 
 /**
@@ -827,7 +722,7 @@ static inline void timer_cc_enable(timer_dev *dev, uint8 channel) {
  * @see timer_cc_enable()
  */
 static inline void timer_cc_disable(timer_dev *dev, uint8 channel) {
-    *bb_perip(&(dev->regs).gen->CCER, 4 * (channel - 1)) = 0;
+
 }
 
 /**
@@ -838,7 +733,7 @@ static inline void timer_cc_disable(timer_dev *dev, uint8 channel) {
  * @see timer_cc_set_polarity()
  */
 static inline uint8 timer_cc_get_pol(timer_dev *dev, uint8 channel) {
-    return *bb_perip(&(dev->regs).gen->CCER, 4 * (channel - 1) + 1);
+    return 0;
 }
 
 /**
@@ -859,7 +754,7 @@ static inline uint8 timer_cc_get_pol(timer_dev *dev, uint8 channel) {
  * @param pol New polarity, 0 or 1.
  */
 static inline void timer_cc_set_pol(timer_dev *dev, uint8 channel, uint8 pol) {
-    *bb_perip(&(dev->regs).gen->CCER, 4 * (channel - 1) + 1) = pol;
+
 }
 
 /**
@@ -869,8 +764,7 @@ static inline void timer_cc_set_pol(timer_dev *dev, uint8 channel, uint8 pol) {
  *         from 1 to 18.
  */
 static inline uint8 timer_dma_get_burst_len(timer_dev *dev) {
-    uint32 dbl = ((dev->regs).gen->DCR & TIMER_DCR_DBL) >> 8;
-    return dbl + 1;             /* 0 means 1 transfer, etc. */
+    return 0;
 }
 
 /**
@@ -880,10 +774,7 @@ static inline uint8 timer_dma_get_burst_len(timer_dev *dev) {
  *               read/write to timer DMA register, from 1 to 18.
  */
 static inline void timer_dma_set_burst_len(timer_dev *dev, uint8 length) {
-    uint32 tmp = (dev->regs).gen->DCR;
-    tmp &= ~TIMER_DCR_DBL;
-    tmp |= (length - 1) << 8;
-    (dev->regs).gen->DCR = tmp;
+
 }
 
 /**
@@ -893,45 +784,7 @@ static inline void timer_dma_set_burst_len(timer_dev *dev, uint8 length) {
  */
 typedef enum timer_dma_base_addr {
     /** Base is control register 1 */
-    TIMER_DMA_BASE_CR1 = TIMER_DCR_DBA_CR1,
-    /** Base is control register 2 */
-    TIMER_DMA_BASE_CR2 = TIMER_DCR_DBA_CR2,
-    /** Base is slave mode control register */
-    TIMER_DMA_BASE_SMCR = TIMER_DCR_DBA_SMCR,
-    /** Base is DMA interrupt enable register */
-    TIMER_DMA_BASE_DIER  = TIMER_DCR_DBA_DIER,
-    /** Base is status register */
-    TIMER_DMA_BASE_SR = TIMER_DCR_DBA_SR,
-    /** Base is event generation register */
-    TIMER_DMA_BASE_EGR = TIMER_DCR_DBA_EGR,
-    /** Base is capture/compare mode register 1 */
-    TIMER_DMA_BASE_CCMR1 = TIMER_DCR_DBA_CCMR1,
-    /** Base is capture/compare mode register 2 */
-    TIMER_DMA_BASE_CCMR2 = TIMER_DCR_DBA_CCMR2,
-    /** Base is capture/compare enable register */
-    TIMER_DMA_BASE_CCER = TIMER_DCR_DBA_CCER,
-    /** Base is counter */
-    TIMER_DMA_BASE_CNT = TIMER_DCR_DBA_CNT,
-    /** Base is prescaler */
-    TIMER_DMA_BASE_PSC = TIMER_DCR_DBA_PSC,
-    /** Base is auto-reload register */
-    TIMER_DMA_BASE_ARR = TIMER_DCR_DBA_ARR,
-    /** Base is repetition counter register */
-    TIMER_DMA_BASE_RCR = TIMER_DCR_DBA_RCR,
-    /** Base is capture/compare register 1 */
-    TIMER_DMA_BASE_CCR1 = TIMER_DCR_DBA_CCR1,
-    /** Base is capture/compare register 2 */
-    TIMER_DMA_BASE_CCR2 = TIMER_DCR_DBA_CCR2,
-    /** Base is capture/compare register 3 */
-    TIMER_DMA_BASE_CCR3 = TIMER_DCR_DBA_CCR3,
-    /** Base is capture/compare register 4 */
-    TIMER_DMA_BASE_CCR4 = TIMER_DCR_DBA_CCR4,
-    /** Base is break and dead-time register */
-    TIMER_DMA_BASE_BDTR = TIMER_DCR_DBA_BDTR,
-    /** Base is DMA control register */
-    TIMER_DMA_BASE_DCR = TIMER_DCR_DBA_DCR,
-    /** Base is DMA address for full transfer */
-    TIMER_DMA_BASE_DMAR = TIMER_DCR_DBA_DMAR,
+    TIMER_DMA_BASE_CR1 = 1
 } timer_dma_base_addr;
 
 /**
@@ -943,8 +796,8 @@ typedef enum timer_dma_base_addr {
  * @return DMA base address
  */
 static inline timer_dma_base_addr timer_dma_get_base_addr(timer_dev *dev) {
-    uint32 dcr = (dev->regs).gen->DCR;
-    return (timer_dma_base_addr)(dcr & TIMER_DCR_DBA);
+    static timer_dma_base_addr tmp;
+    return tmp;
 }
 
 /**
@@ -957,10 +810,7 @@ static inline timer_dma_base_addr timer_dma_get_base_addr(timer_dev *dev) {
  */
 static inline void timer_dma_set_base_addr(timer_dev *dev,
                                            timer_dma_base_addr dma_base) {
-    uint32 tmp = (dev->regs).gen->DCR;
-    tmp &= ~TIMER_DCR_DBA;
-    tmp |= dma_base;
-    (dev->regs).gen->DCR = tmp;
+
 }
 
 /**
@@ -1025,15 +875,7 @@ static inline void timer_oc_set_mode(timer_dev *dev,
                                      uint8 channel,
                                      timer_oc_mode mode,
                                      uint8 flags) {
-    /* channel == 1,2 -> CCMR1; channel == 3,4 -> CCMR2 */
-    __io uint32 *ccmr = &(dev->regs).gen->CCMR1 + (((channel - 1) >> 1) & 1);
-    /* channel == 1,3 -> shift = 0, channel == 2,4 -> shift = 8 */
-    uint8 shift = 8 * (1 - (channel & 1));
 
-    uint32 tmp = *ccmr;
-    tmp &= ~(0xFF << shift);
-    tmp |= (mode | flags | TIMER_CCMR_CCS_OUTPUT) << shift;
-    *ccmr = tmp;
 }
 
 /*

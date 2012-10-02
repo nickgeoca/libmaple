@@ -53,12 +53,13 @@ extern "C"{
 /** GPIO device type */
 typedef struct gpio_dev {
     gpio_reg_map *regs;         /**< Register map */
-    rcc_clk_id    clk_id;       /**< RCC clock information */
+    clk_dev_id    clk_id;       /**< RCC clock information */
     /**
      * @brief (Deprecated) External interrupt port.
      * Instead of dev->exti_port, use gpio_exti_port(dev).
      */
     exti_cfg      exti_port;
+    gpio_type     type;
 } gpio_dev;
 
 /*
@@ -75,7 +76,8 @@ void gpio_set_mode(gpio_dev *dev, uint8 pin, gpio_pin_mode mode);
  * @param dev GPIO port whose exti_cfg to return.
  */
 static inline exti_cfg gpio_exti_port(gpio_dev *dev) {
-    return (exti_cfg)(EXTI_PA + (dev->clk_id - RCC_GPIOA));
+    static exti_cfg tmp;
+    return tmp;
 }
 
 /**
@@ -88,21 +90,18 @@ static inline exti_cfg gpio_exti_port(gpio_dev *dev) {
  * @param val If true, set the pin.  If false, reset the pin.
  */
 static inline void gpio_write_bit(gpio_dev *dev, uint8 pin, uint8 val) {
-    val = !val;          /* "set" bits are lower than "reset" bits  */
-    dev->regs->BSRR = (1U << pin) << (16 * val);
+    REG_WRITE_SET_CLR(dev->regs->PB, val, 1 << pin);
 }
 
 /**
  * Determine whether or not a GPIO pin is set.
- *
- * Pin must have previously been configured to input mode.
  *
  * @param dev GPIO device whose pin to test.
  * @param pin Pin on dev to test.
  * @return True if the pin is set, false otherwise.
  */
 static inline uint32 gpio_read_bit(gpio_dev *dev, uint8 pin) {
-    return dev->regs->IDR & (1U << pin);
+    return (dev->regs->PBPIN & 1 << pin) == 0;
 }
 
 /**
@@ -111,7 +110,7 @@ static inline uint32 gpio_read_bit(gpio_dev *dev, uint8 pin) {
  * @param pin Pin on dev to toggle.
  */
 static inline void gpio_toggle_bit(gpio_dev *dev, uint8 pin) {
-    dev->regs->ODR = dev->regs->ODR ^ (1U << pin);
+    dev->regs->PB_MSK =  ((1 << pin) << 16) | (~dev->regs->PB & 0xFFFF);
 }
 
 #ifdef __cplusplus

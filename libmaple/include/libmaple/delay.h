@@ -50,8 +50,11 @@ static inline void delay_us(uint32 us) {
 
     /* fudge for function call overhead  */
     us--;
+
     asm volatile("   mov r0, %[us]          \n\t"
+                 ".syntax unified           \n\t"
                  "1: subs r0, #1            \n\t"
+                 ".syntax divided           \n\t"
                  "   bhi 1b                 \n\t"
                  :
                  : [us] "r" (us)

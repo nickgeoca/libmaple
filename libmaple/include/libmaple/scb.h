@@ -68,19 +68,13 @@ typedef struct scb_reg_map {
     __io uint32 DFSR;    /**< Debug Fault Status Register */
     __io uint32 MMFAR;   /**< Mem Manage Address Register */
     __io uint32 BFAR;    /**< Bus Fault Address Register */
-#if 0
-    /* The following registers are implementation-defined according to
-     * ARM v7-M, and I can't find evidence of their existence in ST's
-     * docs.  I'm removing them.  Feel free to yell at me if they do
-     * exist. [mbolivar]
-     */
     __io uint32 AFSR;    /**< Auxiliary Fault Status Register */
     __io uint32 PFR[2];  /**< Processor Feature Register */
     __io uint32 DFR;     /**< Debug Feature Register */
     __io uint32 AFR;     /**< Auxiliary Feature Register */
     __io uint32 MMFR[4]; /**< Memory Model Feature Register */
     __io uint32 ISAR[5]; /**< ISA Feature Register */
-#endif
+
 } scb_reg_map;
 
 /** System control block register map base pointer */

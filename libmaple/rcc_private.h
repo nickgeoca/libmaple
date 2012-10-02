@@ -33,35 +33,8 @@
 
 #include <libmaple/bitband.h>
 
-struct rcc_dev_info {
-    const rcc_clk_domain clk_domain;
-    const uint8 line_num;
-};
 
-extern const struct rcc_dev_info rcc_dev_table[];
 
-static inline void rcc_do_clk_enable(__io uint32** enable_regs,
-                                     rcc_clk_id id) {
-    __io uint32 *enable_reg = enable_regs[rcc_dev_clk(id)];
-    uint8 line_num = rcc_dev_table[id].line_num;
-    bb_peri_set_bit(enable_reg, line_num, 1);
-}
 
-static inline void rcc_do_reset_dev(__io uint32** reset_regs,
-                                    rcc_clk_id id) {
-    __io uint32 *reset_reg = reset_regs[rcc_dev_clk(id)];
-    uint8 line_num = rcc_dev_table[id].line_num;
-    bb_peri_set_bit(reset_reg, line_num, 1);
-    bb_peri_set_bit(reset_reg, line_num, 0);
-}
-
-static inline void rcc_do_set_prescaler(const uint32 *masks,
-                                        rcc_prescaler prescaler,
-                                        uint32 divider) {
-    uint32 cfgr = RCC_BASE->CFGR;
-    cfgr &= ~masks[prescaler];
-    cfgr |= divider;
-    RCC_BASE->CFGR = cfgr;
-}
 
 #endif

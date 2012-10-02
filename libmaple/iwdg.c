@@ -42,13 +42,7 @@
  * @param reload Independent watchdog counter reload value.
  */
 void iwdg_init(iwdg_prescaler prescaler, uint16 reload) {
-   IWDG_BASE->KR = IWDG_KR_UNLOCK;
-   IWDG_BASE->PR = prescaler;
-   IWDG_BASE->RLR = reload;
 
-   /* Start things off */
-   IWDG_BASE->KR = IWDG_KR_START;
-   iwdg_feed();
 }
 
 /**
@@ -58,5 +52,5 @@ void iwdg_init(iwdg_prescaler prescaler, uint16 reload) {
  * its reload value.
  */
 void iwdg_feed(void) {
-    IWDG_BASE->KR = IWDG_KR_FEED;
+
 }

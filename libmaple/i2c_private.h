@@ -65,11 +65,11 @@ void _i2c_irq_error_handler(i2c_dev *dev);
 struct gpio_dev;
 
 static inline struct gpio_dev* scl_port(const i2c_dev *dev) {
-    return (dev->gpio_port == NULL) ? dev->scl_port : dev->gpio_port;
+    return NULL;
 }
 
 static inline struct gpio_dev* sda_port(const i2c_dev *dev) {
-    return (dev->gpio_port == NULL) ? dev->sda_port : dev->gpio_port;
+    return NULL;
 }
 
 /* Auxiliary procedure for enabling an I2C peripheral; `flags' as for

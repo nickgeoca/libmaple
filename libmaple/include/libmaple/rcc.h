@@ -51,7 +51,7 @@ typedef enum rcc_sysclk_src {
 } rcc_sysclk_src;
 
 #include <series/rcc.h>
-
+#if 0
 /* Note: Beyond the usual (registers, etc.), it's up to the series
  * header to define the following types:
  *
@@ -67,10 +67,10 @@ typedef enum rcc_sysclk_src {
  *   libmaple/rcc.c for information on how to choose these values so
  *   that rcc_turn_on_clk() etc. will work on your series.
  *
- * - enum rcc_clk_id: For each available peripheral. These are widely used
+ * - enum clk_dev_id: For each available peripheral. These are widely used
  *   as unique IDs (TODO extricate from RCC?). Peripherals which are
  *   common across STM32 series should use the same token for their
- *   rcc_clk_id in each series header.
+ *   clk_dev_id in each series header.
  *
  * - enum rcc_clk_domain: For each clock domain. This is returned by
  *   rcc_dev_clk(). For instance, each AHB and APB is a clock domain.
@@ -137,20 +137,20 @@ int rcc_is_clk_ready(rcc_clk clock);
  * @brief Turn on the clock line on a peripheral
  * @param id Clock ID of the peripheral to turn on.
  */
-extern void rcc_clk_enable(rcc_clk_id id);
+extern void rcc_clk_enable(clk_dev_id id);
 
 /**
  * @brief Reset a peripheral.
  *
- * Caution: not all rcc_clk_id values refer to a peripheral which can
+ * Caution: not all clk_dev_id values refer to a peripheral which can
  * be reset. (Only rcc_clk_ids for peripherals with bits in an RCC
  * reset register can be used here.)
  *
  * @param id Clock ID of the peripheral to reset.
  */
-extern void rcc_reset_dev(rcc_clk_id id);
+extern void rcc_reset_dev(clk_dev_id id);
 
-rcc_clk_domain rcc_dev_clk(rcc_clk_id id);
+rcc_clk_domain rcc_dev_clk(clk_dev_id id);
 
 /* Clock security system */
 
@@ -167,6 +167,7 @@ static inline void rcc_enable_css() {
 static inline void rcc_disable_css() {
     RCC_BASE->CR &= ~RCC_CR_CSSON;
 }
+#endif
 
 #ifdef __cplusplus
 } // extern "C"

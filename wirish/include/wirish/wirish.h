@@ -34,22 +34,22 @@
 #ifndef _WIRISH_WIRISH_H_
 #define _WIRISH_WIRISH_H_
 
+
+
 #include <libmaple/stm32.h>
 
 #include <wirish/boards.h>
 #include <wirish/io.h>
-#include <wirish/bit_constants.h>
-#include <wirish/pwm.h>
-#include <wirish/ext_interrupts.h>
-#include <wirish/wirish_debug.h>
-#include <wirish/wirish_math.h>
+//#include <wirish/bit_constants.h>
+//#include <wirish/pwm.h>
+//#include <wirish/ext_interrupts.h>
+//#include <wirish/wirish_debug.h>
+//#include <wirish/wirish_math.h>
 #include <wirish/wirish_time.h>
-#if STM32_MCU_SERIES == STM32_SERIES_F1 /* FIXME [0.0.13?] port to F2 */
-#include <wirish/HardwareSPI.h>
-#endif
+//#include <wirish/HardwareSPI.h>
 #include <wirish/HardwareSerial.h>
 #include <wirish/HardwareTimer.h>
-#include <wirish/usb_serial.h>
+//#include <wirish/usb_serial.h>
 #include <wirish/wirish_types.h>
 
 #include <libmaple/libmaple.h>

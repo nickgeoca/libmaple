@@ -30,7 +30,7 @@
 #define SPI_DEV(num)                              \
     {                                             \
         .regs    = SPI##num##_BASE,               \
-        .clk_id  = RCC_SPI##num,                  \
+        .clk_id  = CLK_SPI##num,                  \
         .irq_num = NVIC_SPI##num,                 \
     }
 

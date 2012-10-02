@@ -36,6 +36,5 @@
  * Enables the power interface clock, and resets the power device.
  */
 void pwr_init(void) {
-    rcc_clk_enable(RCC_PWR);
-    rcc_reset_dev(RCC_PWR);
+
 }

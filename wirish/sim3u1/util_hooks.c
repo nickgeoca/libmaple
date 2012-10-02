@@ -1,6 +1,7 @@
 /******************************************************************************
  * The MIT License
  *
+ * Copyright (c) 2010 Perry Hung (from libmaple/util.c).
  * Copyright (c) 2012 LeafLabs, LLC.
  *
  * Permission is hereby granted, free of charge, to any person
@@ -22,24 +23,42 @@
  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
-*****************************************************************************/
+ *****************************************************************************/
 
-#ifndef _LIBMAPLE_STM32_PRIVATE_H_
-#define _LIBMAPLE_STM32_PRIVATE_H_
+/*
+ * STM32F1 implementations for libmaple/util.c hooks
+ *
+ * These need more love and attention before being made public API
+ * (this includes being easily overridable by user code).
+ */
 
-typedef enum stm32_mem_block_purpose {
-    STM32_BLOCK_CODE,
-    STM32_BLOCK_SRAM,
-    STM32_BLOCK_PERIPH,
-    STM32_BLOCK_FSMC_1_2,
-    STM32_BLOCK_FSMC_3_4,
-    STM32_BLOCK_FSMC_REG,
-    STM32_BLOCK_UNUSED,
-    STM32_BLOCK_CORTEX_INTERNAL,
-} stm32_mem_block_purpose;
+#include <libmaple/nvic.h>
+#include <libmaple/gpio.h>
+#include <libmaple/stm32.h>
+#include <libmaple/timer.h>
+#include <libmaple/adc.h>
+#include <libmaple/usart.h>
 
-static inline stm32_mem_block_purpose stm32_block_purpose(void *addr) {
-    return (stm32_mem_block_purpose)((unsigned)addr >> 29);
+/* Failed ASSERT()s send out a message using this USART config. */
+#ifndef ERROR_USART
+#define ERROR_USART            USART2
+#define ERROR_USART_BAUD       9600
+#define ERROR_TX_PORT          GPIOA
+#define ERROR_TX_PIN           2
+#endif
+
+/*
+ * Disables all peripheral interrupts except USB (when available),
+ * turns off commonly-used peripherals. Called by __error() with
+ * global interrupts disabled.
+ */
+void __lm_error(void) {
+
 }
 
-#endif
+/*
+ * Enable the error USART for writing.
+ */
+usart_dev* __lm_enable_error_usart() {
+    return 0;
+}

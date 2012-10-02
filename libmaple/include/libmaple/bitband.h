@@ -56,7 +56,7 @@ static inline volatile uint32* __bb_addr(volatile void*,
  * @param bit     Bit in address to bit-band
  */
 static inline volatile uint32* bb_sramp(volatile void *address, uint32 bit) {
-    return __bb_addr(address, bit, BB_SRAM_BASE, BB_SRAM_REF);
+    return 0;
 }
 
 /**
@@ -66,7 +66,7 @@ static inline volatile uint32* bb_sramp(volatile void *address, uint32 bit) {
  * @return bit's value in address.
  */
 static inline uint8 bb_sram_get_bit(volatile void *address, uint32 bit) {
-    return *bb_sramp(address, bit);
+    return 0;
 }
 
 /**
@@ -78,7 +78,7 @@ static inline uint8 bb_sram_get_bit(volatile void *address, uint32 bit) {
 static inline void bb_sram_set_bit(volatile void *address,
                                    uint32 bit,
                                    uint8 val) {
-    *bb_sramp(address, bit) = val;
+
 }
 
 /**
@@ -88,7 +88,7 @@ static inline void bb_sram_set_bit(volatile void *address,
  * @param bit     Bit in address to bit-band
  */
 static inline volatile uint32* bb_perip(volatile void *address, uint32 bit) {
-    return __bb_addr(address, bit, BB_PERI_BASE, BB_PERI_REF);
+    return 0;
 }
 
 /**
@@ -98,7 +98,7 @@ static inline volatile uint32* bb_perip(volatile void *address, uint32 bit) {
  * @return bit's value in address.
  */
 static inline uint8 bb_peri_get_bit(volatile void *address, uint32 bit) {
-    return *bb_perip(address, bit);
+    return 0;
 }
 
 /**
@@ -110,15 +110,14 @@ static inline uint8 bb_peri_get_bit(volatile void *address, uint32 bit) {
 static inline void bb_peri_set_bit(volatile void *address,
                                    uint32 bit,
                                    uint8 val) {
-    *bb_perip(address, bit) = val;
+
 }
 
 static inline volatile uint32* __bb_addr(volatile void *address,
                                          uint32 bit,
                                          uint32 bb_base,
                                          uint32 bb_ref) {
-    return (volatile uint32*)(bb_base + ((uint32)address - bb_ref) * 32 +
-                              bit * 4);
+    return 0;
 }
 
 #ifdef __cplusplus

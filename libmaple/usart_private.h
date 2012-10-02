@@ -38,16 +38,18 @@
 #include <libmaple/usart.h>
 
 static __always_inline void usart_irq(ring_buffer *rb, usart_reg_map *regs) {
+    uint32 i = regs->FIFOCN & UART_FIFOCN_RCNT_MASK;
+    while (i--) {
 #ifdef USART_SAFE_INSERT
     /* If the buffer is full and the user defines USART_SAFE_INSERT,
      * ignore new bytes. */
-    rb_safe_insert(rb, (uint8)regs->DR);
+#error
+        rb_safe_insert(rb, REG_CAST_BYTE(regs->DATA));
 #else
     /* By default, push bytes around in the ring buffer. */
-    rb_push_insert(rb, (uint8)regs->DR);
+        rb_push_insert(rb, REG_CAST_BYTE(regs->DATA));
 #endif
+    }
 }
-
-uint32 _usart_clock_freq(usart_dev *dev);
 
 #endif

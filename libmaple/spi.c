@@ -46,8 +46,7 @@ static void spi_reconfigure(spi_dev *dev, uint32 cr1_config);
  * @param dev Device to initialize and reset.
  */
 void spi_init(spi_dev *dev) {
-    rcc_clk_enable(dev->clk_id);
-    rcc_reset_dev(dev->clk_id);
+
 }
 
 /**
@@ -65,7 +64,7 @@ void spi_master_enable(spi_dev *dev,
                        spi_baud_rate baud,
                        spi_mode mode,
                        uint32 flags) {
-    spi_reconfigure(dev, baud | flags | SPI_CR1_MSTR | mode);
+
 }
 
 /**
@@ -79,7 +78,7 @@ void spi_master_enable(spi_dev *dev,
  * @see spi_cfg_flag
  */
 void spi_slave_enable(spi_dev *dev, spi_mode mode, uint32 flags) {
-    spi_reconfigure(dev, flags | mode);
+
 }
 
 /**
@@ -92,16 +91,7 @@ void spi_slave_enable(spi_dev *dev, spi_mode mode, uint32 flags) {
  * @return Number of elements transmitted.
  */
 uint32 spi_tx(spi_dev *dev, const void *buf, uint32 len) {
-    uint32 txed = 0;
-    uint8 byte_frame = spi_dff(dev) == SPI_DFF_8_BIT;
-    while (spi_is_tx_empty(dev) && (txed < len)) {
-        if (byte_frame) {
-            dev->regs->DR = ((const uint8*)buf)[txed++];
-        } else {
-            dev->regs->DR = ((const uint16*)buf)[txed++];
-        }
-    }
-    return txed;
+    return 0;
 }
 
 /**
@@ -109,7 +99,7 @@ uint32 spi_tx(spi_dev *dev, const void *buf, uint32 len) {
  * @param dev Device to enable
  */
 void spi_peripheral_enable(spi_dev *dev) {
-    bb_peri_set_bit(&dev->regs->CR1, SPI_CR1_SPE_BIT, 1);
+    return;
 }
 
 /**
@@ -117,7 +107,7 @@ void spi_peripheral_enable(spi_dev *dev) {
  * @param dev Device to disable
  */
 void spi_peripheral_disable(spi_dev *dev) {
-    bb_peri_set_bit(&dev->regs->CR1, SPI_CR1_SPE_BIT, 0);
+
 }
 
 /**
@@ -125,7 +115,7 @@ void spi_peripheral_disable(spi_dev *dev) {
  * @param dev SPI device on which to enable TX DMA requests
  */
 void spi_tx_dma_enable(spi_dev *dev) {
-    bb_peri_set_bit(&dev->regs->CR2, SPI_CR2_TXDMAEN_BIT, 1);
+
 }
 
 /**
@@ -133,7 +123,7 @@ void spi_tx_dma_enable(spi_dev *dev) {
  * @param dev SPI device on which to disable TX DMA requests
  */
 void spi_tx_dma_disable(spi_dev *dev) {
-    bb_peri_set_bit(&dev->regs->CR2, SPI_CR2_TXDMAEN_BIT, 0);
+
 }
 
 /**
@@ -141,7 +131,7 @@ void spi_tx_dma_disable(spi_dev *dev) {
  * @param dev SPI device on which to enable RX DMA requests
  */
 void spi_rx_dma_enable(spi_dev *dev) {
-    bb_peri_set_bit(&dev->regs->CR2, SPI_CR2_RXDMAEN_BIT, 1);
+
 }
 
 /**
@@ -149,7 +139,7 @@ void spi_rx_dma_enable(spi_dev *dev) {
  * @param dev SPI device on which to disable RX DMA requests
  */
 void spi_rx_dma_disable(spi_dev *dev) {
-    bb_peri_set_bit(&dev->regs->CR2, SPI_CR2_RXDMAEN_BIT, 0);
+
 }
 
 /*
@@ -157,8 +147,5 @@ void spi_rx_dma_disable(spi_dev *dev) {
  */
 
 static void spi_reconfigure(spi_dev *dev, uint32 cr1_config) {
-    spi_irq_disable(dev, SPI_INTERRUPTS_ALL);
-    spi_peripheral_disable(dev);
-    dev->regs->CR1 = cr1_config;
-    spi_peripheral_enable(dev);
+
 }

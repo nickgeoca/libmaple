@@ -315,8 +315,7 @@ void fsmc_sram_init_gpios(void);
  */
 static inline void fsmc_nor_psram_set_datast(fsmc_nor_psram_reg_map *regs,
                                              uint8 datast) {
-    regs->BTR &= ~FSMC_BTR_DATAST;
-    regs->BTR |= datast << 8;
+
 }
 
 /**
@@ -329,8 +328,7 @@ static inline void fsmc_nor_psram_set_datast(fsmc_nor_psram_reg_map *regs,
  */
 static inline void fsmc_nor_psram_set_addset(fsmc_nor_psram_reg_map *regs,
                                              uint8 addset) {
-    regs->BTR &= ~FSMC_BTR_ADDSET;
-    regs->BTR |= addset & 0xF;
+
 }
 
 #ifdef __cplusplus

@@ -50,17 +50,7 @@ const dac_dev *DAC = &dac;
  * @sideeffect May set PA4 or PA5 to INPUT_ANALOG
  */
 void dac_init(const dac_dev *dev, uint32 flags) {
-    /* First turn on the clock */
-    rcc_clk_enable(RCC_DAC);
-    rcc_reset_dev(RCC_DAC);
 
-    if (flags & DAC_CH1) {
-        dac_enable_channel(dev, 1);
-    }
-
-    if (flags & DAC_CH2) {
-        dac_enable_channel(dev, 2);
-    }
 }
 
 /**
@@ -70,14 +60,7 @@ void dac_init(const dac_dev *dev, uint32 flags) {
  * @param val value to write
  */
 void dac_write_channel(const dac_dev *dev, uint8 channel, uint16 val) {
-    switch(channel) {
-    case 1:
-        dev->regs->DHR12R1 = DAC_DHR12R1_DACC1DHR & val;
-        break;
-    case 2:
-        dev->regs->DHR12R2 = DAC_DHR12R2_DACC2DHR & val;
-        break;
-    }
+
 }
 
 /**
@@ -87,20 +70,7 @@ void dac_write_channel(const dac_dev *dev, uint8 channel, uint16 val) {
  * @sideeffect May change pin mode of PA4 or PA5
  */
 void dac_enable_channel(const dac_dev *dev, uint8 channel) {
-    /*
-     * Setup ANALOG mode on PA4 and PA5. This mapping is consistent
-     * across all supported STM32s with a DAC.
-     */
-    switch (channel) {
-    case 1:
-        gpio_set_mode(GPIOA, 4, GPIO_MODE_ANALOG);
-        dev->regs->CR |= DAC_CR_EN1;
-        break;
-    case 2:
-        gpio_set_mode(GPIOA, 5, GPIO_MODE_ANALOG);
-        dev->regs->CR |= DAC_CR_EN2;
-        break;
-    }
+
 }
 
 /**
@@ -109,12 +79,5 @@ void dac_enable_channel(const dac_dev *dev, uint8 channel) {
  * @param channel channel to disable, either 1 or 2
  */
 void dac_disable_channel(const dac_dev *dev, uint8 channel) {
-    switch (channel) {
-    case 1:
-        dev->regs->CR &= ~DAC_CR_EN1;
-        break;
-    case 2:
-        dev->regs->CR &= ~DAC_CR_EN2;
-        break;
-    }
+
 }

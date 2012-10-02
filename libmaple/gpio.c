@@ -45,6 +45,5 @@
  * @param dev GPIO device to initialize.
  */
 void gpio_init(gpio_dev *dev) {
-    rcc_clk_enable(dev->clk_id);
-    rcc_reset_dev(dev->clk_id);
+    clk_enable_dev(dev->clk_id);
 }

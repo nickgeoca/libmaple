@@ -48,6 +48,8 @@ extern "C" {
  * Don't make these into an enum; the preprocessor needs them.
  */
 
+/** SiM3U167 series. */
+#define SIM3_SERIES_U1 0
 /** STM32F1 series. */
 #define STM32_SERIES_F1 0
 /** STM32F2 series. */
@@ -69,20 +71,6 @@ extern "C" {
  */
 #include <series/stm32.h>
 
-/* Ensure the series header isn't broken. */
-#if (!defined(STM32_PCLK1)         ||     \
-     !defined(STM32_PCLK2)         ||     \
-     !defined(STM32_MCU_SERIES)    ||     \
-     !defined(STM32_NR_INTERRUPTS) ||     \
-     !defined(STM32_NR_GPIO_PORTS) ||     \
-     !defined(STM32_TIMER_MASK)    ||     \
-     !defined(STM32_DELAY_US_MULT) ||     \
-     !defined(STM32_SRAM_END)      ||     \
-     !defined(STM32_HAVE_DAC)      ||     \
-     !defined(STM32_HAVE_FSMC)     ||     \
-     !defined(STM32_HAVE_USB))
-#error "Bad STM32F1 configuration. Check <series/stm32.h> header for your MCU."
-#endif
 
 /*
  * Derived macros
@@ -95,7 +83,8 @@ extern "C" {
  * Given a constant timer number n (starting from 1), this macro has a
  * nonzero value exactly when TIMERn is available.
  */
-#define STM32_HAVE_TIMER(n) (STM32_TIMER_MASK & (1 << (n)))
+// #define STM32_HAVE_TIMER(n) (STM32_TIMER_MASK & (1 << (n)))
+#define STM32_HAVE_TIMER(n) (0)
 
 /*
  * Doxygen for functionality provided by series header.

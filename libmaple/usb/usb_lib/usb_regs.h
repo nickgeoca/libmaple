@@ -218,8 +218,7 @@ enum EP_BUF_NUM
 * Output         : None.
 * Return         : None.
 *******************************************************************************/
-#define _SetEPType(bEpNum,wType) (_SetENDPOINT(bEpNum,\
-                                  ((_GetENDPOINT(bEpNum) & EP_T_MASK) | wType)))
+#define _SetEPType(bEpNum,wType)
 
 /*******************************************************************************
 * Macro Name     : GetEPType
@@ -228,7 +227,7 @@ enum EP_BUF_NUM
 * Output         : None.
 * Return         : Endpoint Type
 *******************************************************************************/
-#define _GetEPType(bEpNum) (_GetENDPOINT(bEpNum) & EP_T_FIELD)
+#define _GetEPType(bEpNum)
 
 /*******************************************************************************
 * Macro Name     : SetEPTxStatus
@@ -238,17 +237,7 @@ enum EP_BUF_NUM
 * Output         : None.
 * Return         : None.
 *******************************************************************************/
-#define _SetEPTxStatus(bEpNum,wState) {\
-    register u16 _wRegVal;       \
-    _wRegVal = _GetENDPOINT(bEpNum) & EPTX_DTOGMASK;\
-    /* toggle first bit ? */     \
-    if((EPTX_DTOG1 & wState)!= 0)      \
-      _wRegVal ^= EPTX_DTOG1;        \
-    /* toggle second bit ?  */         \
-    if((EPTX_DTOG2 & wState)!= 0)      \
-      _wRegVal ^= EPTX_DTOG2;        \
-    _SetENDPOINT(bEpNum, _wRegVal);    \
-  } /* _SetEPTxStatus */
+#define _SetEPTxStatus(bEpNum,wState)
 
 /*******************************************************************************
 * Macro Name     : SetEPRxStatus
@@ -258,18 +247,7 @@ enum EP_BUF_NUM
 * Output         : None.
 * Return         : None.
 *******************************************************************************/
-#define _SetEPRxStatus(bEpNum,wState) {\
-    register u16 _wRegVal;   \
-    \
-    _wRegVal = _GetENDPOINT(bEpNum) & EPRX_DTOGMASK;\
-    /* toggle first bit ? */  \
-    if((EPRX_DTOG1 & wState)!= 0) \
-      _wRegVal ^= EPRX_DTOG1;  \
-    /* toggle second bit ? */  \
-    if((EPRX_DTOG2 & wState)!= 0) \
-      _wRegVal ^= EPRX_DTOG2;  \
-    _SetENDPOINT(bEpNum, _wRegVal); \
-  } /* _SetEPRxStatus */
+#define _SetEPRxStatus(bEpNum,wState)
 /*******************************************************************************
 * Macro Name     : GetEPTxStatus / GetEPRxStatus 
 * Description    : gets the status for tx/rx transfer (bits STAT_TX[1:0]

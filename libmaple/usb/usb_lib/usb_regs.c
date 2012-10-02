@@ -179,7 +179,7 @@ void SetEPType(u8 bEpNum, u16 wType)
 *******************************************************************************/
 u16 GetEPType(u8 bEpNum)
 {
-  return(_GetEPType(bEpNum));
+  return 0;
 }
 
 /*******************************************************************************
@@ -689,12 +689,8 @@ u16 GetEPDblBuf1Count(u8 bEpNum)
 *******************************************************************************/
 EP_DBUF_DIR GetEPDblBufDir(u8 bEpNum)
 {
-  if ((u16)(*_pEPRxCount(bEpNum) & 0xFC00) != 0)
-    return(EP_DBUF_OUT);
-  else if (((u16)(*_pEPTxCount(bEpNum)) & 0x03FF) != 0)
-    return(EP_DBUF_IN);
-  else
-    return(EP_DBUF_ERR);
+
+    return EP_DBUF_ERR;
 }
 /*******************************************************************************
 * Function Name  : FreeUserBuffer
@@ -706,14 +702,7 @@ EP_DBUF_DIR GetEPDblBufDir(u8 bEpNum)
 *******************************************************************************/
 void FreeUserBuffer(u8 bEpNum, u8 bDir)
 {
-  if (bDir == EP_DBUF_OUT)
-  { /* OUT double buffered endpoint */
-    _ToggleDTOG_TX(bEpNum);
-  }
-  else if (bDir == EP_DBUF_IN)
-  { /* IN double buffered endpoint */
-    _ToggleDTOG_RX(bEpNum);
-  }
+
 }
 
 /*******************************************************************************
@@ -725,9 +714,7 @@ void FreeUserBuffer(u8 bEpNum, u8 bDir)
 *******************************************************************************/
 u16 ToWord(u8 bh, u8 bl)
 {
-  u16 wRet;
-  wRet = (u16)bl | ((u16)bh << 8);
-  return(wRet);
+  return 0;
 }
 /*******************************************************************************
 * Function Name  : ByteSwap

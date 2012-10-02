@@ -40,7 +40,7 @@
 #define APB2                            RCC_APB2
 #define AHB                             RCC_AHB
 
-/* Device descriptor table, maps rcc_clk_id onto bus and enable/reset
+/* Device descriptor table, maps clk_dev_id onto bus and enable/reset
  * register bit numbers. */
 const struct rcc_dev_info rcc_dev_table[] = {
     [RCC_GPIOA]  = { .clk_domain = APB2, .line_num = 2 },

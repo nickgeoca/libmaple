@@ -48,134 +48,57 @@
  */
 
 void TwoWire::set_scl(bool state) {
-    I2C_DELAY(this->i2c_delay);
-    digitalWrite(this->scl_pin,state);
-    //Allow for clock stretching - dangerous currently
-    if (state == HIGH) {
-        while(digitalRead(this->scl_pin) == 0);
-    }
+
 }
 
 void TwoWire::set_sda(bool state) {
-    I2C_DELAY(this->i2c_delay);
-    digitalWrite(this->sda_pin, state);
+
 }
 
 void TwoWire::i2c_start() {
-    set_sda(LOW);
-    set_scl(LOW);
+
 }
 
 void TwoWire::i2c_stop() {
-    set_sda(LOW);
-    set_scl(HIGH);
-    set_sda(HIGH);
+
 }
 
 bool TwoWire::i2c_get_ack() {
-    set_scl(LOW);
-    set_sda(HIGH);
-    set_scl(HIGH);
 
-    bool ret = !digitalRead(this->sda_pin);
-    set_scl(LOW);
-    return ret;
+    return true;
 }
 
 void TwoWire::i2c_send_ack() {
-    set_sda(LOW);
-    set_scl(HIGH);
-    set_scl(LOW);
+
 }
 
 void TwoWire::i2c_send_nack() {
-    set_sda(HIGH);
-    set_scl(HIGH);
-    set_scl(LOW);
+
 }
 
 uint8 TwoWire::i2c_shift_in() {
-    uint8 data = 0;
-    set_sda(HIGH);
-
-    int i;
-    for (i = 0; i < 8; i++) {
-        set_scl(HIGH);
-        data |= digitalRead(this->sda_pin) << (7-i);
-        set_scl(LOW);
-    }
-
-    return data;
+    return 0;
 }
 
 void TwoWire::i2c_shift_out(uint8 val) {
-    int i;
-    for (i = 0; i < 8; i++) {
-        set_sda(!!(val & (1 << (7 - i)) ) );
-        set_scl(HIGH);
-        set_scl(LOW);
-    }
+
 }
 
 uint8 TwoWire::process() {
-    itc_msg.xferred = 0;
-
-    uint8 sla_addr = (itc_msg.addr << 1);
-    if (itc_msg.flags == I2C_MSG_READ) {
-        sla_addr |= I2C_READ;
-    }
-    i2c_start();
-    // shift out the address we're transmitting to
-    i2c_shift_out(sla_addr);
-    if (!i2c_get_ack()) {
-        return ENACKADDR;
-    }
-    // Recieving
-    if (itc_msg.flags == I2C_MSG_READ) {
-        while (itc_msg.xferred < itc_msg.length) {
-            itc_msg.data[itc_msg.xferred++] = i2c_shift_in();
-            if (itc_msg.xferred < itc_msg.length) {
-                i2c_send_ack();
-            } else {
-                i2c_send_nack();
-            }
-        }
-    }
-    // Sending
-    else {
-        for (uint8 i = 0; i < itc_msg.length; i++) {
-            i2c_shift_out(itc_msg.data[i]);
-            if (!i2c_get_ack()) {
-                return ENACKTRNS;
-            }
-            itc_msg.xferred++;
-        }
-    }
-    i2c_stop();
-    return SUCCESS;
+    return 0;
 }
 
 // TODO: Add in Error Handling if pins is out of range for other Maples
 // TODO: Make delays more capable
 TwoWire::TwoWire(uint8 scl, uint8 sda, uint8 delay) : i2c_delay(delay) {
-    this->scl_pin=scl;
-    this->sda_pin=sda;
 }
 
 void TwoWire::begin(uint8 self_addr) {
-    tx_buf_idx = 0;
-    tx_buf_overflow = false;
-    rx_buf_idx = 0;
-    rx_buf_len = 0;
-    pinMode(this->scl_pin, OUTPUT_OPEN_DRAIN);
-    pinMode(this->sda_pin, OUTPUT_OPEN_DRAIN);
-    set_scl(HIGH);
-    set_sda(HIGH);
+
 }
 
 TwoWire::~TwoWire() {
-    this->scl_pin=0;
-    this->sda_pin=0;
+
 }
 
 // Declare the instance that the users of the library can use

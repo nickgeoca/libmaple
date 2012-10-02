@@ -29,7 +29,7 @@ BOARD_INCLUDE_DIR := $(MAKEDIR)/board-includes
 
 # Try "make help" for more information on BOARD and MEMORY_TARGET;
 # these default to a Maple Flash build.
-BOARD ?= maple
+BOARD ?= si_arduino
 MEMORY_TARGET ?= flash
 
 # $(BOARD)- and $(MEMORY_TARGET)-specific configuration
@@ -54,7 +54,8 @@ include $(MAKEDIR)/build-templates.mk
 TARGET_FLAGS    += -I$(LIBMAPLE_PATH)/include/libmaple                       \
                    -I$(WIRISH_PATH)/include/wirish
 TARGET_FLAGS += -I$(LIBRARIES_PATH) # for internal lib. includes, e.g. <Wire/WireBase.h>
-GLOBAL_CFLAGS   := -Os -g3 -gdwarf-2 -nostdlib \
+#GLOBAL_CFLAGS   := -Os -g3 -gdwarf-2 -nostdlib
+GLOBAL_CFLAGS   := -Os -nostdlib \
                    -ffunction-sections -fdata-sections \
 		   -Wl,--gc-sections $(TARGET_FLAGS)
 GLOBAL_CXXFLAGS := -fno-rtti -fno-exceptions -Wall $(TARGET_FLAGS)
@@ -74,11 +75,8 @@ LIBMAPLE_MODULES += $(LIBMAPLE_MODULE_SERIES) # STM32 series submodule in libmap
 LIBMAPLE_MODULES += $(SRCROOT)/wirish
 
 # Official libraries:
-LIBMAPLE_MODULES += $(SRCROOT)/libraries/Servo
-LIBMAPLE_MODULES += $(SRCROOT)/libraries/LiquidCrystal
 LIBMAPLE_MODULES += $(SRCROOT)/libraries/Wire
 # Experimental libraries:
-LIBMAPLE_MODULES += $(SRCROOT)/libraries/FreeRTOS
 
 # User modules:
 ifneq ($(USER_MODULES),)

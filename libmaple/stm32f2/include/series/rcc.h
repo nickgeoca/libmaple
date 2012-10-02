@@ -756,9 +756,9 @@ typedef enum rcc_clk {
 } rcc_clk;
 
 /**
- * @brief STM32F2 rcc_clk_id.
+ * @brief STM32F2 clk_dev_id.
  */
-typedef enum rcc_clk_id {
+typedef enum clk_dev_id {
     RCC_ADC1,
     RCC_ADC2,
     RCC_ADC3,

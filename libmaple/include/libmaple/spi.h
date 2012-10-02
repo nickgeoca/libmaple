@@ -202,7 +202,7 @@ typedef struct spi_reg_map {
 /** SPI device type */
 typedef struct spi_dev {
     spi_reg_map *regs;          /**< Register map */
-    rcc_clk_id clk_id;          /**< RCC clock information */
+    clk_dev_id clk_id;          /**< RCC clock information */
     nvic_irq_num irq_num;       /**< NVIC interrupt number */
 } spi_dev;
 
@@ -330,14 +330,14 @@ void spi_rx_dma_disable(spi_dev *dev);
  * @return True, if and only if dev's peripheral is enabled.
  */
 static inline uint8 spi_is_enabled(spi_dev *dev) {
-    return dev->regs->CR1 & SPI_CR1_SPE_BIT;
+    return 0;
 }
 
 /**
  * @brief Disable all SPI peripherals
  */
 static inline void spi_peripheral_disable_all(void) {
-    spi_foreach(spi_peripheral_disable);
+
 }
 
 /** Available SPI interrupts */
@@ -366,8 +366,7 @@ typedef enum spi_interrupt {
  * @see spi_interrupt
  */
 static inline void spi_irq_enable(spi_dev *dev, uint32 interrupt_flags) {
-    dev->regs->CR2 |= interrupt_flags;
-    nvic_irq_enable(dev->irq_num);
+
 }
 
 /**
@@ -377,7 +376,7 @@ static inline void spi_irq_enable(spi_dev *dev, uint32 interrupt_flags) {
  * @see spi_interrupt
  */
 static inline void spi_irq_disable(spi_dev *dev, uint32 interrupt_flags) {
-    dev->regs->CR2 &= ~interrupt_flags;
+
 }
 
 /**
@@ -388,9 +387,7 @@ static inline void spi_irq_disable(spi_dev *dev, uint32 interrupt_flags) {
  *         Otherwise, SPI_DFF_16_BIT.
  */
 static inline spi_cfg_flag spi_dff(spi_dev *dev) {
-    return ((dev->regs->CR1 & SPI_CR1_DFF) == SPI_CR1_DFF_8_BIT ?
-            SPI_DFF_8_BIT :
-            SPI_DFF_16_BIT);
+    return 0;
 }
 
 /**
@@ -400,7 +397,7 @@ static inline spi_cfg_flag spi_dff(spi_dev *dev) {
  * @return true, iff dev's RX register is empty.
  */
 static inline uint8 spi_is_rx_nonempty(spi_dev *dev) {
-    return dev->regs->SR & SPI_SR_RXNE;
+    return 0;
 }
 
 /**
@@ -415,7 +412,7 @@ static inline uint8 spi_is_rx_nonempty(spi_dev *dev) {
  * @see spi_is_rx_reg_nonempty()
  */
 static inline uint16 spi_rx_reg(spi_dev *dev) {
-    return (uint16)dev->regs->DR;
+    return 0;
 }
 
 /**
@@ -425,7 +422,7 @@ static inline uint16 spi_rx_reg(spi_dev *dev) {
  * @return true, iff dev's TX register is empty.
  */
 static inline uint8 spi_is_tx_empty(spi_dev *dev) {
-    return dev->regs->SR & SPI_SR_TXE;
+    return 0;
 }
 
 /**
@@ -446,7 +443,7 @@ static inline uint8 spi_is_tx_empty(spi_dev *dev) {
  * @see spi_slave_enable()
  */
 static inline void spi_tx_reg(spi_dev *dev, uint16 val) {
-    dev->regs->DR = val;
+
 }
 
 /**
@@ -456,7 +453,7 @@ static inline void spi_tx_reg(spi_dev *dev, uint16 val) {
  * @return true, iff dev's BSY flag is set.
  */
 static inline uint8 spi_is_busy(spi_dev *dev) {
-    return dev->regs->SR & SPI_SR_BSY;
+    return 0;
 }
 
 /*

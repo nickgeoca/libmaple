@@ -69,7 +69,7 @@ typedef struct dma_handler_config {
 /** DMA device type */
 typedef struct dma_dev {
     struct dma_reg_map        *regs;       /**< Register map */
-    rcc_clk_id                 clk_id;     /**< Clock ID */
+    clk_dev_id                 clk_id;     /**< Clock ID */
     struct dma_handler_config  handlers[]; /**< For internal use */
 } dma_dev;
 

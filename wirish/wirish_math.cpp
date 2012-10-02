@@ -25,25 +25,14 @@
 #include <wirish/wirish_math.h>
 
 void randomSeed(unsigned int seed) {
-    if (seed != 0) {
-        srand(seed);
-    }
+
 }
 
 long random(long howbig) {
-    if (howbig == 0) {
-        return 0;
-    }
 
-    return rand() % howbig;
 }
 
 long random(long howsmall, long howbig) {
-    if (howsmall >= howbig) {
-        return howsmall;
-    }
 
-    long diff = howbig - howsmall;
-    return random(diff) + howsmall;
 }
 

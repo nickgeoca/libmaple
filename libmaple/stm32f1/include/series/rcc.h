@@ -388,9 +388,9 @@ typedef struct rcc_reg_map {
  */
 
 /**
- * @brief STM32F1 rcc_clk_id.
+ * @brief STM32F1 clk_dev_id.
  */
-typedef enum rcc_clk_id {
+typedef enum clk_dev_id {
     RCC_ADC1,
     RCC_ADC2,
     RCC_ADC3,

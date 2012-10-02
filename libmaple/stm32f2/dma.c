@@ -75,7 +75,7 @@ dma_dev *DMA2 = &dma2;
  * comments in the dma_request_src definition).
  */
 
-/* rcc_clk_id of dma_dev which supports src. */
+/* clk_dev_id of dma_dev which supports src. */
 static __always_inline rcc_clk_id src_clk_id(dma_request_src src) {
     return (rcc_clk_id)(((uint32)src >> 3) & 0x3F);
 }

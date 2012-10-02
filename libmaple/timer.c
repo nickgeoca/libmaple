@@ -45,77 +45,10 @@ static inline void enable_irq(timer_dev *dev, uint8 interrupt);
  *
  * Defer to the timer_private API for declaring these.
  */
-
-#if STM32_HAVE_TIMER(1)
 static timer_dev timer1 = ADVANCED_TIMER(1);
-/** Timer 1 device (advanced) */
 timer_dev *TIMER1 = &timer1;
-#endif
-#if STM32_HAVE_TIMER(2)
-static timer_dev timer2 = GENERAL_TIMER(2);
-/** Timer 2 device (general-purpose) */
-timer_dev *TIMER2 = &timer2;
-#endif
-#if STM32_HAVE_TIMER(3)
-static timer_dev timer3 = GENERAL_TIMER(3);
-/** Timer 3 device (general-purpose) */
-timer_dev *TIMER3 = &timer3;
-#endif
-#if STM32_HAVE_TIMER(4)
-static timer_dev timer4 = GENERAL_TIMER(4);
-/** Timer 4 device (general-purpose) */
-timer_dev *TIMER4 = &timer4;
-#endif
-#if STM32_HAVE_TIMER(5)
-static timer_dev timer5 = GENERAL_TIMER(5);
-/** Timer 5 device (general-purpose) */
-timer_dev *TIMER5 = &timer5;
-#endif
-#if STM32_HAVE_TIMER(6)
-static timer_dev timer6 = BASIC_TIMER(6);
-/** Timer 6 device (basic) */
-timer_dev *TIMER6 = &timer6;
-#endif
-#if STM32_HAVE_TIMER(7)
-static timer_dev timer7 = BASIC_TIMER(7);
-/** Timer 7 device (basic) */
-timer_dev *TIMER7 = &timer7;
-#endif
-#if STM32_HAVE_TIMER(8)
-static timer_dev timer8 = ADVANCED_TIMER(8);
-/** Timer 8 device (advanced) */
-timer_dev *TIMER8 = &timer8;
-#endif
-#if STM32_HAVE_TIMER(9)
-static timer_dev timer9 = RESTRICTED_GENERAL_TIMER(9, TIMER_DIER_TIE_BIT);
-/** Timer 9 device (general-purpose) */
-timer_dev *TIMER9 = &timer9;
-#endif
-#if STM32_HAVE_TIMER(10)
-static timer_dev timer10 = RESTRICTED_GENERAL_TIMER(10, TIMER_DIER_CC1IE_BIT);
-/** Timer 10 device (general-purpose) */
-timer_dev *TIMER10 = &timer10;
-#endif
-#if STM32_HAVE_TIMER(11)
-static timer_dev timer11 = RESTRICTED_GENERAL_TIMER(11, TIMER_DIER_CC1IE_BIT);
-/** Timer 11 device (general-purpose) */
-timer_dev *TIMER11 = &timer11;
-#endif
-#if STM32_HAVE_TIMER(12)
-static timer_dev timer12 = RESTRICTED_GENERAL_TIMER(12, TIMER_DIER_TIE_BIT);
-/** Timer 12 device (general-purpose) */
-timer_dev *TIMER12 = &timer12;
-#endif
-#if STM32_HAVE_TIMER(13)
-static timer_dev timer13 = RESTRICTED_GENERAL_TIMER(13, TIMER_DIER_CC1IE_BIT);
-/** Timer 13 device (general-purpose) */
-timer_dev *TIMER13 = &timer13;
-#endif
-#if STM32_HAVE_TIMER(14)
-static timer_dev timer14 = RESTRICTED_GENERAL_TIMER(14, TIMER_DIER_CC1IE_BIT);
-/** Timer 14 device (general-purpose) */
-timer_dev *TIMER14 = &timer14;
-#endif
+
+
 
 /*
  * Routines
@@ -126,48 +59,7 @@ timer_dev *TIMER14 = &timer14;
  * @param fn Function to call on each timer device.
  */
 void timer_foreach(void (*fn)(timer_dev*)) {
-#if STM32_HAVE_TIMER(1)
     fn(TIMER1);
-#endif
-#if STM32_HAVE_TIMER(2)
-    fn(TIMER2);
-#endif
-#if STM32_HAVE_TIMER(3)
-    fn(TIMER3);
-#endif
-#if STM32_HAVE_TIMER(4)
-    fn(TIMER4);
-#endif
-#if STM32_HAVE_TIMER(5)
-    fn(TIMER5);
-#endif
-#if STM32_HAVE_TIMER(6)
-    fn(TIMER6);
-#endif
-#if STM32_HAVE_TIMER(7)
-    fn(TIMER7);
-#endif
-#if STM32_HAVE_TIMER(8)
-    fn(TIMER8);
-#endif
-#if STM32_HAVE_TIMER(9)
-    fn(TIMER9);
-#endif
-#if STM32_HAVE_TIMER(10)
-    fn(TIMER10);
-#endif
-#if STM32_HAVE_TIMER(11)
-    fn(TIMER11);
-#endif
-#if STM32_HAVE_TIMER(12)
-    fn(TIMER12);
-#endif
-#if STM32_HAVE_TIMER(13)
-    fn(TIMER13);
-#endif
-#if STM32_HAVE_TIMER(14)
-    fn(TIMER14);
-#endif
 }
 
 /**
@@ -175,8 +67,21 @@ void timer_foreach(void (*fn)(timer_dev*)) {
  * @param dev Timer to initialize
  */
 void timer_init(timer_dev *dev) {
-    rcc_clk_enable(dev->clk_id);
-    rcc_reset_dev(dev->clk_id);
+    timer_reg_map *regs = dev->regs;
+    clk_enable_dev(dev->clk_id);
+    regs->MODE &= ~EPCA_MODE_CLKSEL_MASK & ~EPCA_MODE_CLKDIV_MASK;
+    regs->MODE |= EPCA_MODE_CLKSEL_APB | (19 << EPCA_MODE_CLKDIV_BIT);
+    regs->LIMIT = 0x7CF;
+    regs->MODE &= ~EPCACH_MODE_COSEL_MASK & ~EPCA_MODE_HDOSEL_MASK;
+    regs->MODE |= EPCACH_MODE_COSEL_TOGGLE_OUTPUT | EPCA_MODE_HDOSEL_NO_DIFF;
+
+    // Setup channel 0
+
+    REG_WRITE_SET_CLR(TIMER1_CH0->CONTROL, 0, 1);
+    TIMER1_CH0->CCAPV = 0x003E8;
+
+    REG_WRITE_SET_CLR(regs->STATUS, 0, EPCA_STATUS_C0IOVFI_MASK | 1);
+
 }
 
 /**
@@ -188,16 +93,7 @@ void timer_init(timer_dev *dev) {
  * @param dev Timer to disable.
  */
 void timer_disable(timer_dev *dev) {
-    (dev->regs).bas->CR1 = 0;
-    (dev->regs).bas->DIER = 0;
-    switch (dev->type) {
-    case TIMER_ADVANCED:        /* fall-through */
-    case TIMER_GENERAL:
-        (dev->regs).gen->CCER = 0;
-        break;
-    case TIMER_BASIC:
-        break;
-    }
+
 }
 
 /**
@@ -212,24 +108,7 @@ void timer_disable(timer_dev *dev) {
  * @param mode New timer mode for channel
  */
 void timer_set_mode(timer_dev *dev, uint8 channel, timer_mode mode) {
-    ASSERT_FAULT(channel > 0 && channel <= 4);
 
-    /* TODO decide about the basic timers */
-    ASSERT(dev->type != TIMER_BASIC);
-    if (dev->type == TIMER_BASIC)
-        return;
-
-    switch (mode) {
-    case TIMER_DISABLED:
-        disable_channel(dev, channel);
-        break;
-    case TIMER_PWM:
-        pwm_mode(dev, channel);
-        break;
-    case TIMER_OUTPUT_COMPARE:
-        output_compare_mode(dev, channel);
-        break;
-    }
 }
 
 /**
@@ -244,20 +123,7 @@ void timer_set_mode(timer_dev *dev, uint8 channel, timer_mode mode) {
  * @return Nonzero if dev has channel, zero otherwise.
  */
 int timer_has_cc_channel(timer_dev *dev, uint8 channel) {
-    /* On all currently supported series: advanced and "full-featured"
-     * general purpose timers have all four channels. Of the
-     * restricted general timers, timers 9 and 12 have channels 1 and
-     * 2; the others have channel 1 only. Basic timers have none. */
-    rcc_clk_id id = dev->clk_id;
-    ASSERT((1 <= channel) && (channel <= 4));
-    if (id <= RCC_TIMER5 || id == RCC_TIMER8) {
-        return 1;     /* 1 and 8 are advanced, 2-5 are "full" general */
-    } else if (id <= RCC_TIMER7) {
-        return 0;     /* 6 and 7 are basic */
-    }
-    /* The rest are restricted general. */
-    return (((id == RCC_TIMER9 || id == RCC_TIMER12) && channel <= 2) ||
-            channel == 1);
+    return 0;
 }
 
 /**
@@ -273,9 +139,7 @@ int timer_has_cc_channel(timer_dev *dev, uint8 channel) {
 void timer_attach_interrupt(timer_dev *dev,
                             uint8 interrupt,
                             voidFuncPtr handler) {
-    dev->handlers[interrupt] = handler;
-    timer_enable_irq(dev, interrupt);
-    enable_irq(dev, interrupt);
+
 }
 
 /**
@@ -288,8 +152,7 @@ void timer_attach_interrupt(timer_dev *dev,
  * @see timer_channel
  */
 void timer_detach_interrupt(timer_dev *dev, uint8 interrupt) {
-    timer_disable_irq(dev, interrupt);
-    dev->handlers[interrupt] = NULL;
+
 }
 
 /*
@@ -297,30 +160,22 @@ void timer_detach_interrupt(timer_dev *dev, uint8 interrupt) {
  */
 
 static void disable_channel(timer_dev *dev, uint8 channel) {
-    timer_detach_interrupt(dev, channel);
-    timer_cc_disable(dev, channel);
+
 }
 
 static void pwm_mode(timer_dev *dev, uint8 channel) {
-    timer_disable_irq(dev, channel);
-    timer_oc_set_mode(dev, channel, TIMER_OC_MODE_PWM_1, TIMER_OC_PE);
-    timer_cc_enable(dev, channel);
+
 }
 
 static void output_compare_mode(timer_dev *dev, uint8 channel) {
-    timer_oc_set_mode(dev, channel, TIMER_OC_MODE_ACTIVE_ON_MATCH, 0);
-    timer_cc_enable(dev, channel);
+
 }
 
 static void enable_adv_irq(timer_dev *dev, timer_interrupt_id id);
 static void enable_bas_gen_irq(timer_dev *dev);
 
 static inline void enable_irq(timer_dev *dev, timer_interrupt_id iid) {
-    if (dev->type == TIMER_ADVANCED) {
-        enable_adv_irq(dev, iid);
-    } else {
-        enable_bas_gen_irq(dev);
-    }
+
 }
 
 /* Advanced control timers have several IRQ lines corresponding to
@@ -330,83 +185,11 @@ static inline void enable_irq(timer_dev *dev, timer_interrupt_id iid) {
  * and TIM8, and needs the obvious changes if that assumption is
  * violated by a later STM32 series. */
 static void enable_adv_irq(timer_dev *dev, timer_interrupt_id id) {
-    uint8 is_tim1 = dev->clk_id == RCC_TIMER1;
-    nvic_irq_num irq_num;
-    switch (id) {
-    case TIMER_UPDATE_INTERRUPT:
-        irq_num = (is_tim1 ?
-                   NVIC_TIMER1_UP_TIMER10 :
-                   NVIC_TIMER8_UP_TIMER13);
-        break;
-    case TIMER_CC1_INTERRUPT:   /* Fall through */
-    case TIMER_CC2_INTERRUPT:   /* ... */
-    case TIMER_CC3_INTERRUPT:   /* ... */
-    case TIMER_CC4_INTERRUPT:
-        irq_num = is_tim1 ? NVIC_TIMER1_CC : NVIC_TIMER8_CC;
-        break;
-    case TIMER_COM_INTERRUPT:   /* Fall through */
-    case TIMER_TRG_INTERRUPT:
-        irq_num = (is_tim1 ?
-                   NVIC_TIMER1_TRG_COM_TIMER11 :
-                   NVIC_TIMER8_TRG_COM_TIMER14);
-        break;
-    case TIMER_BREAK_INTERRUPT:
-        irq_num = (is_tim1 ?
-                   NVIC_TIMER1_BRK_TIMER9 :
-                   NVIC_TIMER8_BRK_TIMER12);
-        break;
-    default:
-        /* Can't happen, but placate the compiler */
-        ASSERT(0);
-        return;
-    }
-    nvic_irq_enable(irq_num);
+
 }
 
 /* Basic and general purpose timers have a single IRQ line, which is
  * shared by all interrupts supported by a particular timer. */
 static void enable_bas_gen_irq(timer_dev *dev) {
-    nvic_irq_num irq_num;
-    switch (dev->clk_id) {
-    case RCC_TIMER2:
-        irq_num = NVIC_TIMER2;
-        break;
-    case RCC_TIMER3:
-        irq_num = NVIC_TIMER3;
-        break;
-    case RCC_TIMER4:
-        irq_num = NVIC_TIMER4;
-        break;
-    case RCC_TIMER5:
-        irq_num = NVIC_TIMER5;
-        break;
-    case RCC_TIMER6:
-        irq_num = NVIC_TIMER6;
-        break;
-    case RCC_TIMER7:
-        irq_num = NVIC_TIMER7;
-        break;
-    case RCC_TIMER9:
-        irq_num = NVIC_TIMER1_BRK_TIMER9;
-        break;
-    case RCC_TIMER10:
-        irq_num = NVIC_TIMER1_UP_TIMER10;
-        break;
-    case RCC_TIMER11:
-        irq_num = NVIC_TIMER1_TRG_COM_TIMER11;
-        break;
-    case RCC_TIMER12:
-        irq_num = NVIC_TIMER8_BRK_TIMER12;
-        break;
-    case RCC_TIMER13:
-        irq_num = NVIC_TIMER8_UP_TIMER13;
-        break;
-    case RCC_TIMER14:
-        irq_num = NVIC_TIMER8_TRG_COM_TIMER14;
-        break;
-    default:
-        ASSERT_FAULT(0);
-        return;
-    }
-    nvic_irq_enable(irq_num);
+
 }
