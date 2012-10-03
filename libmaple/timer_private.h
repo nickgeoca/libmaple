@@ -48,6 +48,7 @@
         .regs = TIMER##num##_BASE,                           \
         .clk_id = CLK_EPCA##num,                                       \
         .type = TIMER_ADVANCED,                                         \
+        .chnl_base = TIMER##num##_CH0,                     \
     }
 
 

@@ -141,6 +141,7 @@ typedef struct timer_dev {
     timer_reg_map *regs;         /**< Register map */
     clk_dev_id clk_id;          /**< RCC clock information */
     timer_type type;            /**< Timer's type */
+    timer_chnl_reg_map* chnl_base;
 } timer_dev;
 
 extern timer_dev *TIMER1;
@@ -537,7 +538,16 @@ static inline void timer_pause(timer_dev *dev) {
 static inline void timer_resume(timer_dev *dev) {
     REG_WRITE_SET_CLR(dev->regs->STATUS, 1, EPCA_STATUS_RUN_START);
 }
-
+static inline uint32 timer_actl_freq(timer_dev *dev, uint32 tmr_spd) {
+    uint32 bus_spd = clk_get_bus_speed(dev->clk_id);
+    // 1) Fepca = bus_clk / (clk_div + 1)
+    // 2) clk_div = bus_clk / Fepca - 1
+    // ==> Fepca = bus_clk / ((bus_clk / Fepca - 1)  + 1)
+    return bus_spd / ((bus_spd / tmr_spd - 1) + 1);
+}
+static inline timer_chnl_reg_map *timer_get_chnl_base(timer_dev *dev, uint32 chnl) {
+    return (timer_chnl_reg_map *)((uint32)(dev->chnl_base) + 0x40 * chnl);
+}
 /**
  * @brief Returns the timer's counter value.
  *
@@ -625,7 +635,13 @@ static inline uint16 timer_get_compare(timer_dev *dev, uint8 channel) {
 static inline void timer_set_compare(timer_dev *dev,
                                      uint8 channel,
                                      uint16 value) {
+    timer_chnl_reg_map *reg = timer_get_chnl_base(dev, channel);
+    uint32 limit = timer_actl_freq(dev, 1000000) / 1000;
 
+    reg->MODE &= ~EPCACH_MODE_COSEL_MASK;
+    REG_WRITE_SET_CLR(reg->CONTROL, 1, 1);
+    // CCAPV = 2 * limit * (1 - DC)
+    reg->CCAPV = 2 * limit * value / 65535;
 }
 
 /**

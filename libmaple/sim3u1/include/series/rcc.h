@@ -286,6 +286,7 @@ typedef struct stm32f2_rcc_pll_data {
                       * Allowed values: 2, 3, ..., 63. */
 } stm32f2_rcc_pll_data;
 #endif
+uint32 clk_get_bus_speed(clk_dev_id id);
 
 
 #ifdef __cplusplus

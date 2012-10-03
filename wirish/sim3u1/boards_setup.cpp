@@ -55,7 +55,10 @@ namespace wirish {
     namespace priv {
 
         __weak adc_prescaler w_adc_pre = (adc_prescaler)0;
-        __weak adc_smp_rate w_adc_smp = (adc_smp_rate)1;
+        // Default Group Configuration:
+        //  Grp 0: 10Bit, Seq Len 1;    Grp 1: 10Bit, Seq Len 16
+        //  Grp 2: 12Bit, Seq Len 1;    Grp 3: 12Bit, Seq Len 16
+        __weak adc_grp_num w_adc_grp = (adc_grp_num)2;
 
         __weak void board_reset_pll(void) {
             // TODO
@@ -67,13 +70,7 @@ namespace wirish {
 
         __weak void board_setup_gpio(void) {
             gpio_init_all();
-            gpio_set_af(PIN_MAP[6].gpio_device, PIN_MAP[6].gpio_bit, GPIOHD_FNCT_EPCA0);
 
-            // Setup analog pins
-            for (uint32 i = 0; i < BOARD_NR_ADC_PINS; i++) {
-                uint32 pin = boardADCPins[i];
-                gpio_set_mode(PIN_MAP[pin].gpio_device, PIN_MAP[pin].gpio_bit, GPIO_ANALOG);
-            }
         }
 
         __weak void board_setup_usb(void) {

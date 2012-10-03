@@ -49,7 +49,7 @@ const adc_dev *ADC1 = &adc1;
  */
 
 void adc_set_prescaler(adc_prescaler pre) {
-    //rcc_set_prescaler(RCC_PRESCALER_ADC, (uint32)pre);
+
 }
 
 void adc_foreach(void (*fn)(const adc_dev*)) {
@@ -63,6 +63,6 @@ void adc_enable_single_swstart(const adc_dev *dev) {
     adc_init(dev);
     //adc_set_extsel(dev, ADC_SWSTART);
     //adc_set_exttrig(dev, 1);
-    //adc_enable(dev);
-    //adc_calibrate(dev);
+    adc_enable(dev);
+
 }

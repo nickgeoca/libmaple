@@ -62,23 +62,29 @@ void timer_foreach(void (*fn)(timer_dev*)) {
     fn(TIMER1);
 }
 
+
 /**
  * Initialize a timer, and reset its register map.
  * @param dev Timer to initialize
  */
 void timer_init(timer_dev *dev) {
     timer_reg_map *regs = dev->regs;
+    uint32 clk_spd = 1000000;
+    uint32 pwm_hz = 1000;
+    // clk_div = clk_in / Fepca - 1
+    uint32 clk_div = clk_get_bus_speed(dev->clk_id) / clk_spd - 1;
+    clk_spd = timer_actl_freq(dev, clk_spd);
+
     clk_enable_dev(dev->clk_id);
+
+    // Set clock speed
     regs->MODE &= ~EPCA_MODE_CLKSEL_MASK & ~EPCA_MODE_CLKDIV_MASK;
-    regs->MODE |= EPCA_MODE_CLKSEL_APB | (19 << EPCA_MODE_CLKDIV_BIT);
-    regs->LIMIT = 0x7CF;
+    regs->MODE |= EPCA_MODE_CLKSEL_APB | (clk_div << EPCA_MODE_CLKDIV_BIT);
+
+    // Set PWM frequency
+    regs->LIMIT = clk_spd / pwm_hz;
     regs->MODE &= ~EPCACH_MODE_COSEL_MASK & ~EPCA_MODE_HDOSEL_MASK;
     regs->MODE |= EPCACH_MODE_COSEL_TOGGLE_OUTPUT | EPCA_MODE_HDOSEL_NO_DIFF;
-
-    // Setup channel 0
-
-    REG_WRITE_SET_CLR(TIMER1_CH0->CONTROL, 0, 1);
-    TIMER1_CH0->CCAPV = 0x003E8;
 
     REG_WRITE_SET_CLR(regs->STATUS, 0, EPCA_STATUS_C0IOVFI_MASK | 1);
 

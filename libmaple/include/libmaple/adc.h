@@ -155,7 +155,9 @@ static inline void adc_set_reg_seqlen(const adc_dev *dev, uint8 length) {
  * @param dev ADC device to enable
  */
 static inline void adc_enable(const adc_dev *dev) {
-    //*bb_perip(&dev->regs->CR2, ADC_CR2_ADON_BIT) = 1;
+    // Enable ADC
+    REG_WRITE_SET_CLR(dev->regs->CONTROL, SARADC_CR_ADCEN_EN, BIT(SARADC_CR_ADCEN_BIT));
+
 }
 
 /**
@@ -169,6 +171,17 @@ extern void adc_disable(const adc_dev *dev);
  */
 static inline void adc_disable_all(void) {
     adc_foreach(adc_disable);
+}
+
+// Note: Only set one tslot at a time
+static inline void adc_set_tslot_grp(const adc_dev *dev, uint32 tslot, adc_grp_num grp)
+{
+    volatile uint32 *reg = SARADC_SQ_REG(dev->regs, tslot);
+    uint32 sq_reg = *reg;
+    sq_reg &= ~SARADC_SQ_TSCHR_MASK(tslot);
+    sq_reg |= grp << SARADC_SQ_TSCHR_BIT(tslot);
+    *reg = sq_reg;
+    return;
 }
 
 #ifdef __cplusplus

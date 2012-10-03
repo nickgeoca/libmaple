@@ -73,12 +73,13 @@ extern const stm32_pin_info PIN_MAP[BOARD_NR_GPIO_PINS] = {
     PMAP_ROW(GPIOB,   13, NULL,     0, NULL,    ADCx),
     PMAP_ROW(GPIOB,    5, NULL,     0, ADC1,    14),
     PMAP_ROW(GPIOC,   12, NULL,     0, NULL,    ADCx),
-    PMAP_ROW(GPIOE,    0, TIMER1,   0, NULL,    ADCx)
+    PMAP_ROW(GPIOE,    0, TIMER1,   0, NULL,    ADCx),
+    PMAP_ROW(GPIOE,    1, TIMER1,   1, NULL,    ADCx),
 };
 // Array of pins you can use for pwmWrite(). Keep it in Flash because
 // it doesn't change, and so we don't waste RAM.
 extern const uint8 boardPWMPins[] __FLASH__ = {
-    6
+    6, 7
 };
 
 // Array of pins you can use for analogRead().

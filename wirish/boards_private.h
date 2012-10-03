@@ -52,7 +52,7 @@ namespace wirish {
          */
 
         extern adc_prescaler w_adc_pre;
-        extern adc_smp_rate w_adc_smp;
+        extern adc_grp_num w_adc_grp;
 
         /*
          * Chip-specific initialization routines and helper functions.

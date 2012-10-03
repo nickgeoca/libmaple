@@ -124,7 +124,9 @@ static void setup_nvic(void) {
 
 static void adc_default_config(const adc_dev *dev) {
     adc_enable_single_swstart(dev);
-    adc_set_sample_rate(dev, wirish::priv::w_adc_smp);
+    for (int i = 0; i < 8; i++) {
+        adc_set_tslot_grp(dev, i, wirish::priv::w_adc_grp); /**< Associate a timeslot with a group characteristic */
+    }
 }
 
 static void setup_adcs(void) {

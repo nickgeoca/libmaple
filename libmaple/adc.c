@@ -37,52 +37,18 @@
 #include <libmaple/rcc.h>
 
 
-
-
-volatile uint32 ADC_SCAN_FINISHED;
-
-static void hndlr2(const adc_dev *dev)
-{
-    adc_reg_map *regs = ADC1->regs;
-    // Clear interrupt: 1) single conversion complete
-    REG_WRITE_SET_CLR(regs->STATUS, 0, SARADC_STATUS_SCCI_MASK);
-    // Enable burst mode and start conversion
-    REG_WRITE_SET_CLR(regs->CONTROL, 1, SARADC_CR_BURSTEN_MASK);
-    REG_WRITE_SET_CLR(regs->CONTROL, 1, SARADC_CR_ADBUSY_MASK);
-}
-
-static void hndlr1(const adc_dev *dev)
-{
-    adc_reg_map *regs = ADC1->regs;
-    // Clear interrupts: 1) scan done; 2) single conversion complete
-    REG_WRITE_SET_CLR(regs->STATUS, 0, SARADC_STATUS_SDI_MASK);
-    REG_WRITE_SET_CLR(regs->STATUS, 0, SARADC_STATUS_SCCI_MASK);
-    // Disable autoscan
-    REG_WRITE_SET_CLR(regs->CONFIG, 0, SARADC_CFGR_SCANEN_MASK);
-    // Disable accumulator
-    REG_WRITE_SET_CLR(regs->CONTROL, 1, SARADC_CR_ACCMD_MASK);
-    ADC_SCAN_FINISHED = 1;
-}
-
 void  __irq_adc1(void) {
     adc_reg_map *regs = ADC1->regs;
-
-    // Scan complete interrupt handler
-    if (regs->STATUS & SARADC_STATUS_SDI_MASK &&
-            regs->CONFIG & SARADC_CFGR_SDIEN_MASK) {
-        hndlr1(ADC1);
+    // Interrupt: single conversion complete
+    if (regs->STATUS & SARADC_STATUS_SCCI_MASK &&
+                regs->CONFIG & SARADC_CFGR_SCCIEN_MASK) {
+        // Clear interrupt
+        REG_WRITE_SET_CLR(regs->STATUS, 0, SARADC_STATUS_SCCI_MASK);
     }
-
-    // Conversion complete interrupt handler
-    else if (regs->STATUS & SARADC_STATUS_SCCI_MASK &&
-            regs->CONFIG & SARADC_CFGR_SCCIEN_MASK) {
-        hndlr2(ADC1);
-    }
-
     return;
 }
 
-
+// Note: Only set one tslot at a time
 static inline void adc_set_tslot_chnl(const adc_dev *dev, uint32 tslot, adc_tslot_chnl chnl)
 {
     volatile uint32 *reg = SARADC_SQ_REG(dev->regs, tslot);
@@ -93,16 +59,9 @@ static inline void adc_set_tslot_chnl(const adc_dev *dev, uint32 tslot, adc_tslo
     return;
 }
 
-static inline void adc_set_tslot_grp(const adc_dev *dev, uint32 tslot, adc_grp_num grp)
-{
-    volatile uint32 *reg = SARADC_SQ_REG(dev->regs, tslot);
-    uint32 sq_reg = *reg;
-    sq_reg &= ~SARADC_SQ_TSCHR_MASK(tslot);
-    sq_reg |= grp << SARADC_SQ_TSCHR_BIT(tslot);
-    *reg = sq_reg;
-    return;
-}
 
+
+// Note: Only set one group characteristic at a time
 static inline void adc_set_grp_res(const adc_dev *dev, uint32 grp, adc_bit_res res)
 {
     volatile uint32 *reg = SARADC_CHAR_REG(dev->regs, grp);
@@ -110,13 +69,15 @@ static inline void adc_set_grp_res(const adc_dev *dev, uint32 grp, adc_bit_res r
     REG_WRITE_SET_CLR(*reg, 1, res << SARADC_CHAR_RSEL_BIT(grp));
 }
 
-static inline void adc_set_grp_brst_cnt(const adc_dev *dev, uint32 grp, adc_smp_cnt cnt)
+// Note: Only set one group characteristic at a time
+static inline void adc_set_grp_seqlen(const adc_dev *dev, uint32 grp, adc_smp_cnt cnt)
 {
     volatile uint32 *reg = SARADC_CHAR_REG(dev->regs, grp);
     REG_WRITE_SET_CLR(*reg, 0, SARADC_CHAR_RPT_MASK(grp));
     REG_WRITE_SET_CLR(*reg, 1, cnt << SARADC_CHAR_RPT_BIT(grp));
 }
 
+// Note: Only set one group characteristic at a time
 static inline void adc_set_grp_gain(const adc_dev *dev, uint32 grp, adc_grp_gain gn)
 {
     volatile uint32 *reg = SARADC_CHAR_REG(dev->regs, grp);
@@ -135,9 +96,7 @@ static inline void adc_set_grp_gain(const adc_dev *dev, uint32 grp, adc_grp_gain
  */
 void adc_init(const adc_dev *dev) {
     adc_reg_map *regs = dev->regs;
-    uint32 clk;
-    uint32 group = 0;
-    uint32 tslot = 0;
+    uint32 clk, i;
     uint32 sar_clk = 10000000; // 16240000
 
     // Enable clock
@@ -154,34 +113,39 @@ void adc_init(const adc_dev *dev) {
     // set conversion start to software only
     REG_WRITE_SET_CLR(regs->CONTROL, 0, SARADC_CR_SCSEL_MASK);
     REG_WRITE_SET_CLR(regs->CONTROL, 1, SARADC_CR_SCSEL_ADCNT0);
+    // Use burst mode for 12 bit resolution
     REG_WRITE_SET_CLR(regs->CONFIG, 1, SARADC_CFGR_BCLKSEL_MASK); /**< Burst mode uses apb clk */
 
     // adc will run through one scan of all enabled time sequences
     REG_WRITE_SET_CLR(regs->CONFIG, 0, SARADC_CFGR_SCANMD_MASK); /**< Autoscan mode once */
     REG_WRITE_SET_CLR(regs->CONTROL, 1, SARADC_CR_VCMEN_MASK); /**< Enable vcm buffer */
     REG_WRITE_SET_CLR(regs->CONTROL, 0, SARADC_CR_VREFSEL_MASK); /**< Select vref internal */
+    REG_WRITE_SET_CLR(regs->CONTROL, 1, SARADC_CR_TRKMD_DELAYED); /**< Delay tracking by 3 SAR clk cylces */
+    REG_WRITE_SET_CLR(regs->CONTROL, 1, SARADC_CR_BMTK_MASK); /**< Minimize burst mode delay (4/apb frequency), since trkmd delay is already set. */
+    REG_WRITE_SET_CLR(regs->CONTROL, 1, SARADC_CR_AD12BSSEL_ONE); /**< Sample once convert 4 times for 12-bit mode. */
 
     // Setup group 0
     adc_set_grp_res(dev, ADC_GRP_0, ADC_10_bit);
-    adc_set_grp_brst_cnt(dev, ADC_GRP_0, ADC_SMPCNT_64);
     adc_set_grp_gain(dev, ADC_GRP_0, ADC_GN_HALF);
+    adc_set_grp_seqlen(dev, ADC_GRP_0, ADC_SMPCNT_1);
+    // Setup group 1
+    adc_set_grp_res(dev, ADC_GRP_1, ADC_10_bit);
+    adc_set_grp_gain(dev, ADC_GRP_1, ADC_GN_HALF);
+    adc_set_grp_seqlen(dev, ADC_GRP_1, ADC_SMPCNT_16);
+    // Setup group 2
+    adc_set_grp_res(dev, ADC_GRP_2, ADC_12_bit);
+    adc_set_grp_gain(dev, ADC_GRP_2, ADC_GN_HALF);
+    adc_set_grp_seqlen(dev, ADC_GRP_2, ADC_SMPCNT_1);
+    // Setup group 3
+    adc_set_grp_res(dev, ADC_GRP_3, ADC_12_bit);
+    adc_set_grp_gain(dev, ADC_GRP_3, ADC_GN_HALF);
+    adc_set_grp_seqlen(dev, ADC_GRP_3, ADC_SMPCNT_16);
 
-    // Set timeslot0 group number
-    adc_set_tslot_grp(dev, 0, ADC_GRP_0); /**< Associate a timeslot with a group characteristic */
-
-    // Set tslot 1 to end of scan
-    adc_set_tslot_chnl(dev, 1, ADC_CHN_END);
-
-    // Enable ADC
-    REG_WRITE_SET_CLR(regs->CONTROL, SARADC_CR_ADCEN_EN, BIT(SARADC_CR_ADCEN_BIT));
-
-    // Enable interrupts: 1) Single conversion complete; 2) scan done
+    // Enable interrupt: Single conversion complete
     nvic_clr_pending_irq(dev->irq_num);
     nvic_irq_enable(dev->irq_num);
-    REG_WRITE_SET_CLR(regs->CONFIG, 1, SARADC_CFGR_SCCIEN_MASK);
-    REG_WRITE_SET_CLR(regs->CONFIG, 1, SARADC_CFGR_SDIEN_MASK);
+    //REG_WRITE_SET_CLR(regs->CONFIG, 1, SARADC_CFGR_SCCIEN_MASK);
 }
-
 
 void adc_disable(const adc_dev *dev) {
     adc_reg_map *regs = dev->regs;
@@ -190,13 +154,12 @@ void adc_disable(const adc_dev *dev) {
             SARADC_CFGR_FORIEN_MASK | SARADC_CFGR_SDIEN_MASK | SARADC_CFGR_SCCIEN_MASK);
 
     nvic_clr_pending_irq(dev->irq_num);
-    nvic_irq_enable(dev->irq_num);
 
     // DISABLE MODULE
     REG_WRITE_SET_CLR(regs->CONTROL, SARADC_CR_ADCEN_DS, BIT(SARADC_CR_ADCEN_BIT));
 
     // DISABLE CLOCK
-    clk_dev_disable(dev->clk_id);
+    //clk_dev_disable(dev->clk_id);
 }
 
 /**
@@ -224,22 +187,7 @@ void adc_set_extsel(const adc_dev *dev, adc_extsel_event event) {
  * @see adc_smp_rate
  */
 void adc_set_sample_rate(const adc_dev *dev, adc_smp_rate smp_rate) {
-#if 0
-    uint32 adc_smpr1_val = 0, adc_smpr2_val = 0;
-    int i;
-
-    for (i = 0; i < 10; i++) {
-        if (i < 8) {
-            /* ADC_SMPR1 determines sample time for channels [10,17] */
-            adc_smpr1_val |= smp_rate << (i * 3);
-        }
-        /* ADC_SMPR2 determines sample time for channels [0,9] */
-        adc_smpr2_val |= smp_rate << (i * 3);
-    }
-
-    dev->regs->SMPR1 = adc_smpr1_val;
-    dev->regs->SMPR2 = adc_smpr2_val;
-#endif
+    return;
 }
 
 /**
@@ -253,18 +201,12 @@ uint16 adc_read(const adc_dev *dev, uint8 channel) {
 
     adc_reg_map *regs = dev->regs;
     uint32 val;
-    ADC_SCAN_FINISHED = 0;
+    uint32 prev_chnl = (regs->SQ3210 & SARADC_SQ3210_TS0MUX_MASK) >> SARADC_SQ3210_TS0MUX_BIT;
 
-    // Set to timeslot 0 to channel
+    // Single read only uses timeslot 0
     adc_set_tslot_chnl(dev, 0, channel);
 
-    // burst mode must be enabled before each conversion start
-    // it is cleared by hardware after the burst mode conversion completes
     REG_WRITE_SET_CLR(regs->CONTROL, 1, SARADC_CR_BURSTEN_EN);
-
-    // a 0-to-1 transition on the SCANEN bit is required to arm the scan.
-    // the scan will not start until a conversion start occurs.
-    REG_WRITE_SET_CLR(regs->CONFIG, 1, SARADC_CFGR_SCANEN_EN);
 
     // a 1-to-0 transition on ACCMD bit will enable the accumulator for the next conversion
     REG_WRITE_SET_CLR(regs->CONTROL, 0, SARADC_CR_ACCMD_MASK);
@@ -273,9 +215,13 @@ uint16 adc_read(const adc_dev *dev, uint8 channel) {
     // Start conversion
     REG_WRITE_SET_CLR(regs->CONTROL, 1, SARADC_CR_ADBUSY_MASK);
 
-    while (!ADC_SCAN_FINISHED);
-    val = regs->DATA;
-    val /= 64;
-    val = 2 * (val * 1650 / 1023);
+    while (~regs->FIFOSTATUS & SARADC_FIFOSTATUS_DRDYF_MASK);
+    REG_WRITE_SET_CLR(regs->STATUS, 0, SARADC_STATUS_SCCI_MASK);
+
+    val = regs->DATA * 3300 / 4095;
+
+    // Set previous channel
+    adc_set_tslot_chnl(dev, 0, prev_chnl);
+
     return val;
 }

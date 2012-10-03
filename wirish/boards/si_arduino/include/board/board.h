@@ -48,10 +48,10 @@
 /* Total number of GPIO pins that are broken out to headers and
  * intended for use. This includes pins like the LED, button, and
  * debug port (JTAG/SWD) pins. */
-#define BOARD_NR_GPIO_PINS      7
+#define BOARD_NR_GPIO_PINS      8
 
 /* Number of pins capable of PWM output. */
-#define BOARD_NR_PWM_PINS       1
+#define BOARD_NR_PWM_PINS       2
 
 /* Number of pins capable of ADC conversion. */
 #define BOARD_NR_ADC_PINS       1
@@ -65,7 +65,7 @@
  * enum. These are optional, but recommended. They make it easier to
  * write code using low-level GPIO functionality. */
 enum {
-    PC9, PC10, PB12, PB13, PB5, PC12, PE0
+    PC9, PC10, PB12, PB13, PB5, PC12, PE0, PE1
 };
 
 

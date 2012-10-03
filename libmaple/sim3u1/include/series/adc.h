@@ -295,7 +295,7 @@ typedef struct adc_dev {
 
 
 
-#define SARADC_SQ_REG(regs, tslot)      ((tslot) < 4 ? &(regs)->SQ3210 : &(regs)->SQ7654)
+#define SARADC_SQ_REG(regs, tslot)      ((tslot) < 4 ? &((regs)->SQ3210) : &((regs)->SQ7654))
 
 typedef enum adc_tslot_chnl {
     ADC_CHN_0,
@@ -433,14 +433,14 @@ typedef enum adc_grp_num {
 #define SARADC_CHAR10_CHR1WCIEN_EN      (1 << SARADC_CHAR10_CHR1WCIEN_BIT)
 
 
-#define SARADC_CHAR_REG(regs, grp)      ((grp) < 2 ? &(regs)->CHAR10 : &(regs)->CHAR32)
+#define SARADC_CHAR_REG(regs, grp)      ((grp) < 2 ? &((regs)->CHAR10) : &((regs)->CHAR32))
 
 
 typedef enum adc_bit_res {
     ADC_10_bit,
     ADC_12_bit
 }adc_bit_res;
-#define SARADC_CHAR_RSEL_BIT(grp)       (SARADC_CHAR10_CHR0RSEL_BIT << ((grp) & 1) * 16)
+#define SARADC_CHAR_RSEL_BIT(grp)       (SARADC_CHAR10_CHR0RSEL_BIT + ((grp) & 1) * 16)
 #define SARADC_CHAR_RSEL_MASK(grp)      ((SARADC_CHAR10_CHR0RSEL_MASK >> SARADC_CHAR10_CHR0RSEL_BIT) << SARADC_CHAR_RSEL_BIT(grp))
 
 typedef enum adc_smp_cnt {
@@ -451,14 +451,14 @@ typedef enum adc_smp_cnt {
     ADC_SMPCNT_32,
     ADC_SMPCNT_64,
 } adc_smp_cnt;
-#define SARADC_CHAR_RPT_BIT(grp)       (SARADC_CHAR10_CHR0RPT_BIT << ((grp) & 1) * 16)
+#define SARADC_CHAR_RPT_BIT(grp)       (SARADC_CHAR10_CHR0RPT_BIT + ((grp) & 1) * 16)
 #define SARADC_CHAR_RPT_MASK(grp)      ((SARADC_CHAR10_CHR0RPT_MASK >> SARADC_CHAR10_CHR0RPT_BIT) << SARADC_CHAR_RPT_BIT(grp))
 
 typedef enum adc_grp_gain {
     ADC_GN_UNITY,
     ADC_GN_HALF,
 } adc_grp_gain;
-#define SARADC_CHAR_GN_BIT(grp)       (SARADC_CHAR10_CHR0GN_BIT << ((grp) & 1) * 16)
+#define SARADC_CHAR_GN_BIT(grp)       (SARADC_CHAR10_CHR0GN_BIT + ((grp) & 1) * 16)
 #define SARADC_CHAR_GN_MASK(grp)      ((SARADC_CHAR10_CHR0GN_MASK >> SARADC_CHAR10_CHR0GN_BIT) << SARADC_CHAR_GN_BIT(grp))
 
 
