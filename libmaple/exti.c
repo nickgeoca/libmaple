@@ -50,20 +50,6 @@ typedef struct exti_channel {
 static exti_channel exti_channels[] = {
     { .handler = NULL, .arg = NULL },  // EXTI0
     { .handler = NULL, .arg = NULL },  // EXTI1
-    { .handler = NULL, .arg = NULL },  // EXTI2
-    { .handler = NULL, .arg = NULL },  // EXTI3
-    { .handler = NULL, .arg = NULL },  // EXTI4
-    { .handler = NULL, .arg = NULL },  // EXTI5
-    { .handler = NULL, .arg = NULL },  // EXTI6
-    { .handler = NULL, .arg = NULL },  // EXTI7
-    { .handler = NULL, .arg = NULL },  // EXTI8
-    { .handler = NULL, .arg = NULL },  // EXTI9
-    { .handler = NULL, .arg = NULL },  // EXTI10
-    { .handler = NULL, .arg = NULL },  // EXTI11
-    { .handler = NULL, .arg = NULL },  // EXTI12
-    { .handler = NULL, .arg = NULL },  // EXTI13
-    { .handler = NULL, .arg = NULL },  // EXTI14
-    { .handler = NULL, .arg = NULL },  // EXTI15
 };
 
 /*
@@ -87,10 +73,11 @@ static exti_channel exti_channels[] = {
  * @see exti_trigger_mode
  */
 void exti_attach_interrupt(exti_num num,
-                           exti_cfg port,
+                           exti_cfg cfg,
                            voidFuncPtr handler,
                            exti_trigger_mode mode) {
-
+    // Call callback version with arg being null
+    exti_attach_callback(num, cfg, (voidArgumentFuncPtr)handler, NULL, mode);
 }
 
 /**
@@ -111,11 +98,70 @@ void exti_attach_interrupt(exti_num num,
  * @see exti_trigger_mode
  */
 void exti_attach_callback(exti_num num,
-                          exti_cfg port,
+                          exti_cfg trig_num,
                           voidArgumentFuncPtr handler,
                           void *arg,
                           exti_trigger_mode mode) {
+    uint32 bit_offset, trig_used = 1;
+    ASSERT(handler);
 
+    /* The trig num starts at one in the Wiring API */
+    trig_num -= 1;
+
+    /* If an active exti is using the same trigger, then use it.
+     * Else use an unused exti if possible
+     */
+    if ((EXTI_BASE->CONTROL0 & 0xf) == trig_num && EXTI_BASE->CONTROL0 & BIT(7)) {
+        num = 0;
+    }
+    else if ((EXTI_BASE->CONTROL0 >> 8 & 0xf) == trig_num && EXTI_BASE->CONTROL0 & BIT(15)) {
+        num = 1;
+    }
+    else {
+        trig_used = 0;
+        num =  (EXTI_BASE->CONTROL0 & BIT(7)) ? 1 : 0;
+    }
+    bit_offset = num ? 8 : 0;
+
+    /* Register the handler */
+    exti_channels[num].handler = handler;
+    exti_channels[num].arg = arg;
+
+    /* Set trigger mode */
+    switch (mode) {
+    case EXTI_FALLING:
+        REG_WRITE_SET_CLR(EXTI_BASE->CONTROL0, 1, BIT(5 + bit_offset));
+        REG_WRITE_SET_CLR(EXTI_BASE->CONTROL0, 0, BIT(4 + bit_offset));
+        break;
+    default: // EXTI_RISING
+        REG_WRITE_SET_CLR(EXTI_BASE->CONTROL0, 1, BIT(5 + bit_offset));
+        REG_WRITE_SET_CLR(EXTI_BASE->CONTROL0, 1, BIT(4 + bit_offset));
+        break;
+    }
+
+    if (trig_used) {
+        return;
+    }
+
+    /* Set trigger number */
+    REG_WRITE_SET_CLR(EXTI_BASE->CONTROL0,  0, 0xf << (bit_offset));
+    REG_WRITE_SET_CLR(EXTI_BASE->CONTROL0,  1, trig_num << (bit_offset));
+
+    /* Unmask external interrupt request */
+    REG_WRITE_SET_CLR(EXTI_BASE->CONTROL0, 1, BIT(7 + bit_offset));
+
+    /* Enable the interrupt line */
+    switch(num)
+    {
+        case EXTI0:
+            nvic_clr_pending_irq(NVIC_PBEXT0);
+            nvic_irq_enable(NVIC_PBEXT0);
+            break;
+        case EXTI1:
+            nvic_clr_pending_irq(NVIC_PBEXT1);
+            nvic_irq_enable(NVIC_PBEXT1);
+            break;
+    }
 }
 
 /**
@@ -124,15 +170,39 @@ void exti_attach_callback(exti_num num,
  * @see exti_num
  */
 void exti_detach_interrupt(exti_num num) {
+    uint32 trig_num;
 
-}
+    trig_num = num - 1;
+    /* Determine which exti it is. If not recognized, return  */
+    if ((EXTI_BASE->CONTROL0 & 0xf) == trig_num && EXTI_BASE->CONTROL0 & BIT(7)) {
+        num = 0;
+    }
+    else if ((EXTI_BASE->CONTROL0 >> 8 & 0xf) == trig_num && EXTI_BASE->CONTROL0 & BIT(15)) {
+        num = 1;
+    }
+    else {
+        return;
+    }
 
-/*
- * Private routines
- */
+    /* Mask the interrupt request */
+    REG_WRITE_SET_CLR(EXTI_BASE->CONTROL0, 0, BIT(7 + num * 8));
 
-void exti_do_select(__io uint32 *exti_cr, exti_num num, exti_cfg port) {
+    /* Clear pending interrupts */
+    switch(num)
+    {
+        case EXTI0:
+            nvic_clr_pending_irq(NVIC_PBEXT0);
+            nvic_irq_disable(NVIC_PBEXT0);
+            break;
+        case EXTI1:
+            nvic_clr_pending_irq(NVIC_PBEXT1);
+            nvic_irq_disable(NVIC_PBEXT1);
+            break;
+    }
 
+    /* Unregister the user's handler */
+    exti_channels[num].handler = NULL;
+    exti_channels[num].arg = NULL;
 }
 
 /*
@@ -140,54 +210,27 @@ void exti_do_select(__io uint32 *exti_cr, exti_num num, exti_cfg port) {
  */
 
 void __irq_exti0(void) {
-
+    dispatch_single_exti(EXTI0);
 }
 
 void __irq_exti1(void) {
-
+    dispatch_single_exti(EXTI1);
 }
 
-void __irq_exti2(void) {
-
-}
-
-void __irq_exti3(void) {
-
-}
-
-void __irq_exti4(void) {
-
-}
-
-void __irq_exti9_5(void) {
-
-}
-
-void __irq_exti15_10(void) {
-
-}
 
 /*
  * Auxiliary functions
  */
 
-/* Clear the pending bits for EXTIs whose bits are set in exti_msk.
- *
- * If a pending bit is cleared as the last instruction in an ISR, it
- * won't actually be cleared in time and the ISR will fire again.  To
- * compensate, this function NOPs for 2 cycles after clearing the
- * pending bits to ensure it takes effect. */
-static __always_inline void clear_pending_msk(uint32 exti_msk) {
-
-}
-
 /* This dispatch routine is for non-multiplexed EXTI lines only; i.e.,
  * it doesn't check EXTI_PR. */
 static __always_inline void dispatch_single_exti(uint32 exti) {
+    voidArgumentFuncPtr handler = exti_channels[exti].handler;
 
+    if (!handler) {
+        return;
+    }
+
+    handler(exti_channels[exti].arg);
 }
 
-/* Dispatch routine for EXTIs which share an IRQ. */
-static __always_inline void dispatch_extis(uint32 start, uint32 stop) {
-
-}

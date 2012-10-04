@@ -59,60 +59,31 @@ gpio_af timer_get_af(timer_dev *dev) {
  * Defer to the timer_private dispatch API.
  */
 
-void __irq_tim1_brk_tim9(void) {
+void __irq_epca1(void) {
 
 }
 
-void __irq_tim1_up_tim10(void) {
+void __irq_pca1(void) {
 
 }
 
-void __irq_tim1_trg_com_tim11(void) {
+void __irq_pca2(void) {
 
 }
 
-void __irq_tim1_cc(void) {
+void __irq_tim1_low(void) {
 
 }
 
-void __irq_tim2(void) {
+void __irq_tim1_high(void) {
 
 }
 
-void __irq_tim3(void) {
+void __irq_tim2_low(void) {
 
 }
 
-void __irq_tim4(void) {
+void __irq_tim2_high(void) {
 
 }
 
-void __irq_tim5(void) {
-
-}
-
-/* FIXME: this is also the DAC DMA underrun interrupt, so it needs a
- * different name (and to be supported?). */
-void __irq_tim6(void) {
-
-}
-
-void __irq_tim7(void) {
-
-}
-
-void __irq_tim8_brk_tim12(void) {
-
-}
-
-void __irq_tim8_up_tim13(void) {
-
-}
-
-void __irq_tim8_trg_com_tim14(void) {
-
-}
-
-void __irq_tim8_cc(void) {
-
-}

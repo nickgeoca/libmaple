@@ -72,7 +72,7 @@ caddr_t _sbrk(int incr) {
 
     ret = pbreak;
     pbreak += incr;
-    return  (caddr_t)NULL;
+    return ret;
 }
 
 __weak int _open(const char *path, int flags, ...) {
@@ -115,14 +115,56 @@ __weak void putch(unsigned char c) {
 }
 
 __weak void cgets(char *s, int bufsize) {
+    char *p;
+    int c;
+    int i;
 
+    for (i = 0; i < bufsize; i++) {
+        *(s+i) = 0;
+    }
+//    memset(s, 0, bufsize);
+
+    p = s;
+
+    for (p = s; p < s + bufsize-1;) {
+        c = getch();
+        switch (c) {
+        case '\r' :
+        case '\n' :
+            putch('\r');
+            putch('\n');
+            *p = '\n';
+            return;
+
+        case '\b' :
+            if (p > s) {
+                *p-- = 0;
+                putch('\b');
+                putch(' ');
+                putch('\b');
+            }
+            break;
+
+        default :
+            putch(c);
+            *p++ = c;
+            break;
+        }
+    }
+    return;
 }
 
 __weak int _write(int fd, const char *buf, size_t cnt) {
+    int i;
 
+    for (i = 0; i < cnt; i++)
+        putch(buf[i]);
+
+    return cnt;
 }
 
 /* Override fgets() in newlib with a version that does line editing */
 __weak char *fgets(char *s, int bufsize, void *f) {
-    return 0;
+    cgets(s, bufsize);
+    return s;
 }

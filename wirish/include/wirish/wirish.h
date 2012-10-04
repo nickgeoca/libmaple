@@ -42,7 +42,7 @@
 #include <wirish/io.h>
 #include <wirish/bit_constants.h>
 #include <wirish/pwm.h>
-//#include <wirish/ext_interrupts.h>
+#include <wirish/ext_interrupts.h>
 //#include <wirish/wirish_debug.h>
 #include <wirish/wirish_math.h>
 #include <wirish/wirish_time.h>

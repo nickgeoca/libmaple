@@ -37,7 +37,7 @@ extern "C" {
 #endif
 
 struct exti_reg_map;
-#define EXTI_BASE ((struct exti_reg_map*)0x40013C00)
+#define EXTI_BASE ((struct exti_reg_map*)0x4002A000)
 
 #ifdef __cpluspus
 }

@@ -64,27 +64,31 @@ void boardInit(void) {
 // - Timer channel (1 to 4, for PWM), or 0 if none
 // - ADC device, or NULL if none
 // - ADC channel, or ADCx if none
+// - External interrupt trigger, or 0 if none
 extern const stm32_pin_info PIN_MAP[BOARD_NR_GPIO_PINS] = {
 
     /* Top header */
-    PMAP_ROW(GPIOC,    8, NULL,     0, ADC1,    ADCx),
-    PMAP_ROW(GPIOC,   10, NULL,     0, NULL,    ADCx),
-    PMAP_ROW(GPIOB,   12, NULL,     0, NULL,    ADCx),
-    PMAP_ROW(GPIOB,   13, NULL,     0, NULL,    ADCx),
-    PMAP_ROW(GPIOB,    5, NULL,     0, ADC1,    14),
-    PMAP_ROW(GPIOC,   12, NULL,     0, NULL,    ADCx),
-    PMAP_ROW(GPIOE,    0, TIMER1,   0, NULL,    ADCx),
-    PMAP_ROW(GPIOE,    1, TIMER1,   1, NULL,    ADCx),
+    PMAP_ROW(GPIOC,    8, NULL,     0, ADC1,    ADCx,   0),
+    PMAP_ROW(GPIOC,   10, NULL,     0, NULL,    ADCx,   0),
+    PMAP_ROW(GPIOB,   12, NULL,     0, NULL,    ADCx,   0),
+    PMAP_ROW(GPIOB,   13, NULL,     0, NULL,    ADCx,   0),
+    PMAP_ROW(GPIOB,    5, NULL,     0, ADC1,    14,     0),
+    PMAP_ROW(GPIOC,   12, NULL,     0, NULL,    ADCx,   0),
+    PMAP_ROW(GPIOE,    0, TIMER1,   1, NULL,    ADCx,   0),
+    PMAP_ROW(GPIOE,    1, TIMER1,   2, NULL,    ADCx,   0),
+    PMAP_ROW(GPIOC,    0, NULL,     0, NULL,    ADCx,   1),
+    PMAP_ROW(GPIOC,    1, NULL,     0, NULL,    ADCx,   2),
+    PMAP_ROW(GPIOC,    2, NULL,     0, NULL,    ADCx,   3)
 };
 // Array of pins you can use for pwmWrite(). Keep it in Flash because
 // it doesn't change, and so we don't waste RAM.
 extern const uint8 boardPWMPins[] __FLASH__ = {
-    6, 7
+    PE0, PE1
 };
 
 // Array of pins you can use for analogRead().
 extern const uint8 boardADCPins[] __FLASH__ = {
-    4
+    PB5
 };
 
 // Array of pins that the board uses for something special. Other than

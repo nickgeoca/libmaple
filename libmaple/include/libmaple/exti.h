@@ -47,12 +47,9 @@ extern "C"{
 
 /** EXTI register map type */
 typedef struct exti_reg_map {
-    __io uint32 IMR;   /**< Interrupt mask register */
-    __io uint32 EMR;   /**< Event mask register */
-    __io uint32 RTSR;  /**< Rising trigger selection register */
-    __io uint32 FTSR;  /**< Falling trigger selection register */
-    __io uint32 SWIER; /**< Software interrupt event register */
-    __io uint32 PR;    /**< Pending register */
+    __io uint32 CONTROL0; // Base Address + 0x0
+    __io uint32 CONTROL0_SET;
+    __io uint32 CONTROL0_CLR;
 } exti_reg_map;
 
 /*
@@ -66,38 +63,31 @@ typedef struct exti_reg_map {
 typedef enum exti_num {
     EXTI0,    /**< EXTI line 0 */
     EXTI1,    /**< EXTI line 1 */
-    EXTI2,    /**< EXTI line 2 */
-    EXTI3,    /**< EXTI line 3 */
-    EXTI4,    /**< EXTI line 4 */
-    EXTI5,    /**< EXTI line 5 */
-    EXTI6,    /**< EXTI line 6 */
-    EXTI7,    /**< EXTI line 7 */
-    EXTI8,    /**< EXTI line 8 */
-    EXTI9,    /**< EXTI line 9 */
-    EXTI10,   /**< EXTI line 10 */
-    EXTI11,   /**< EXTI line 11 */
-    EXTI12,   /**< EXTI line 12 */
-    EXTI13,   /**< EXTI line 13 */
-    EXTI14,   /**< EXTI line 14 */
-    EXTI15,   /**< EXTI line 15 */
 } exti_num;
 
 /**
  * @brief EXTI port configuration
  *
- * These specify which GPIO port an external interrupt line should be
+ * These specify which GPIO pin an external interrupt trigger should be
  * connected to.
  */
 typedef enum exti_cfg {
-    EXTI_PA,                    /**< Use PAx pin */
-    EXTI_PB,                    /**< Use PBx pin */
-    EXTI_PC,                    /**< Use PCx pin */
-    EXTI_PD,                    /**< Use PDx pin */
-    EXTI_PE,                    /**< Use PEx pin */
-    EXTI_PF,                    /**< Use PFx pin */
-    EXTI_PG,                    /**< Use PGx pin */
-    EXTI_PH,                    /**< Use PHx pin */
-    EXTI_PI,                    /**< Use PIx pin */
+    EXTIx_TRIG0,  /**< Pin: PC0  */
+    EXTIx_TRIG1,  /**< Pin: PC1  */
+    EXTIx_TRIG2,  /**< Pin: PC2  */
+    EXTIx_TRIG3,  /**< Pin: PC3  */
+    EXTIx_TRIG4,  /**< Pin: PC4  */
+    EXTIx_TRIG5,  /**< Pin: PC5  */
+    EXTIx_TRIG6,  /**< Pin: PC6  */
+    EXTIx_TRIG7,  /**< Pin: PC7  */
+    EXTIx_TRIG8,  /**< Pin: PD3  */
+    EXTIx_TRIG9,  /**< Pin: PD4  */
+    EXTIx_TRIG10, /**< Pin: PD5  */
+    EXTIx_TRIG11, /**< Pin: PD6  */
+    EXTIx_TRIG12, /**< Pin: PD7  */
+    EXTIx_TRIG13, /**< Pin: PD8  */
+    EXTIx_TRIG14, /**< Pin: PD9  */
+    EXTIx_TRIG15, /**< Pin: PD10 */
 } exti_cfg;
 
 /** External interrupt trigger mode */
@@ -112,7 +102,7 @@ typedef enum exti_trigger_mode {
  */
 
 void exti_attach_interrupt(exti_num num,
-                           exti_cfg port,
+                           exti_cfg cfg,
                            voidFuncPtr handler,
                            exti_trigger_mode mode);
 void exti_attach_callback(exti_num num,

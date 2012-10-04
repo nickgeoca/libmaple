@@ -84,7 +84,7 @@ void pinMode(uint8 pin, WiringPinMode mode) {
     }
 
     // This only applies to PB4 pins
-    if (PIN_MAP[pin].gpio_device->type == GPIO_HIGHDRIVE) {
+    if (gpio_get_type(PIN_MAP[pin].gpio_device) == GPIO_HIGHDRIVE) {
         gpio_set_af(PIN_MAP[pin].gpio_device, PIN_MAP[pin].gpio_bit, pwm ? GPIOHD_FNCT_EPCA0 : GPIOHD_FNCT_GPIO);
     }
 }

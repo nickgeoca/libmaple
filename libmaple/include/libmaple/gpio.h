@@ -54,12 +54,6 @@ extern "C"{
 typedef struct gpio_dev {
     gpio_reg_map *regs;         /**< Register map */
     clk_dev_id    clk_id;       /**< RCC clock information */
-    /**
-     * @brief (Deprecated) External interrupt port.
-     * Instead of dev->exti_port, use gpio_exti_port(dev).
-     */
-    exti_cfg      exti_port;
-    gpio_type     type;
 } gpio_dev;
 
 /*
@@ -76,8 +70,14 @@ void gpio_set_mode(gpio_dev *dev, uint8 pin, gpio_pin_mode mode);
  * @param dev GPIO port whose exti_cfg to return.
  */
 static inline exti_cfg gpio_exti_port(gpio_dev *dev) {
-    static exti_cfg tmp;
-    return tmp;
+    return (exti_cfg)0;
+}
+
+static inline gpio_type gpio_get_type(gpio_dev *dev) {
+    if (dev == GPIOE) {
+        return GPIO_HIGHDRIVE;
+    }
+    return GPIO_STANDARD;
 }
 
 /**

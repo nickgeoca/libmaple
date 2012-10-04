@@ -40,8 +40,6 @@
 gpio_dev gpioa = {
     .regs      = GPIOA_BASE,
     .clk_id    = CLK_PB,
-    .exti_port = EXTI_PA,
-    .type      = GPIO_STANDARD,
 };
 /** GPIO port A device. */
 gpio_dev* const GPIOA = &gpioa;
@@ -49,8 +47,6 @@ gpio_dev* const GPIOA = &gpioa;
 gpio_dev gpiob = {
     .regs      = GPIOB_BASE,
     .clk_id    = CLK_PB,
-    .exti_port = EXTI_PB,
-    .type      = GPIO_STANDARD,
 };
 /** GPIO port B device. */
 gpio_dev* const GPIOB = &gpiob;
@@ -58,8 +54,6 @@ gpio_dev* const GPIOB = &gpiob;
 gpio_dev gpioc = {
     .regs      = GPIOC_BASE,
     .clk_id    = CLK_PB,
-    .exti_port = EXTI_PC,
-    .type      = GPIO_STANDARD,
 };
 /** GPIO port C device. */
 gpio_dev* const GPIOC = &gpioc;
@@ -67,8 +61,6 @@ gpio_dev* const GPIOC = &gpioc;
 gpio_dev gpiod = {
     .regs      = GPIOD_BASE,
     .clk_id    = CLK_PB,
-    .exti_port = EXTI_PD,
-    .type      = GPIO_STANDARD,
 };
 /** GPIO port D device. */
 gpio_dev* const GPIOD = &gpiod;
@@ -76,8 +68,6 @@ gpio_dev* const GPIOD = &gpiod;
 gpio_dev gpioe = {
     .regs      = GPIOE_BASE,
     .clk_id    = CLK_PB,
-    .exti_port = EXTI_PE,
-    .type      = GPIO_HIGHDRIVE,
 };
 /** GPIO port E device. */
 gpio_dev* const GPIOE = &gpioe;
@@ -102,14 +92,14 @@ void gpio_init_all(void) {
     // Skip list
     GPIOA->regs->std.PBSKIPEN = 0x0000FFFF;
     GPIOB->regs->std.PBSKIPEN = 0x00000FFF;
-    GPIOC->regs->std.PBSKIPEN = (1 << 8) | (1 << 10);
+    GPIOC->regs->std.PBSKIPEN = (1 << 0) | (1 << 1) | (1 << 2) |(1 << 8) | (1 << 10);
 
     // Enable UART0 on Crossbar 0
     REG_WRITE_SET_CLR(PBCFG_BASE->XBAR0H, 1,
             PBCFG_XBAR0H_UART0EN_MASK);
 
 
-    // Unlock port banks
+    // Setup Port Bank 4
     if (PBCFG_BASE->PBKEY == PBCFG_PBKEY_KEY_INTERMEDIATE) {
         PBCFG_BASE->PBKEY = 0xF1;
     }
@@ -153,7 +143,7 @@ void gpio_set_modef(gpio_dev *dev,
     REG_WRITE_SET_CLR(regs->PBMDSEL, mode & (1 << GPIO_PBMDSEL_BIT), mask);
 
     /* High Drive GPIO */
-    if (dev->type == GPIO_HIGHDRIVE) {
+    if (gpio_get_type(dev) == GPIO_HIGHDRIVE) {
         /* Drive strength */
         REG_WRITE_SET_CLR(regs->hd.PBDRV, flags & (1 << GPIO_PBDRV_BIT), mask);
 
