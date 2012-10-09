@@ -46,9 +46,41 @@ static usart_dev usart1 = {
     .clk_id   = CLK_UART1,
     .irq_num  = NVIC_UART1,
 };
-
 /** USART1 device */
 usart_dev *USART1 = &usart1;
+
+static ring_buffer usart2_rb;
+static usart_dev usart2 = {
+    .regs     = USART2_BASE,
+    .rb       = &usart2_rb,
+    .max_baud = 4500000UL,
+    .clk_id   = CLK_UART2,
+    .irq_num  = NVIC_UART2,
+};
+/** USART2 device */
+usart_dev *USART2 = &usart2;
+
+static ring_buffer usart3_rb;
+static usart_dev usart3 = {
+    .regs     = USART3_BASE,
+    .rb       = &usart3_rb,
+    .max_baud = 4500000UL,
+    .clk_id   = CLK_USART1,
+    .irq_num  = NVIC_USART1,
+};
+/** USART3 device */
+usart_dev *USART3 = &usart3;
+
+static ring_buffer usart4_rb;
+static usart_dev usart4 = {
+    .regs     = USART4_BASE,
+    .rb       = &usart4_rb,
+    .max_baud = 4500000UL,
+    .clk_id   = CLK_USART2,
+    .irq_num  = NVIC_USART2,
+};
+/** USART4 device */
+usart_dev *USART4 = &usart4;
 
 /*
  * Routines
@@ -100,6 +132,15 @@ gpio_af usart_get_af(usart_dev *dev) {
 
 void __irq_uart1(void) {
     usart_irq(&usart1_rb, USART1_BASE);
+}
+void __irq_uart2(void) {
+    usart_irq(&usart2_rb, USART2_BASE);
+}
+void __irq_usart1(void) {
+    usart_irq(&usart3_rb, USART3_BASE);
+}
+void __irq_usart2(void) {
+    usart_irq(&usart4_rb, USART4_BASE);
 }
 
 /**

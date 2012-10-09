@@ -48,6 +48,17 @@ void  __irq_adc1(void) {
     return;
 }
 
+void  __irq_adc2(void) {
+    adc_reg_map *regs = ADC2->regs;
+    // Interrupt: single conversion complete
+    if (regs->STATUS & SARADC_STATUS_SCCI_MASK &&
+                regs->CONFIG & SARADC_CFGR_SCCIEN_MASK) {
+        // Clear interrupt
+        REG_WRITE_SET_CLR(regs->STATUS, 0, SARADC_STATUS_SCCI_MASK);
+    }
+    return;
+}
+
 // Note: Only set one tslot at a time
 static inline void adc_set_tslot_chnl(const adc_dev *dev, uint32 tslot, adc_tslot_chnl chnl)
 {

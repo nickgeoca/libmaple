@@ -82,6 +82,8 @@ private:
 
 
 extern HardwareSerial Serial1;
-
+extern HardwareSerial Serial2;
+extern HardwareSerial Serial3;
+extern HardwareSerial Serial4;
 
 #endif

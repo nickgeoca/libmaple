@@ -44,6 +44,9 @@
 
 
 DEFINE_HWSERIAL(Serial1, 1);
+DEFINE_HWSERIAL(Serial2, 2);
+DEFINE_HWSERIAL(Serial3, 3);
+DEFINE_HWSERIAL(Serial4, 4);
 
 HardwareSerial::HardwareSerial(usart_dev *usart_device,
                                uint8 tx_pin,

@@ -90,14 +90,20 @@ void gpio_init_all(void) {
     REG_WRITE_SET_CLR(PBCFG_BASE->XBAR1, 1, PBCFG_XBAR1_XBAR1EN_MASK);
 
     // Skip list
-    GPIOA->regs->std.PBSKIPEN = 0x0000FFFF;
-    GPIOB->regs->std.PBSKIPEN = 0x00000FFF;
-    GPIOC->regs->std.PBSKIPEN = (1 << 0) | (1 << 1) | (1 << 2) |(1 << 8) | (1 << 10);
+    GPIOA->regs->std.PBSKIPEN = 0x0000FFFF ^ 0xc3;
+    GPIOB->regs->std.PBSKIPEN = 0x0000FFFF ^ 0x0000;
+    GPIOC->regs->std.PBSKIPEN = 0x0000FFFF ^ 0;
+    GPIOD->regs->std.PBSKIPEN = 0x0000FFFF ^ 0x0030;
 
-    // Enable UART0 on Crossbar 0
-    REG_WRITE_SET_CLR(PBCFG_BASE->XBAR0H, 1,
-            PBCFG_XBAR0H_UART0EN_MASK);
+    // Enable devices on Crossbar 0
+    REG_WRITE_SET_CLR(PBCFG_BASE->XBAR0L, 1,
+            PBCFG_XBAR0L_USART0EN_MASK | PBCFG_XBAR0L_USART1EN_MASK);
+    //REG_WRITE_SET_CLR(PBCFG_BASE->XBAR0H, 1,
+    //        PBCFG_XBAR0H_UART0EN_MASK);
 
+    // Enable UART0 on Crossbar 1
+    REG_WRITE_SET_CLR(PBCFG_BASE->XBAR1, 1,
+            PBCFG_XBAR1_UART1EN_MASK);
 
     // Setup Port Bank 4
     if (PBCFG_BASE->PBKEY == PBCFG_PBKEY_KEY_INTERMEDIATE) {
@@ -195,8 +201,10 @@ void gpio_set_modef(gpio_dev *dev,
  */
 void gpio_set_af(gpio_dev *dev, uint8 bit, gpio_af af) {
     uint32 tmp;
-    tmp = ~(((bit == 5) ? 5 : 3) << (bit << 1));
+    uint32 mask = (bit == 5) ? 7 : 3;
+    uint32 shift = bit * 2;
+    tmp = ~(mask << shift);
     tmp &= dev->regs->hd.PBFSEL;
-    tmp |= (((bit == 5) ? 5 : 3) & af) << (bit << 1);
+    tmp |= (mask & af) << shift;
     dev->regs->hd.PBFSEL = tmp;
 }

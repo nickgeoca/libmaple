@@ -47,6 +47,9 @@ struct usart_reg_map;
 
 /** USART1 register map base pointer */
 #define USART1_BASE                     ((struct usart_reg_map*)0x40002000)
+#define USART2_BASE                     ((struct usart_reg_map*)0x40003000)
+#define USART3_BASE                     ((struct usart_reg_map*)0x40000000)
+#define USART4_BASE                     ((struct usart_reg_map*)0x40001000)
 
 
 /*
@@ -83,6 +86,9 @@ struct usart_reg_map;
 
 struct usart_dev;
 extern struct usart_dev *USART1;
+extern struct usart_dev *USART2;
+extern struct usart_dev *USART3;
+extern struct usart_dev *USART4;
 
 /*
  * Routines
@@ -139,6 +145,10 @@ typedef struct usart_dev {
     clk_dev_id clk_id;               /**< RCC clock information */
     nvic_irq_num irq_num;            /**< USART NVIC interrupt */
 } usart_dev;
+
+/*
+ * UART registers
+ */
 
 /* Config reg */
 #define UART_CFGR_RSTRTEN_MASK          0x00000001
@@ -458,6 +468,358 @@ typedef struct usart_dev {
 #define UART_DATA_MASK                  0xFFFFFFFF
 
 #define UART_DATA_BIT                   0  /* DATA<31:0>: FIFO Data.                         */
+
+
+/*
+ * USART registers
+ */
+#define USART_CFGR_RSTRTEN_MASK          0x00000001
+#define USART_CFGR_RPAREN_MASK           0x00000002
+#define USART_CFGR_RSTPEN_MASK           0x00000004
+#define USART_CFGR_RSTPMD_MASK           0x00000018
+#define USART_CFGR_RPARMD_MASK           0x00000060
+#define USART_CFGR_RDATLN_MASK           0x00000700
+#define USART_CFGR_RSCEN_MASK            0x00001000
+#define USART_CFGR_RIRDAEN_MASK          0x00002000
+#define USART_CFGR_RINVEN_MASK           0x00004000
+#define USART_CFGR_RSYNCEN_MASK          0x00008000
+#define USART_CFGR_TSTRTEN_MASK          0x00010000
+#define USART_CFGR_TPAREN_MASK           0x00020000
+#define USART_CFGR_TSTPEN_MASK           0x00040000
+#define USART_CFGR_TSTPMD_MASK           0x00180000
+#define USART_CFGR_TPARMD_MASK           0x00600000
+#define USART_CFGR_TDATLN_MASK           0x07000000
+#define USART_CFGR_TSCEN_MASK            0x10000000
+#define USART_CFGR_TIRDAEN_MASK          0x20000000
+#define USART_CFGR_TINVEN_MASK           0x40000000
+#define USART_CFGR_TSYNCEN_MASK          0x80000000
+#define USART_CFGR_RSTRTEN_BIT           0  /* RSTRTEN<0>: Receiver Start Enable.             */
+#define USART_CFGR_RPAREN_BIT            1  /* RPAREN<1>: Receiver Parity Enable.             */
+#define USART_CFGR_RSTPEN_BIT            2  /* RSTPEN<2>: Receiver Stop Enable.               */
+#define USART_CFGR_RSTPMD_BIT            3  /* RSTPMD<4:3>: Receiver Stop Mode.               */
+#define USART_CFGR_RPARMD_BIT            5  /* RPARMD<6:5>: Receiver Parity Mode.             */
+#define USART_CFGR_RDATLN_BIT            8  /* RDATLN<10:8>: Receiver Data Length.            */
+#define USART_CFGR_RSCEN_BIT             12 /* RSCEN<12>: Receiver Smartcard Parity Response Enable. */
+#define USART_CFGR_RIRDAEN_BIT           13 /* RIRDAEN<13>: Receiver IrDA Enable.             */
+#define USART_CFGR_RINVEN_BIT            14 /* RINVEN<14>: Receiver Invert Enable.            */
+#define USART_CFGR_RSYNCEN_BIT           15 /* RSYNCEN<15>: Receiver Synchronous Mode Enable. */
+#define USART_CFGR_TSTRTEN_BIT           16 /* TSTRTEN<16>: Transmitter Start Enable.         */
+#define USART_CFGR_TPAREN_BIT            17 /* TPAREN<17>: Transmitter Parity Enable.         */
+#define USART_CFGR_TSTPEN_BIT            18 /* TSTPEN<18>: Transmitter Stop Enable.           */
+#define USART_CFGR_TSTPMD_BIT            19 /* TSTPMD<20:19>: Transmitter Stop Mode.          */
+#define USART_CFGR_TPARMD_BIT            21 /* TPARMD<22:21>: Transmitter Parity Mode.        */
+#define USART_CFGR_TDATLN_BIT            24 /* TDATLN<26:24>: Transmitter Data Length.        */
+#define USART_CFGR_TSCEN_BIT             28 /* TSCEN<28>: Transmitter Smartcard Parity Response Enable. */
+#define USART_CFGR_TIRDAEN_BIT           29 /* TIRDAEN<29>: Transmitter IrDA Enable.          */
+#define USART_CFGR_TINVEN_BIT            30 /* TINVEN<30>: Transmitter Invert Enable.         */
+#define USART_CFGR_TSYNCEN_BIT           31 /* TSYNCEN<31>: Transmitter Synchronous Mode Enable. */
+#define USART_CFGR_RDATLN_5_BITS         (0 << USART_CFGR_RDATLN_BIT)
+#define USART_CFGR_RDATLN_6_BITS         (1 << USART_CFGR_RDATLN_BIT)
+#define USART_CFGR_RDATLN_7_BITS         (2 << USART_CFGR_RDATLN_BIT)
+#define USART_CFGR_RDATLN_8_BITS         (3 << USART_CFGR_RDATLN_BIT)
+#define USART_CFGR_RDATLN_9_BITS_STORED  (4 << USART_CFGR_RDATLN_BIT)
+#define USART_CFGR_RDATLN_9_BITS_MATCH   (5 << USART_CFGR_RDATLN_BIT)
+#define USART_CFGR_TDATLN_5_BITS         (0 << USART_CFGR_TDATLN_BIT)
+#define USART_CFGR_TDATLN_6_BITS         (1 << USART_CFGR_TDATLN_BIT)
+#define USART_CFGR_TDATLN_7_BITS         (2 << USART_CFGR_TDATLN_BIT)
+#define USART_CFGR_TDATLN_8_BITS         (3 << USART_CFGR_TDATLN_BIT)
+#define USART_CFGR_TDATLN_9_BITS_FIFO    (4 << USART_CFGR_TDATLN_BIT)
+#define USART_CFGR_TDATLN_9_BITS_TBIT    (5 << USART_CFGR_TDATLN_BIT)
+#define USART_CFGR_RSTRTEN_DS            (0 << USART_CFGR_RSTRTEN_BIT)
+#define USART_CFGR_RSTRTEN_EN            (1 << USART_CFGR_RSTRTEN_BIT)
+#define USART_CFGR_RPAREN_DS             (0 << USART_CFGR_RPAREN_BIT)
+#define USART_CFGR_RPAREN_EN             (1 << USART_CFGR_RPAREN_BIT)
+#define USART_CFGR_RSTPEN_DS             (0 << USART_CFGR_RSTPEN_BIT)
+#define USART_CFGR_RSTPEN_EN             (1 << USART_CFGR_RSTPEN_BIT)
+#define USART_CFGR_RSTPMD_0P5_STOP       (0 << USART_CFGR_RSTPMD_BIT)
+#define USART_CFGR_RSTPMD_1_STOP         (1 << USART_CFGR_RSTPMD_BIT)
+#define USART_CFGR_RSTPMD_1P5_STOP       (2 << USART_CFGR_RSTPMD_BIT)
+#define USART_CFGR_RSTPMD_2_STOP         (3 << USART_CFGR_RSTPMD_BIT)
+#define USART_CFGR_RPARMD_ODD            (0 << USART_CFGR_RPARMD_BIT)
+#define USART_CFGR_RPARMD_EVEN           (1 << USART_CFGR_RPARMD_BIT)
+#define USART_CFGR_RPARMD_MARK           (2 << USART_CFGR_RPARMD_BIT)
+#define USART_CFGR_RPARMD_SPACE          (3 << USART_CFGR_RPARMD_BIT)
+#define USART_CFGR_RSCEN_DS              (0 << USART_CFGR_RSCEN_BIT)
+#define USART_CFGR_RSCEN_EN              (1 << USART_CFGR_RSCEN_BIT)
+#define USART_CFGR_RIRDAEN_DS            (0 << USART_CFGR_RIRDAEN_BIT)
+#define USART_CFGR_RIRDAEN_EN            (1 << USART_CFGR_RIRDAEN_BIT)
+#define USART_CFGR_RINVEN_DS             (0 << USART_CFGR_RINVEN_BIT)
+#define USART_CFGR_RINVEN_EN             (1 << USART_CFGR_RINVEN_BIT)
+#define USART_CFGR_RSYNCEN_DS            (0 << USART_CFGR_RSYNCEN_BIT)
+#define USART_CFGR_RSYNCEN_EN            (1 << USART_CFGR_RSYNCEN_BIT)
+#define USART_CFGR_TSTRTEN_DS            (0 << USART_CFGR_TSTRTEN_BIT)
+#define USART_CFGR_TSTRTEN_EN            (1 << USART_CFGR_TSTRTEN_BIT)
+#define USART_CFGR_TPAREN_DS             (0 << USART_CFGR_TPAREN_BIT)
+#define USART_CFGR_TPAREN_EN             (1 << USART_CFGR_TPAREN_BIT)
+#define USART_CFGR_TSTPEN_DS             (0 << USART_CFGR_TSTPEN_BIT)
+#define USART_CFGR_TSTPEN_EN             (1 << USART_CFGR_TSTPEN_BIT)
+#define USART_CFGR_TSTPMD_0P5_STOP       (0 << USART_CFGR_TSTPMD_BIT)
+#define USART_CFGR_TSTPMD_1_STOP         (1 << USART_CFGR_TSTPMD_BIT)
+#define USART_CFGR_TSTPMD_1P5_STOP       (2 << USART_CFGR_TSTPMD_BIT)
+#define USART_CFGR_TSTPMD_2_STOP         (3 << USART_CFGR_TSTPMD_BIT)
+#define USART_CFGR_TPARMD_ODD            (0 << USART_CFGR_TPARMD_BIT)
+#define USART_CFGR_TPARMD_EVEN           (1 << USART_CFGR_TPARMD_BIT)
+#define USART_CFGR_TPARMD_MARK           (2 << USART_CFGR_TPARMD_BIT)
+#define USART_CFGR_TPARMD_SPACE          (3 << USART_CFGR_TPARMD_BIT)
+#define USART_CFGR_TSCEN_DS              (0 << USART_CFGR_TSCEN_BIT)
+#define USART_CFGR_TSCEN_EN              (1 << USART_CFGR_TSCEN_BIT)
+#define USART_CFGR_TIRDAEN_DS            (0 << USART_CFGR_TIRDAEN_BIT)
+#define USART_CFGR_TIRDAEN_EN            (1 << USART_CFGR_TIRDAEN_BIT)
+#define USART_CFGR_TINVEN_DS             (0 << USART_CFGR_TINVEN_BIT)
+#define USART_CFGR_TINVEN_EN             (1 << USART_CFGR_TINVEN_BIT)
+#define USART_CFGR_TSYNCEN_DS            (0U << USART_CFGR_TSYNCEN_BIT)
+#define USART_CFGR_TSYNCEN_EN            (1U << USART_CFGR_TSYNCEN_BIT)
+
+#define USART_MODE_DBGMD_MASK            0x00010000
+#define USART_MODE_LBMD_MASK             0x000C0000
+#define USART_MODE_STPSTCLK_MASK         0x00200000
+#define USART_MODE_STRTSTCLK_MASK        0x00400000
+#define USART_MODE_ISTCLK_MASK           0x00800000
+#define USART_MODE_DUPLEXMD_MASK         0x08000000
+#define USART_MODE_CLKIDLE_MASK          0x10000000
+#define USART_MODE_CLKESEL_MASK          0x20000000
+#define USART_MODE_ITSEN_MASK            0x40000000
+#define USART_MODE_OPMD_MASK             0x80000000
+#define USART_MODE_DBGMD_BIT             16 /* DBGMD<16>: USART Debug Mode.                   */
+#define USART_MODE_LBMD_BIT              18 /* LBMD<19:18>: Loop Back Mode.                   */
+#define USART_MODE_STPSTCLK_BIT          21 /* STPSTCLK<21>: Stop State Clock Control.        */
+#define USART_MODE_STRTSTCLK_BIT         22 /* STRTSTCLK<22>: Start State Clock Control.      */
+#define USART_MODE_ISTCLK_BIT            23 /* ISTCLK<23>: Idle Clock Control.                */
+#define USART_MODE_DUPLEXMD_BIT          27 /* DUPLEXMD<27>: Duplex Mode.                     */
+#define USART_MODE_CLKIDLE_BIT           28 /* CLKIDLE<28>: Clock Idle State.                 */
+#define USART_MODE_CLKESEL_BIT           29 /* CLKESEL<29>: Clock Edge Select.                */
+#define USART_MODE_ITSEN_BIT             30 /* ITSEN<30>: Idle TX/UCLK Tristate Enable.       */
+#define USART_MODE_OPMD_BIT              31 /* OPMD<31>: Operational Mode.                    */
+#define USART_MODE_DBGMD_RUN             (0 << USART_MODE_DBGMD_BIT)
+#define USART_MODE_DBGMD_HALT            (1 << USART_MODE_DBGMD_BIT)
+#define USART_MODE_LBMD_DS               (0 << USART_MODE_LBMD_BIT)
+#define USART_MODE_LBMD_RXONLY           (1 << USART_MODE_LBMD_BIT)
+#define USART_MODE_LBMD_TXONLY           (2 << USART_MODE_LBMD_BIT)
+#define USART_MODE_LBMD_BOTH             (3 << USART_MODE_LBMD_BIT)
+#define USART_MODE_STPSTCLK_DS           (0 << USART_MODE_STPSTCLK_BIT)
+#define USART_MODE_STPSTCLK_EN           (1 << USART_MODE_STPSTCLK_BIT)
+#define USART_MODE_STRTSTCLK_DS          (0 << USART_MODE_STRTSTCLK_BIT)
+#define USART_MODE_STRTSTCLK_EN          (1 << USART_MODE_STRTSTCLK_BIT)
+#define USART_MODE_ISTCLK_DS             (0 << USART_MODE_ISTCLK_BIT)
+#define USART_MODE_ISTCLK_EN             (1 << USART_MODE_ISTCLK_BIT)
+#define USART_MODE_DUPLEXMD_FULL_DUPLEX  (0 << USART_MODE_DUPLEXMD_BIT)
+#define USART_MODE_DUPLEXMD_HALF_DUPLEX  (1 << USART_MODE_DUPLEXMD_BIT)
+#define USART_MODE_CLKIDLE_IDLE_LOW      (0 << USART_MODE_CLKIDLE_BIT)
+#define USART_MODE_CLKIDLE_IDLE_HIGH     (1 << USART_MODE_CLKIDLE_BIT)
+#define USART_MODE_CLKESEL_FALLING       (0 << USART_MODE_CLKESEL_BIT)
+#define USART_MODE_CLKESEL_RISING        (1 << USART_MODE_CLKESEL_BIT)
+#define USART_MODE_ITSEN_DS              (0 << USART_MODE_ITSEN_BIT)
+#define USART_MODE_ITSEN_EN              (1 << USART_MODE_ITSEN_BIT)
+#define USART_MODE_OPMD_SLAVE            (0U << USART_MODE_OPMD_BIT)
+#define USART_MODE_OPMD_MASTER           (1U << USART_MODE_OPMD_BIT)
+
+#define USART_FLOWCN_RTS_MASK            0x00000001
+#define USART_FLOWCN_RX_MASK             0x00000002
+#define USART_FLOWCN_RTSINVEN_MASK       0x00000020
+#define USART_FLOWCN_RTSTH_MASK          0x00000040
+#define USART_FLOWCN_RTSEN_MASK          0x00000080
+#define USART_FLOWCN_CTS_MASK            0x00010000
+#define USART_FLOWCN_TX_MASK             0x00020000
+#define USART_FLOWCN_UCLK_MASK           0x00040000
+#define USART_FLOWCN_CTSINVEN_MASK       0x00200000
+#define USART_FLOWCN_CTSEN_MASK          0x00800000
+#define USART_FLOWCN_TIRDAPW_MASK        0x30000000
+#define USART_FLOWCN_RTS_BIT             0  /* RTS<0>: RTS State.                             */
+#define USART_FLOWCN_RX_BIT              1  /* RX<1>: RX Pin Status.                          */
+#define USART_FLOWCN_RTSINVEN_BIT        5  /* RTSINVEN<5>: RTS Invert Enable.                */
+#define USART_FLOWCN_RTSTH_BIT           6  /* RTSTH<6>: RTS Threshold Control.               */
+#define USART_FLOWCN_RTSEN_BIT           7  /* RTSEN<7>: RTS Enable.                          */
+#define USART_FLOWCN_CTS_BIT             16 /* CTS<16>: CTS State.                            */
+#define USART_FLOWCN_TX_BIT              17 /* TX<17>: TX State.                              */
+#define USART_FLOWCN_UCLK_BIT            18 /* UCLK<18>: UCLK State.                          */
+#define USART_FLOWCN_CTSINVEN_BIT        21 /* CTSINVEN<21>: CTS Invert Enable.               */
+#define USART_FLOWCN_CTSEN_BIT           23 /* CTSEN<23>: CTS Enable.                         */
+#define USART_FLOWCN_TIRDAPW_BIT         28 /* TIRDAPW<29:28>: Transmit IrDA Pulse Width.     */
+#define USART_FLOWCN_RTS_LOW             (0 << USART_FLOWCN_RTS_BIT)
+#define USART_FLOWCN_RTS_HIGH            (1 << USART_FLOWCN_RTS_BIT)
+#define USART_FLOWCN_RX_LOW              (0 << USART_FLOWCN_RX_BIT)
+#define USART_FLOWCN_RX_HIGH             (1 << USART_FLOWCN_RX_BIT)
+#define USART_FLOWCN_RTSINVEN_DS         (0 << USART_FLOWCN_RTSINVEN_BIT)
+#define USART_FLOWCN_RTSINVEN_EN         (1 << USART_FLOWCN_RTSINVEN_BIT)
+#define USART_FLOWCN_RTSTH_FULL          (0 << USART_FLOWCN_RTSTH_BIT)
+#define USART_FLOWCN_RTSTH_ONE_BYTE_FREE (1 << USART_FLOWCN_RTSTH_BIT)
+#define USART_FLOWCN_RTSEN_DS            (0 << USART_FLOWCN_RTSEN_BIT)
+#define USART_FLOWCN_RTSEN_EN            (1 << USART_FLOWCN_RTSEN_BIT)
+#define USART_FLOWCN_CTS_LOW             (0 << USART_FLOWCN_CTS_BIT)
+#define USART_FLOWCN_CTS_HIGH            (1 << USART_FLOWCN_CTS_BIT)
+#define USART_FLOWCN_TX_LOW              (0 << USART_FLOWCN_TX_BIT)
+#define USART_FLOWCN_TX_HIGH             (1 << USART_FLOWCN_TX_BIT)
+#define USART_FLOWCN_UCLK_LOW            (0 << USART_FLOWCN_UCLK_BIT)
+#define USART_FLOWCN_UCLK_HIGH           (1 << USART_FLOWCN_UCLK_BIT)
+#define USART_FLOWCN_CTSINVEN_DS         (0 << USART_FLOWCN_CTSINVEN_BIT)
+#define USART_FLOWCN_CTSINVEN_EN         (1 << USART_FLOWCN_CTSINVEN_BIT)
+#define USART_FLOWCN_CTSEN_DS            (0 << USART_FLOWCN_CTSEN_BIT)
+#define USART_FLOWCN_CTSEN_EN            (1 << USART_FLOWCN_CTSEN_BIT)
+#define USART_FLOWCN_TIRDAPW_1_16TH      (0 << USART_FLOWCN_TIRDAPW_BIT)
+#define USART_FLOWCN_TIRDAPW_1_8TH       (1 << USART_FLOWCN_TIRDAPW_BIT)
+#define USART_FLOWCN_TIRDAPW_3_16TH      (2 << USART_FLOWCN_TIRDAPW_BIT)
+#define USART_FLOWCN_TIRDAPW_1_4TH       (3 << USART_FLOWCN_TIRDAPW_BIT)
+
+#define USART_CR_RFRMERI_MASK            0x00000001
+#define USART_CR_RPARERI_MASK            0x00000002
+#define USART_CR_ROREI_MASK              0x00000004
+#define USART_CR_RDREQI_MASK             0x00000008
+#define USART_CR_RERIEN_MASK             0x00000020
+#define USART_CR_RDREQIEN_MASK           0x00000040
+#define USART_CR_MATMD_MASK              0x00000300
+#define USART_CR_RABDEN_MASK             0x00000400
+#define USART_CR_RBUSYF_MASK             0x00000800
+#define USART_CR_RBIT_MASK               0x00001000
+#define USART_CR_ROSEN_MASK              0x00002000
+#define USART_CR_RINH_MASK               0x00004000
+#define USART_CR_REN_MASK                0x00008000
+#define USART_CR_TSCERI_MASK             0x00010000
+#define USART_CR_TUREI_MASK              0x00020000
+#define USART_CR_TDREQI_MASK             0x00040000
+#define USART_CR_TCPTI_MASK              0x00080000
+#define USART_CR_TCPTTH_MASK             0x00100000
+#define USART_CR_TERIEN_MASK             0x00200000
+#define USART_CR_TDREQIEN_MASK           0x00400000
+#define USART_CR_TCPTIEN_MASK            0x00800000
+#define USART_CR_TBUSYF_MASK             0x08000000
+#define USART_CR_TBIT_MASK               0x10000000
+#define USART_CR_TINH_MASK               0x40000000
+#define USART_CR_TEN_MASK                0x80000000
+#define USART_CR_RFRMERI_BIT             0  /* RFRMERI<0>: Receive Frame Error Interrupt Flag. */
+#define USART_CR_RPARERI_BIT             1  /* RPARERI<1>: Receive Parity Error Interrupt Flag. */
+#define USART_CR_ROREI_BIT               2  /* ROREI<2>: Receive Overrun Error Interrupt Flag. */
+#define USART_CR_RDREQI_BIT              3  /* RDREQI<3>: Receive Data Request Interrupt Flag. */
+#define USART_CR_RERIEN_BIT              5  /* RERIEN<5>: Receive Error Interrupt Enable.     */
+#define USART_CR_RDREQIEN_BIT            6  /* RDREQIEN<6>: Receive Data Request Interrupt Enable. */
+#define USART_CR_MATMD_BIT               8  /* MATMD<9:8>: Match Mode.                        */
+#define USART_CR_RABDEN_BIT              10 /* RABDEN<10>: Receiver Auto-Baud Enable.         */
+#define USART_CR_RBUSYF_BIT              11 /* RBUSYF<11>: Receiver Busy Flag.                */
+#define USART_CR_RBIT_BIT                12 /* RBIT<12>: Last Receive Bit.                    */
+#define USART_CR_ROSEN_BIT               13 /* ROSEN<13>: Receiver One-Shot Enable.           */
+#define USART_CR_RINH_BIT                14 /* RINH<14>: Receiver Inhibit.                    */
+#define USART_CR_REN_BIT                 15 /* REN<15>: Receiver Enable.                      */
+#define USART_CR_TSCERI_BIT              16 /* TSCERI<16>: Smartcard Parity Error Interrupt Flag. */
+#define USART_CR_TUREI_BIT               17 /* TUREI<17>: Transmit Underrun Error Interrupt Flag. */
+#define USART_CR_TDREQI_BIT              18 /* TDREQI<18>: Transmit Data Request Interrupt Flag. */
+#define USART_CR_TCPTI_BIT               19 /* TCPTI<19>: Transmit Complete Interrupt Flag.   */
+#define USART_CR_TCPTTH_BIT              20 /* TCPTTH<20>: Transmit Complete Threshold.       */
+#define USART_CR_TERIEN_BIT              21 /* TERIEN<21>: Transmit Error Interrupt Enable.   */
+#define USART_CR_TDREQIEN_BIT            22 /* TDREQIEN<22>: Transmit Data Request Interrupt Enable. */
+#define USART_CR_TCPTIEN_BIT             23 /* TCPTIEN<23>: Transmit Complete Interrupt Enable. */
+#define USART_CR_TBUSYF_BIT              27 /* TBUSYF<27>: Transmitter Busy Flag.             */
+#define USART_CR_TBIT_BIT                28 /* TBIT<28>: Last Transmit Bit.                   */
+#define USART_CR_TINH_BIT                30 /* TINH<30>: Transmit Inhibit.                    */
+#define USART_CR_TEN_BIT                 31 /* TEN<31>: Transmitter Enable.                   */
+#define USART_CR_RFRMERI_NOT_SET         (0 << USART_CR_RFRMERI_BIT)
+#define USART_CR_RFRMERI_SET             (1 << USART_CR_RFRMERI_BIT)
+#define USART_CR_RPARERI_NOT_SET         (0 << USART_CR_RPARERI_BIT)
+#define USART_CR_RPARERI_SET             (1 << USART_CR_RPARERI_BIT)
+#define USART_CR_ROREI_NOT_SET           (0 << USART_CR_ROREI_BIT)
+#define USART_CR_ROREI_SET               (1 << USART_CR_ROREI_BIT)
+#define USART_CR_RDREQI_NOT_SET          (0 << USART_CR_RDREQI_BIT)
+#define USART_CR_RDREQI_SET              (1 << USART_CR_RDREQI_BIT)
+#define USART_CR_RERIEN_DS               (0 << USART_CR_RERIEN_BIT)
+#define USART_CR_RERIEN_EN               (1 << USART_CR_RERIEN_BIT)
+#define USART_CR_RDREQIEN_DS             (0 << USART_CR_RDREQIEN_BIT)
+#define USART_CR_RDREQIEN_EN             (1 << USART_CR_RDREQIEN_BIT)
+#define USART_CR_MATMD_OFF               (0 << USART_CR_MATMD_BIT)
+#define USART_CR_MATMD_MCE               (1 << USART_CR_MATMD_BIT)
+#define USART_CR_MATMD_FRAME             (2 << USART_CR_MATMD_BIT)
+#define USART_CR_MATMD_STORE             (3 << USART_CR_MATMD_BIT)
+#define USART_CR_RABDEN_DS               (0 << USART_CR_RABDEN_BIT)
+#define USART_CR_RABDEN_EN               (1 << USART_CR_RABDEN_BIT)
+#define USART_CR_RBUSYF_NOT_SET          (0 << USART_CR_RBUSYF_BIT)
+#define USART_CR_RBUSYF_SET              (1 << USART_CR_RBUSYF_BIT)
+#define USART_CR_RBIT_NOT_SET            (0 << USART_CR_RBIT_BIT)
+#define USART_CR_RBIT_SET                (1 << USART_CR_RBIT_BIT)
+#define USART_CR_ROSEN_DS                (0 << USART_CR_ROSEN_BIT)
+#define USART_CR_ROSEN_EN                (1 << USART_CR_ROSEN_BIT)
+#define USART_CR_RINH_INACTV             (0 << USART_CR_RINH_BIT)
+#define USART_CR_RINH_ACTV               (1 << USART_CR_RINH_BIT)
+#define USART_CR_REN_DS                  (0 << USART_CR_REN_BIT)
+#define USART_CR_REN_EN                  (1 << USART_CR_REN_BIT)
+#define USART_CR_TSCERI_NOT_SET          (0 << USART_CR_TSCERI_BIT)
+#define USART_CR_TSCERI_SET              (1 << USART_CR_TSCERI_BIT)
+#define USART_CR_TUREI_NOT_SET           (0 << USART_CR_TUREI_BIT)
+#define USART_CR_TUREI_SET               (1 << USART_CR_TUREI_BIT)
+#define USART_CR_TDREQI_NOT_SET          (0 << USART_CR_TDREQI_BIT)
+#define USART_CR_TDREQI_SET              (1 << USART_CR_TDREQI_BIT)
+#define USART_CR_TCPTI_NOT_SET           (0 << USART_CR_TCPTI_BIT)
+#define USART_CR_TCPTI_SET               (1 << USART_CR_TCPTI_BIT)
+#define USART_CR_TCPTTH_SET_ON_TX        (0 << USART_CR_TCPTTH_BIT)
+#define USART_CR_TCPTTH_SET_ON_EMPTY     (1 << USART_CR_TCPTTH_BIT)
+#define USART_CR_TERIEN_DS               (0 << USART_CR_TERIEN_BIT)
+#define USART_CR_TERIEN_EN               (1 << USART_CR_TERIEN_BIT)
+#define USART_CR_TDREQIEN_DS             (0 << USART_CR_TDREQIEN_BIT)
+#define USART_CR_TDREQIEN_EN             (1 << USART_CR_TDREQIEN_BIT)
+#define USART_CR_TCPTIEN_DS              (0 << USART_CR_TCPTIEN_BIT)
+#define USART_CR_TCPTIEN_EN              (1 << USART_CR_TCPTIEN_BIT)
+#define USART_CR_TBUSYF_NOT_SET          (0 << USART_CR_TBUSYF_BIT)
+#define USART_CR_TBUSYF_SET              (1 << USART_CR_TBUSYF_BIT)
+#define USART_CR_TBIT_NOT_SET            (0 << USART_CR_TBIT_BIT)
+#define USART_CR_TBIT_SET                (1 << USART_CR_TBIT_BIT)
+#define USART_CR_TINH_INACTV             (0 << USART_CR_TINH_BIT)
+#define USART_CR_TINH_ACTV               (1 << USART_CR_TINH_BIT)
+#define USART_CR_TEN_DS                  (0U << USART_CR_TEN_BIT)
+#define USART_CR_TEN_EN                  (1U << USART_CR_TEN_BIT)
+
+#define USART_IPDELAY_MASK               0x00FF0000
+#define USART_IPDELAY_BIT                16 /* IPDELAY<23:16>: Inter-Packet Delay.            */
+
+#define USART_BAUDRATE_RBAUD_MASK        0x0000FFFF
+#define USART_BAUDRATE_TBAUD_MASK        0xFFFF0000
+#define USART_BAUDRATE_RBAUD_BIT         0  /* RBAUD<15:0>: Receiver Baud Rate Control.       */
+#define USART_BAUDRATE_TBAUD_BIT         16 /* TBAUD<31:16>: Transmitter Baud Rate Control.   */
+
+#define USART_FIFOCN_RCNT_MASK           0x00000007
+#define USART_FIFOCN_RFTH_MASK           0x00000030
+#define USART_FIFOCN_RDMAEN_MASK         0x00000080
+#define USART_FIFOCN_RFIFOFL_MASK        0x00000100
+#define USART_FIFOCN_RFERI_MASK          0x00000200
+#define USART_FIFOCN_RSRFULLF_MASK       0x00000400
+#define USART_FIFOCN_TCNT_MASK           0x00070000
+#define USART_FIFOCN_TFTH_MASK           0x00300000
+#define USART_FIFOCN_TDMAEN_MASK         0x00800000
+#define USART_FIFOCN_TFIFOFL_MASK        0x01000000
+#define USART_FIFOCN_TFERI_MASK          0x02000000
+#define USART_FIFOCN_TSRFULLF_MASK       0x04000000
+#define USART_FIFOCN_RCNT_BIT            0  /* RCNT<2:0>: Receive FIFO Count.                 */
+#define USART_FIFOCN_RFTH_BIT            4  /* RFTH<5:4>: Receive FIFO Threshold.             */
+#define USART_FIFOCN_RDMAEN_BIT          7  /* RDMAEN<7>: Receiver DMA Enable.                */
+#define USART_FIFOCN_RFIFOFL_BIT         8  /* RFIFOFL<8>: Receive FIFO Flush.                */
+#define USART_FIFOCN_RFERI_BIT           9  /* RFERI<9>: Receive FIFO Error Interrupt Flag.   */
+#define USART_FIFOCN_RSRFULLF_BIT        10 /* RSRFULLF<10>: Receive Shift Register Full Flag. */
+#define USART_FIFOCN_TCNT_BIT            16 /* TCNT<18:16>: Transmit FIFO Count.              */
+#define USART_FIFOCN_TFTH_BIT            20 /* TFTH<21:20>: Transmit FIFO Threshold.          */
+#define USART_FIFOCN_TDMAEN_BIT          23 /* TDMAEN<23>: Transmitter DMA Enable.            */
+#define USART_FIFOCN_TFIFOFL_BIT         24 /* TFIFOFL<24>: Transmit FIFO Flush.              */
+#define USART_FIFOCN_TFERI_BIT           25 /* TFERI<25>: Transmit FIFO Error Interrupt Flag. */
+#define USART_FIFOCN_TSRFULLF_BIT        26 /* TSRFULLF<26>: Transmit Shift Register Full Flag. */
+#define USART_FIFOCN_RFTH_ONE            (0 << USART_FIFOCN_RFTH_BIT)
+#define USART_FIFOCN_RFTH_TWO            (1 << USART_FIFOCN_RFTH_BIT)
+#define USART_FIFOCN_RFTH_FOUR           (2 << USART_FIFOCN_RFTH_BIT)
+#define USART_FIFOCN_RDMAEN_DS           (0 << USART_FIFOCN_RDMAEN_BIT)
+#define USART_FIFOCN_RDMAEN_EN           (1 << USART_FIFOCN_RDMAEN_BIT)
+#define USART_FIFOCN_RFIFOFL_SET         (1 << USART_FIFOCN_RFIFOFL_BIT)
+#define USART_FIFOCN_RFERI_NOT_SET       (0 << USART_FIFOCN_RFERI_BIT)
+#define USART_FIFOCN_RFERI_SET           (1 << USART_FIFOCN_RFERI_BIT)
+#define USART_FIFOCN_RSRFULLF_NOT_SET    (0 << USART_FIFOCN_RSRFULLF_BIT)
+#define USART_FIFOCN_RSRFULLF_SET        (1 << USART_FIFOCN_RSRFULLF_BIT)
+#define USART_FIFOCN_TFTH_ONE            (0 << USART_FIFOCN_TFTH_BIT)
+#define USART_FIFOCN_TFTH_TWO            (1 << USART_FIFOCN_TFTH_BIT)
+#define USART_FIFOCN_TFTH_FOUR           (2 << USART_FIFOCN_TFTH_BIT)
+#define USART_FIFOCN_TDMAEN_DS           (0 << USART_FIFOCN_TDMAEN_BIT)
+#define USART_FIFOCN_TDMAEN_EN           (1 << USART_FIFOCN_TDMAEN_BIT)
+#define USART_FIFOCN_TFIFOFL_SET         (1 << USART_FIFOCN_TFIFOFL_BIT)
+#define USART_FIFOCN_TFERI_NOT_SET       (0 << USART_FIFOCN_TFERI_BIT)
+#define USART_FIFOCN_TFERI_SET           (1 << USART_FIFOCN_TFERI_BIT)
+#define USART_FIFOCN_TSRFULLF_NOT_SET    (0 << USART_FIFOCN_TSRFULLF_BIT)
+#define USART_FIFOCN_TSRFULLF_SET        (1 << USART_FIFOCN_TSRFULLF_BIT)
+
+#define USART_DATA_MASK                  0xFFFFFFFF
+
+#define USART_DATA_BIT                   0  /* DATA<31:0>: FIFO Data.                         */
+
 
 #define REG_CAST_BYTE(n) (((volatile uint8 *)&(n))[0])
 

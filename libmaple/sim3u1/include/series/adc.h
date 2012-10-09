@@ -40,6 +40,7 @@
  */
 
 extern const struct adc_dev *ADC1;
+extern const struct adc_dev *ADC2;
 
 /*
  * Common register map
@@ -106,6 +107,7 @@ typedef struct adc_dev {
 
 /** ADC1 register map base pointer. */
 #define ADC1_BASE       ((struct adc_reg_map*)0x4001A000)
+#define ADC2_BASE       ((struct adc_reg_map*)0x4001B000)
 
 
 #define SARADC_CFGR_SPSEL_MASK          0x0000000F
