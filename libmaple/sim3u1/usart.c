@@ -99,13 +99,13 @@ void usart_set_baud_rate(usart_dev *dev, uint32 clock_speed, uint32 baud) {
 
     /* Figure out the clock speed, if the user doesn't give one. */
     if (clock_speed == 0) {
-        clock_speed = clk_get_bus_speed(dev->clk_id);
+        clock_speed = clk_get_bus_freq(dev->clk_id);
     }
     ASSERT(clock_speed);
     // Full duplex mode
     REG_WRITE_SET_CLR(dev->regs->MODE, 0, 0x08000000);
     /* Convert desired baud rate to baud rate register setting. */
-    tmp = clock_speed / (2 * baud + 1);
+    tmp = clock_speed / (2 * baud) - 1;
     dev->regs->BAUDRATE = tmp | (tmp << 16);
 }
 

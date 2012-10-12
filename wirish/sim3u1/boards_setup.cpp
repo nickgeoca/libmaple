@@ -64,12 +64,23 @@ namespace wirish {
             // TODO
         }
 
-        __weak void board_setup_clock_prescalers(void) {
+        __weak void board_setup_clock_prescalers(uint32 sys_freq) {
+            uint32 apb_div = CLK_APB_HCLK_DIV_1;
+            uint32 ahb_div = CLK_AHB_SYSCLK_DIV_1;
 
+            // Set limit on apb bus to 50 MHz
+            apb_div = (sys_freq / (1 << ahb_div)) > 50000000 ? CLK_APB_HCLK_DIV_2 : CLK_APB_HCLK_DIV_1;
+            clk_set_prescalers(CLK_PRESCALE_APB, apb_div);
+            clk_set_prescalers(CLK_PRESCALE_AHB, ahb_div);
         }
 
         __weak void board_setup_gpio(void) {
             gpio_init_all();
+
+        }
+
+        __weak void board_setup_xbar(void) {
+            gpio_init_xbar();
 
         }
 
@@ -79,10 +90,52 @@ namespace wirish {
 
         __weak void series_init(void) {
             // Turn off watchdog
-            *((volatile uint32*)0x40030030) = 165;
-            *((volatile uint32*)0x40030030) = 221;
+            *((volatile uint32*)0x4002D020) = 0;
+            clk_enable_dev(CLK_MISC1);
+            *((volatile uint32*)0x40030030) = 0xA5;
+            *((volatile uint32*)0x40030030) = 0xDD;
         }
+        __weak void board_setup_rtc(void) {
+            __io uint32 *rtc_base = (__io uint32 *)0x40029000;
 
+            // Set RTC pins as analog
+            gpio_set_modef(GPIOA, 9, GPIO_ANALOG, GPIO_DRIVE_WEAK);
+            gpio_set_modef(GPIOA, 10, GPIO_ANALOG, GPIO_DRIVE_WEAK);
 
+            // Enable clock
+            clk_enable_dev(CLK_MISC2);
+
+            // Clear interrupts
+            nvic_clr_pending_irq(NVIC_RTC0ALRM);
+            nvic_irq_enable(NVIC_RTC0ALRM);
+
+            // enable high speed mode
+            REG_WRITE_SET_CLR(*(__io uint32 *)((uint32)rtc_base + 0x10), 1, 1 << 7);
+
+            // disable auto gain control
+            REG_WRITE_SET_CLR(*rtc_base, 0, 0x00040000);
+            // enable bias doubler
+            REG_WRITE_SET_CLR(*rtc_base, 1, 1 << 16);
+            // enable auto load cap stepping
+            REG_WRITE_SET_CLR(*rtc_base, 1, 1 << 3);
+            // set clk source as rtc
+            REG_WRITE_SET_CLR(*rtc_base, 0, 1 << 30);
+            // set as crystal oscillator
+            REG_WRITE_SET_CLR(*rtc_base, 1, 0x00020000);
+            // enable module
+            REG_WRITE_SET_CLR(*rtc_base, 1, 1 << 31);
+
+            // Wait at least 20 ms
+            delay(20);
+
+            // Poll clock until stable
+            while (!((*(__io uint32 *)((uint32)rtc_base + 0x10)) & 0x20));
+
+            // Poll load capacitance ready
+            while (!((*(__io uint32 *)((uint32)rtc_base + 0x10)) & 0x100));
+
+            // Wait at least 2 ms
+            delay(2);
+        }
     }
 }

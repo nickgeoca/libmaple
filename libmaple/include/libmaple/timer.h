@@ -91,7 +91,25 @@ typedef struct timer_reg_map {
     };
 } timer_reg_map;
 
-
+typedef struct timer_basic_reg_map
+{
+   __io uint32 CONFIG; // Base Address + 0x0
+   __io uint32 CONFIG_SET;
+   __io uint32 CONFIG_CLR;
+   uint32      reserved0;
+   __io uint32 CLKDIV; // Base Address + 0x10
+   uint32      reserved1;
+   uint32      reserved2;
+   uint32      reserved3;
+   __io uint32 COUNT; // Base Address + 0x20
+   uint32      reserved4;
+   uint32      reserved5;
+   uint32      reserved6;
+   __io uint32 CAPTURE; // Base Address + 0x30
+   uint32      reserved7;
+   uint32      reserved8;
+   uint32      reserved9;
+} timer_basic_reg_map;
 
 
 typedef struct timer_chnl_reg_map {
@@ -134,6 +152,7 @@ typedef struct timer_chnl_reg_map {
 typedef enum timer_type {
     TIMER_ADVANCED,             /**< Advanced type */
     TIMER_GENERAL,              /**< General purpose type */
+    TIMER_BASIC,                /**< Basic timer */
 } timer_type;
 
 /** Timer device type */
@@ -141,10 +160,16 @@ typedef struct timer_dev {
     timer_reg_map *regs;         /**< Register map */
     clk_dev_id clk_id;          /**< RCC clock information */
     timer_type type;            /**< Timer's type */
-    timer_chnl_reg_map* chnl_base;
+    timer_chnl_reg_map **chnl_regs;
+    voidFuncPtr handlers[];
 } timer_dev;
 
 extern timer_dev *TIMER1;
+extern timer_dev *TIMER2;
+extern timer_dev *TIMER3;
+extern timer_dev *TIMER4;
+extern timer_dev *TIMER5;
+
 /*
  * Register bit definitions
  */
@@ -322,6 +347,7 @@ extern timer_dev *TIMER1;
 #define EPCA_STATUS_C5IOVFI_NOT_SET        (0 << EPCA_STATUS_C5IOVFI_BIT)
 #define EPCA_STATUS_C5IOVFI_SET            (1 << EPCA_STATUS_C5IOVFI_BIT)
 
+
 #define EPCA_COUNTER_MASK                  0x0000FFFF
 #define EPCA_COUNTER_BIT                   0  /* COUNTER<15:0>: Counter/Timer.                  */
 
@@ -419,6 +445,11 @@ extern timer_dev *TIMER1;
 
 #define EPCACH_CCAPVUPD_MASK               0x0003FFFF
 #define EPCACH_CCAPVUPD_BIT                0
+
+#define EPCA_STATUS_CXCCI_MASK             (EPCA_STATUS_C0CCI_MASK | EPCA_STATUS_C1CCI_MASK | EPCA_STATUS_C2CCI_MASK | \
+                                            EPCA_STATUS_C3CCI_MASK | EPCA_STATUS_C4CCI_MASK | EPCA_STATUS_C5CCI_MASK)
+#define EPCA_STATUS_CXIOVFI_MASK           (EPCA_STATUS_C0IOVFI_MASK | EPCA_STATUS_C1IOVFI_MASK | EPCA_STATUS_C2IOVFI_MASK | \
+                                            EPCA_STATUS_C3IOVFI_MASK | EPCA_STATUS_C4IOVFI_MASK | EPCA_STATUS_C5IOVFI_MASK)
 /*
  * Convenience routines
  */
@@ -462,6 +493,8 @@ typedef enum timer_channel {
     TIMER_CH6 = 6, /**< Channel 4 */
 } timer_channel;
 
+
+
 /*
  * Note: Don't require timer_channel arguments! We want to be able to say
  *
@@ -488,15 +521,22 @@ int timer_has_cc_channel(timer_dev *dev, uint8 channel);
  * manual for the details.
  */
 typedef enum timer_interrupt_id {
-    TIMER_UPDATE_INTERRUPT,     /**< Update interrupt. */
-    TIMER_CC1_INTERRUPT,        /**< Capture/compare 1 interrupt. */
-    TIMER_CC2_INTERRUPT,        /**< Capture/compare 2 interrupt. */
-    TIMER_CC3_INTERRUPT,        /**< Capture/compare 3 interrupt. */
-    TIMER_CC4_INTERRUPT,        /**< Capture/compare 4 interrupt. */
-    TIMER_COM_INTERRUPT,        /**< COM interrupt. */
-    TIMER_TRG_INTERRUPT,        /**< Trigger interrupt. */
-    TIMER_BREAK_INTERRUPT,      /**< Break interrupt. */
+    TIMER_CC1_INTERRUPT,            /**< Capture/compare 1 interrupt. */
+    TIMER_CC2_INTERRUPT,            /**< Capture/compare 2 interrupt. */
+    TIMER_CC3_INTERRUPT,            /**< Capture/compare 3 interrupt. */
+    TIMER_CC4_INTERRUPT,            /**< Capture/compare 4 interrupt. */
+    TIMER_CC5_INTERRUPT,            /**< Capture/compare 5 interrupt. */
+    TIMER_CC6_INTERRUPT,            /**< Capture/compare 6 interrupt. */
+    TIMER_OVERFLOW_INTERRUPT,       /**< Occurs when the timer reached the limit register. */
+    TIMER_HALT_INTERRUPT,           // TODO [silabs] implement hdkill timer irq */
+    TIMER_OVFL1_INTERRUPT,          /**< Intermediate overflow 1 interrupt. Used in n-bit PWM mode. */
+    TIMER_OVFL2_INTERRUPT,          /**< Intermediate overflow 2 interrupt. Used in n-bit PWM mode. */
+    TIMER_OVFL3_INTERRUPT,          /**< Intermediate overflow 3 interrupt. Used in n-bit PWM mode. */
+    TIMER_OVFL4_INTERRUPT,          /**< Intermediate overflow 4 interrupt. Used in n-bit PWM mode. */
+    TIMER_OVFL5_INTERRUPT,          /**< Intermediate overflow 5 interrupt. Used in n-bit PWM mode. */
+    TIMER_OVFL6_INTERRUPT,          /**< Intermediate overflow 6 interrupt. Used in n-bit PWM mode. */
 } timer_interrupt_id;
+
 
 void timer_attach_interrupt(timer_dev *dev,
                             uint8 interrupt,
@@ -539,17 +579,20 @@ static inline void timer_resume(timer_dev *dev) {
     REG_WRITE_SET_CLR(dev->regs->STATUS, 1, EPCA_STATUS_RUN_START);
 }
 
-static inline uint32 timer_actl_freq(timer_dev *dev, uint32 tmr_spd) {
-    uint32 bus_spd = clk_get_bus_speed(dev->clk_id);
-    // 1) Fepca = bus_clk / (clk_div + 1)
-    // 2) clk_div = bus_clk / Fepca - 1
-    // ==> Fepca = bus_clk / ((bus_clk / Fepca - 1)  + 1)
-    return bus_spd / ((bus_spd / tmr_spd - 1) + 1);
+static inline uint32 timer_actl_freq(timer_dev *dev, uint32 tmr_clk) {
+    uint32 bus_clk = clk_get_bus_freq(dev->clk_id);
+    // PCA modules
+    // 1) tmr_clk = bus_clk / (clk_div + 1)
+    // 2) clk_div = bus_clk / tmr_clk - 1
+    // => tmr_clk = bus_clk / ((bus_clk / tmr_clk - 1)  + 1)
+    // Timer modules
+    // 1) tmr_clk = bus_clk / (256 - clk_div)
+    // 2) clk_div = 256 - bus_clk / tmr_clk
+    // => tmr_clk = bus_clk / (256 - (256 - bus_clk / tmr_clk))
+    return dev->type == TIMER_BASIC ? bus_clk / (256 - (256 - bus_clk / tmr_clk)) :
+            bus_clk / ((bus_clk / tmr_clk - 1) + 1);
 }
 
-static inline timer_chnl_reg_map *timer_get_chnl_base(timer_dev *dev, uint32 chnl) {
-    return (timer_chnl_reg_map *)((uint32)(dev->chnl_base) + 0x40 * chnl);
-}
 /**
  * @brief Returns the timer's counter value.
  *
@@ -637,7 +680,7 @@ static inline uint16 timer_get_compare(timer_dev *dev, uint8 channel) {
 static inline void timer_set_compare(timer_dev *dev,
                                      uint8 channel,
                                      uint16 value) {
-    timer_chnl_reg_map *reg = timer_get_chnl_base(dev, channel - 1);
+    timer_chnl_reg_map *reg = dev->chnl_regs[channel - 1];
     uint32 limit = timer_actl_freq(dev, 1000000) / 1000;
 
     reg->MODE &= ~EPCACH_MODE_COSEL_MASK;
@@ -703,7 +746,26 @@ static inline void timer_dma_disable_req(timer_dev *dev, uint8 channel) {
  * @see timer_channel
  */
 static inline void timer_enable_irq(timer_dev *dev, uint8 interrupt) {
-
+    switch (dev->type) {
+    case TIMER_ADVANCED:
+        if (interrupt <= TIMER_CC6_INTERRUPT) {
+            REG_WRITE_SET_CLR(dev->chnl_regs[interrupt]->CONTROL, 1, EPCACH_CR_CCIEN_MASK);
+        }
+        else if (interrupt == TIMER_OVERFLOW_INTERRUPT) {
+            REG_WRITE_SET_CLR(dev->regs->CONTROL, 1, EPCACH_CR_CCIEN_MASK);
+        }
+        else if (interrupt == TIMER_HALT_INTERRUPT) {
+            REG_WRITE_SET_CLR(dev->regs->CONTROL, 1, EPCACH_CR_CCIEN_MASK);
+        }
+        else if (interrupt >= TIMER_OVFL1_INTERRUPT) {
+            REG_WRITE_SET_CLR(dev->chnl_regs[interrupt - TIMER_OVFL1_INTERRUPT]->CONTROL, 1, EPCACH_CR_CIOVFIEN_MASK);
+        }
+        break;
+    case TIMER_GENERAL:
+        break;
+    case TIMER_BASIC:
+        break;
+    }
 }
 
 /**
@@ -715,7 +777,26 @@ static inline void timer_enable_irq(timer_dev *dev, uint8 interrupt) {
  * @see timer_channel
  */
 static inline void timer_disable_irq(timer_dev *dev, uint8 interrupt) {
-
+    switch (dev->type) {
+    case TIMER_ADVANCED:
+        if (interrupt <= TIMER_CC6_INTERRUPT) {
+            REG_WRITE_SET_CLR(dev->chnl_regs[interrupt]->CONTROL, 0, EPCACH_CR_CCIEN_MASK);
+        }
+        else if (interrupt == TIMER_OVERFLOW_INTERRUPT) {
+            REG_WRITE_SET_CLR(dev->regs->CONTROL, 0, EPCACH_CR_CCIEN_MASK);
+        }
+        else if (interrupt == TIMER_HALT_INTERRUPT) {
+            REG_WRITE_SET_CLR(dev->regs->CONTROL, 0, EPCACH_CR_CCIEN_MASK);
+        }
+        else if (interrupt >= TIMER_OVFL1_INTERRUPT) {
+            REG_WRITE_SET_CLR(dev->chnl_regs[interrupt - TIMER_OVFL1_INTERRUPT]->CONTROL, 0, EPCACH_CR_CIOVFIEN_MASK);
+        }
+        break;
+    case TIMER_GENERAL:
+        break;
+    case TIMER_BASIC:
+        break;
+    }
 }
 
 /**
@@ -895,73 +976,6 @@ static inline void timer_oc_set_mode(timer_dev *dev,
                                      uint8 flags) {
 
 }
-
-/*
- * Old, erroneous bit definitions from previous releases, kept for
- * backwards compatibility:
- */
-
-/** Deprecated. Use TIMER_CCMR1_CC4S_OUTPUT instead. */
-#define TIMER_CCMR1_CC4S_OUTPUT    TIMER_CCMR2_CC4S_OUTPUT
-/** Deprecated. Use TIMER_CCMR1_CC4S_INPUT_TI1 instead. */
-#define TIMER_CCMR1_CC4S_INPUT_TI1 TIMER_CCMR2_CC4S_INPUT_TI1
-/** Deprecated. Use TIMER_CCMR1_CC4S_INPUT_TI2 instead. */
-#define TIMER_CCMR1_CC4S_INPUT_TI2 TIMER_CCMR2_CC4S_INPUT_TI2
-/** Deprecated. Use TIMER_CCMR1_CC4S_INPUT_TRC instead. */
-#define TIMER_CCMR1_CC4S_INPUT_TRC TIMER_CCMR2_CC4S_INPUT_TRC
-/** Deprecated. Use TIMER_CCMR2_IC4F instead. */
-#define TIMER_CCMR2_IC2F           TIMER_CCMR2_IC4F
-/** Deprecated. Use TIMER_CCMR2_IC4PSC instead. */
-#define TIMER_CCMR2_IC2PSC         TIMER_CCMR2_IC4PSC
-/** Deprecated. Use TIMER_CCMR2_IC3F instead. */
-#define TIMER_CCMR2_IC1F           TIMER_CCMR2_IC3F
-/** Deprecated. Use TIMER_CCMR2_IC3PSC instead. */
-#define TIMER_CCMR2_IC1PSC         TIMER_CCMR2_IC3PSC
-/** Deprecated. Use TIMER_CCMR1_CC3S_OUTPUT instead. */
-#define TIMER_CCMR1_CC3S_OUTPUT    TIMER_CCMR2_CC3S_OUTPUT
-/** Deprecated. Use TIMER_CCMR1_CC3S_INPUT_TI1 instead. */
-#define TIMER_CCMR1_CC3S_INPUT_TI1 TIMER_CCMR2_CC3S_INPUT_TI1
-/** Deprecated. Use TIMER_CCMR1_CC3S_INPUT_TI2 instead. */
-#define TIMER_CCMR1_CC3S_INPUT_TI2 TIMER_CCMR2_CC3S_INPUT_TI2
-/** Deprecated. Use TIMER_CCMR1_CC3S_INPUT_TRC instead. */
-#define TIMER_CCMR1_CC3S_INPUT_TRC TIMER_CCMR2_CC3S_INPUT_TRC
-
-/** Deprecated. Use TIMER_DCR_DBL_1_XFER instead. */
-#define TIMER_DCR_DBL_1BYTE  TIMER_DCR_DBL_1_XFER
-/** Deprecated. Use TIMER_DCR_DBL_2_XFER instead. */
-#define TIMER_DCR_DBL_2BYTE  TIMER_DCR_DBL_2_XFER
-/** Deprecated. Use TIMER_DCR_DBL_3_XFER instead. */
-#define TIMER_DCR_DBL_3BYTE  TIMER_DCR_DBL_3_XFER
-/** Deprecated. Use TIMER_DCR_DBL_4_XFER instead. */
-#define TIMER_DCR_DBL_4BYTE  TIMER_DCR_DBL_4_XFER
-/** Deprecated. Use TIMER_DCR_DBL_5_XFER instead. */
-#define TIMER_DCR_DBL_5BYTE  TIMER_DCR_DBL_5_XFER
-/** Deprecated. Use TIMER_DCR_DBL_6_XFER instead. */
-#define TIMER_DCR_DBL_6BYTE  TIMER_DCR_DBL_6_XFER
-/** Deprecated. Use TIMER_DCR_DBL_7_XFER instead. */
-#define TIMER_DCR_DBL_7BYTE  TIMER_DCR_DBL_7_XFER
-/** Deprecated. Use TIMER_DCR_DBL_8_XFER instead. */
-#define TIMER_DCR_DBL_8BYTE  TIMER_DCR_DBL_8_XFER
-/** Deprecated. Use TIMER_DCR_DBL_9_XFER instead. */
-#define TIMER_DCR_DBL_9BYTE  TIMER_DCR_DBL_9_XFER
-/** Deprecated. Use TIMER_DCR_DBL_10_XFER instead. */
-#define TIMER_DCR_DBL_10BYTE TIMER_DCR_DBL_10_XFER
-/** Deprecated. Use TIMER_DCR_DBL_11_XFER instead. */
-#define TIMER_DCR_DBL_11BYTE TIMER_DCR_DBL_11_XFER
-/** Deprecated. Use TIMER_DCR_DBL_12_XFER instead. */
-#define TIMER_DCR_DBL_12BYTE TIMER_DCR_DBL_12_XFER
-/** Deprecated. Use TIMER_DCR_DBL_13_XFER instead. */
-#define TIMER_DCR_DBL_13BYTE TIMER_DCR_DBL_13_XFER
-/** Deprecated. Use TIMER_DCR_DBL_14_XFER instead. */
-#define TIMER_DCR_DBL_14BYTE TIMER_DCR_DBL_14_XFER
-/** Deprecated. Use TIMER_DCR_DBL_15_XFER instead. */
-#define TIMER_DCR_DBL_15BYTE TIMER_DCR_DBL_15_XFER
-/** Deprecated. Use TIMER_DCR_DBL_16_XFER instead. */
-#define TIMER_DCR_DBL_16BYTE TIMER_DCR_DBL_16_XFER
-/** Deprecated. Use TIMER_DCR_DBL_17_XFER instead. */
-#define TIMER_DCR_DBL_17BYTE TIMER_DCR_DBL_17_XFER
-/** Deprecated. Use TIMER_DCR_DBL_18_XFER instead. */
-#define TIMER_DCR_DBL_18BYTE TIMER_DCR_DBL_18_XFER
 
 #ifdef __cplusplus
 } // extern "C"

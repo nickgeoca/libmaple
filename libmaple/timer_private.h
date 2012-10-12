@@ -37,21 +37,6 @@
  * Helper macros for declaring timer_devs of various timer_types
  */
 
-/* The indexes of user handlers in a timer_dev.handlers are just like
- * the corresponding DIER bits, as follows: */
-
-
-
-/* For declaring advanced timers. */
-#define ADVANCED_TIMER(num)                                             \
-    {                                                                   \
-        .regs = TIMER##num##_BASE,                           \
-        .clk_id = CLK_EPCA##num,                                       \
-        .type = TIMER_ADVANCED,                                         \
-        .chnl_base = TIMER##num##_CH0,                     \
-    }
-
-
 /*
  * IRQ handlers
  *
@@ -85,40 +70,57 @@ static __always_inline void dispatch_single_irq(timer_dev *dev,
 }
 
 /* Helper macro for dispatch routines which service multiple interrupts. */
-#define handle_irq(dier_sr, irq_mask, handlers, iid, handled_irq) do {  \
-        if ((dier_sr) & (irq_mask)) { ;}                                  \
-                                                              \
-    } while (0)
+#define get_adv_irq_flags(reg) \
+            ((EPCA_STATUS_CXCCI_MASK & reg)  >> EPCA_IRQ_CXCCI_SHIFT | \
+            (EPCA_STATUS_OVFI_MASK & reg)    >> EPCA_IRQ_OVFI_SHIFT  | \
+            (EPCA_STATUS_HALTI_MASK & reg)   >> EPCA_IRQ_HALTI_SHIFT | \
+            (EPCA_STATUS_CXIOVFI_MASK & reg) >> EPCA_IRQ_CXIOVFI_SHIFT);
 
-static __always_inline void dispatch_adv_brk(timer_dev *dev) {
+#define adv_chnl_cc_irq_enabled(chnl, dev) \
+            (dev->chnl_regs[chnl]->CONTROL & EPCACH_CR_CCIEN_MASK)
+#define adv_ovfi_irq_enabled(dev) \
+            (dev->regs->CONTROL & EPCA_CR_OVFIEN_MASK)
+#define adv_halt_irq_enabled(dev) \
+            (dev->regs->CONTROL & EPCA_CR_HALTIEN_MASK)
+#define adv_chnl_ovfi_irq_enabled(chnl, dev) \
+            (dev->chnl_regs[chnl]->CONTROL & EPCACH_CR_CIOVFDEN_MASK)
 
-}
+#define adv_irq_enabled(bit, dev) \
+            ( \
+            bit <= TIMER_OVERFLOW_INTERRUPT ? adv_chnl_cc_irq_enabled(bit, dev) : /* chnl cap/cmp interrupt     */ \
+            bit <= TIMER_HALT_INTERRUPT  ? adv_ovfi_irq_enabled(dev)         : /* timer overflow interrupt   */ \
+            bit <= TIMER_OVFL1_INTERRUPT    ? adv_halt_irq_enabled(dev)         : /* halt interrupt             */ \
+            adv_chnl_ovfi_irq_enabled(bit - TIMER_OVFL1_INTERRUPT, dev)           /* chnl overflow interrupt    */ \
+            )
 
-static __always_inline void dispatch_adv_up(timer_dev *dev) {
+#define EPCA_IRQ_FLAGS_MASK     (EPCA_STATUS_CXCCI_MASK | EPCA_STATUS_OVFI_MASK | EPCA_STATUS_HALTI_MASK | EPCA_STATUS_CXIOVFI_MASK)
+#define EPCA_IRQ_CXCCI_SHIFT    0
+#define EPCA_IRQ_OVFI_SHIFT     (1 + EPCA_IRQ_CXCCI_SHIFT)
+#define EPCA_IRQ_HALTI_SHIFT    (1 + EPCA_IRQ_OVFI_SHIFT)
+#define EPCA_IRQ_CXIOVFI_SHIFT  (0 + EPCA_IRQ_HALTI_SHIFT)
 
-}
+static __always_inline void dispatch_adv(timer_dev *dev) {
+    timer_reg_map *regs = dev->regs;
+    uint32 status = regs->STATUS & EPCA_IRQ_FLAGS_MASK;
+    uint32 control = regs->CONTROL & EPCA_IRQ_FLAGS_MASK;
+    uint32 irq_flags;
+    uint32 bit;
 
-static __always_inline void dispatch_adv_trg_com(timer_dev *dev) {
+    irq_flags = get_adv_irq_flags(status);
+    // Service interrupts
+    do {
+        bit = __builtin_ctz(irq_flags);
+        irq_flags ^= 1 << bit;
+        if (dev->handlers[bit] && adv_irq_enabled(bit, dev)) {
+            dev->handlers[bit]();
+        }
+    } while (irq_flags);
 
-}
-
-static __always_inline void dispatch_adv_cc(timer_dev *dev) {
-
+    // Clear pending flags
+    REG_WRITE_SET_CLR(regs->STATUS, 0, status);
 }
 
 static __always_inline void dispatch_general(timer_dev *dev) {
-
-}
-
-/* On F1 (XL-density), F2, and F4, TIM9 and TIM12 are restricted
- * general-purpose timers with update, CC1, CC2, and TRG interrupts. */
-static __always_inline void dispatch_tim_9_12(timer_dev *dev) {
-
-}
-
-/* On F1 (XL-density), F2, and F4, timers 10, 11, 13, and 14 are
- * restricted general-purpose timers with update and CC1 interrupts. */
-static __always_inline void dispatch_tim_10_11_13_14(timer_dev *dev) {
 
 }
 

@@ -60,11 +60,20 @@ enum {
     A12, A13, A14, A15, AREF
 };
 
+/* System clock options:
+ * 1) 2.5 MHz
+ * 2) 20 MHz
+ * 3) 23-80MHz
+ */
+#define CYCLES_PER_MICROSECOND  25
+#define RTC_XTAL_HZ             32768
+
+
+/* Pin number for the built-in button. */
+#define BOARD_BUTTON_PIN        0
 
 /* Pin number for the built-in LED. */
-#define BOARD_BUTTON_PIN            0
-#define BOARD_LED_PIN               PD0
-#define CYCLES_PER_MICROSECOND      20
+#define BOARD_LED_PIN           PC10
 
 /* Number of USARTs/UARTs whose pins are broken out to headers. */
 #define BOARD_NR_USARTS         4
@@ -98,10 +107,10 @@ enum {
 #define BOARD_NR_GPIO_PINS      63
 
 /* Number of pins capable of PWM output. */
-#define BOARD_NR_PWM_PINS       6
+#define BOARD_NR_PWM_PINS       12
 
 /* Number of pins capable of ADC conversion. */
-#define BOARD_NR_ADC_PINS       16
+#define BOARD_NR_ADC_PINS       11
 
 /* Number of pins already connected to external hardware.  For Maple,
  * these are just BOARD_LED_PIN, BOARD_BUTTON_PIN, and the debug port

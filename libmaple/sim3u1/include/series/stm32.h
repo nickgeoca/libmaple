@@ -39,13 +39,6 @@ extern "C" {
 /*
  * Chip configuration
  */
-// TODO [silabs]: Consolidate clocking in one header
-#define CLOCK_SPEED_MHZ                 20
-#define CLOCK_SPEED_HZ                  (CLOCK_SPEED_MHZ * 1000000UL)
-
-#define APB_CLK_DIVIDER                 1      // Must be either 1 or 2
-#define AHB_CLK_DIVIDER                 1      // value must be 2^n, where n < 8
-
 #ifndef STM32_PCLK1
 #define STM32_PCLK1                     30000000U
 #endif
@@ -53,9 +46,9 @@ extern "C" {
 #ifndef STM32_PCLK2
 #define STM32_PCLK2                     60000000U
 #endif
-
+#define CLOCK_SPEED_MHZ__ 20
 #ifndef STM32_DELAY_US_MULT
-#define STM32_DELAY_US_MULT             (7 * CLOCK_SPEED_MHZ / 20)/* FIXME: dummy value. */
+#define STM32_DELAY_US_MULT             (7 * CLOCK_SPEED_MHZ__ / 20)/* FIXME: dummy value. */
 #endif
 
 /*

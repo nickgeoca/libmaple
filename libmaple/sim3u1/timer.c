@@ -49,9 +49,9 @@
  * @see gpio_set_af
  * @see gpio_af
  */
-gpio_af timer_get_af(timer_dev *dev) {
+//gpio_af timer_get_af(timer_dev *dev) {
 
-}
+//s}
 
 /*
  * IRQ handlers
@@ -60,7 +60,7 @@ gpio_af timer_get_af(timer_dev *dev) {
  */
 
 void __irq_epca1(void) {
-
+    dispatch_adv(TIMER1);
 }
 
 void __irq_pca1(void) {

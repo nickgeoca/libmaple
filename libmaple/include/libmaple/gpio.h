@@ -59,7 +59,7 @@ typedef struct gpio_dev {
 /*
  * Portable routines
  */
-
+void gpio_init_xbar(void);
 void gpio_init(gpio_dev *dev);
 void gpio_init_all(void);
 /* TODO flags argument version? */

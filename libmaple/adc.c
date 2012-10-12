@@ -70,14 +70,11 @@ static inline void adc_set_tslot_chnl(const adc_dev *dev, uint32 tslot, adc_tslo
     return;
 }
 
-
-
 // Note: Only set one group characteristic at a time
 static inline void adc_set_grp_res(const adc_dev *dev, uint32 grp, adc_bit_res res)
 {
     volatile uint32 *reg = SARADC_CHAR_REG(dev->regs, grp);
-    REG_WRITE_SET_CLR(*reg, 0, SARADC_CHAR_RSEL_MASK(grp));
-    REG_WRITE_SET_CLR(*reg, 1, res << SARADC_CHAR_RSEL_BIT(grp));
+    REG_WRITE_SET_CLR(*reg, res, 1 << SARADC_CHAR_RSEL_BIT(grp));
 }
 
 // Note: Only set one group characteristic at a time
@@ -92,10 +89,8 @@ static inline void adc_set_grp_seqlen(const adc_dev *dev, uint32 grp, adc_smp_cn
 static inline void adc_set_grp_gain(const adc_dev *dev, uint32 grp, adc_grp_gain gn)
 {
     volatile uint32 *reg = SARADC_CHAR_REG(dev->regs, grp);
-    REG_WRITE_SET_CLR(*reg, 0, SARADC_CHAR_GN_MASK(grp));
-    REG_WRITE_SET_CLR(*reg, 1, gn << SARADC_CHAR_GN_BIT(grp));
+    REG_WRITE_SET_CLR(*reg, gn, 1 << SARADC_CHAR_GN_BIT(grp));
 }
-
 
 /**
  * @brief Initialize an ADC peripheral.
@@ -108,7 +103,7 @@ static inline void adc_set_grp_gain(const adc_dev *dev, uint32 grp, adc_grp_gain
 void adc_init(const adc_dev *dev) {
     adc_reg_map *regs = dev->regs;
     uint32 clk, i;
-    uint32 sar_clk = 10000000; // 16240000
+    uint32 sar_clk = 5000000; // 16240000 FIXME [silabs]: saradc clock
 
     // Enable clock
     clk_enable_dev(dev->clk_id);
@@ -116,8 +111,8 @@ void adc_init(const adc_dev *dev) {
     // Setup Peripheral
     // SAR clk to operate at 10 MHZ
     REG_WRITE_SET_CLR(regs->CONFIG, 0, SARADC_CFGR_CLKDIV_MASK);
-    clk = (2 * clk_get_bus_speed(dev->clk_id)) / sar_clk - 1;
-    REG_WRITE_SET_CLR(regs->CONFIG, 1, 3 << SARADC_CFGR_CLKDIV_BIT);
+    clk = (2 * clk_get_bus_freq(dev->clk_id)) / sar_clk - 1;
+    REG_WRITE_SET_CLR(regs->CONFIG, 1, clk << SARADC_CFGR_CLKDIV_BIT);
     REG_WRITE_SET_CLR(regs->CONFIG, 0, SARADC_CFGR_PACKMD_MASK);
     REG_WRITE_SET_CLR(regs->CONFIG, 1, SARADC_CFGR_PACKMD_LOWER_ONLY);
 

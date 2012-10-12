@@ -31,53 +31,142 @@
 
 #include <libmaple/rcc.h>
 #include <libmaple/libmaple.h>
-
+#include <series/flash.h>
 #include "rcc_private.h"
 
-volatile uint32 clk_sys_freq = 0;
-volatile uint32 clk_apb_freq = 0;
-volatile uint32 clk_ahb_freq = 0;
+volatile uint32 g_clk_sys_freq = 0;
 
-void clk_init(uint32 sys_clk, uint32 ahb_div, uint32 apb_div)
+void clk_rcfg_devices(void)
 {
+    flash_set_latency(clk_get_bus_freq(CLK_FLASH));
+    return;
+}
+
+#define PLL_LOCKED_TRUE         (PLL_BASE->CONTROL & PLL_CR_LCKI_MASK)
+void pll_freqency_lock(uint32 freq)
+{
+    // Guess initial mode
+    uint8 mode = 4;
     uint32 tmp;
-    // Set clock dividers
-    tmp = CLK_BASE->CONTROL;
-    tmp &= ~(CLK_CR_AHBDIV_MASK | CLK_CR_APBDIV_MASK);
-    CLK_CR_AHBDIV_DIVn(ahb_div, tmp);
-    CLK_CR_APBDIV_DIVn(apb_div, tmp);
-    CLK_BASE->CONTROL = tmp;
-
-    // TODO [silabs]: pll
-    clk_sys_freq = sys_clk;
-    clk_ahb_freq = sys_clk / ahb_div;
-    clk_apb_freq = clk_ahb_freq / apb_div;
-}
-
-static clk_domain clk_dev_get_bus(clk_dev_id id) {
-    if (id < CLK_LAST_AHB_ENTRY_) {
-        return CLK_AHB;
+    if (freq < 35000000) {
+      mode = 0;
     }
-    else if (id < CLK_LAST_APB0_ENTRY_) {
-        return CLK_APB0;
+    else if (freq < 45000000) {
+      mode = 1;
     }
-    return CLK_APB1;
-}
-#define CLK_GET_DEV_BIT(id_in, bus_in, bit_out) do { \
-                                                    if (bus_in == CLK_AHB) { \
-                                                        bit_out = 1 << id_in; \
-                                                    } \
-                                                    else if (bus_in == CLK_APB0) { \
-                                                        bit_out = 1 << (id_in - CLK_LAST_AHB_ENTRY_ - 1); \
-                                                    } \
-                                                    else { \
-                                                        bit_out = 1 << (id_in - CLK_LAST_APB0_ENTRY_ - 1); \
-                                                    } \
-                                                } while(0)
+    else if (freq < 55000000) {
+      mode = 2;
+    }
+    else if (freq < 70000000) {
+      mode = 3;
+    }
 
-uint32 clk_get_bus_speed(clk_dev_id id) {
-    return (clk_dev_get_bus(id) == CLK_AHB) ? clk_ahb_freq : clk_apb_freq;
+    // set freqency adjuster value
+    PLL_BASE->CALCONFIG &= ~PLL_CALCONFIG_CAL_MASK;
+    PLL_BASE->CALCONFIG |= 0xFFF << PLL_CALCONFIG_CAL_BIT;
+
+    // set freqency range
+    PLL_BASE->CALCONFIG &= ~PLL_CALCONFIG_RANGE_MASK;
+    PLL_BASE->CALCONFIG |= mode << PLL_CALCONFIG_RANGE_BIT;
+
+    // Set to freqency lock mode
+    REG_WRITE_SET_CLR(PLL_BASE->CONTROL, 0, PLL_CR_OUTMD_MASK);
+    REG_WRITE_SET_CLR(PLL_BASE->CONTROL, 1, PLL_CR_OUTMD_FLL);
+
+    // wait until pll is locked
+    while (1) {
+        while (!(PLL_LOCKED_TRUE || PLL_BASE->CONTROL & (PLL_CR_LLMTF_MASK | PLL_CR_HLMTF_MASK)));
+        if (PLL_LOCKED_TRUE) {
+            return;
+        }
+        // disable dco output
+        REG_WRITE_SET_CLR(PLL_BASE->CONTROL, 0, PLL_CR_OUTMD_MASK);
+
+        // Adjust range
+        if ((PLL_BASE->CONTROL & PLL_CR_LLMTF_MASK) && (mode < 4)) {
+            mode += 1;
+        }
+        else if (mode < 4) {
+            mode -= 1;
+        }
+        // set freqency range
+        PLL_BASE->CALCONFIG &= ~PLL_CALCONFIG_RANGE_MASK;
+        PLL_BASE->CALCONFIG |= mode << PLL_CALCONFIG_RANGE_BIT;
+
+        // set to freqency lock mode
+        REG_WRITE_SET_CLR(PLL_BASE->CONTROL, 1, PLL_CR_OUTMD_FLL);
+    }
 }
+
+void pll_set_freq(uint32 freq)
+{
+    // Switch clocks while pll is getting setup
+    clk_set_clk_variable(20000000);
+    clk_switch_sysclk(CLK_SRC_LP);
+    // Disable digitally controlled oscillator
+    REG_WRITE_SET_CLR(PLL_BASE->CONTROL, 0, PLL_CR_OUTMD_MASK);
+    pll_set_prescaler(freq / 32768, 1);
+    pll_freqency_lock(freq);
+}
+void pll_set_ref(uint32 ref)
+{
+    REG_WRITE_SET_CLR(PLL_BASE->CONTROL, 0, PLL_CR_REFSEL_MASK);
+    REG_WRITE_SET_CLR(PLL_BASE->CONTROL, 1, ref << PLL_CR_REFSEL_BIT);
+}
+
+void pll_set_prescaler(uint32 num, uint32 denom)
+{
+    PLL_BASE->DIVIDER = (num - 1) << PLL_DIVIDER_N_BIT | (denom - 1) << PLL_DIVIDER_M_BIT;
+}
+
+void clk_switch_sysclk(clk_sysclk_src sysclk_src)
+{
+    uint32 control = CLK_BASE->CONTROL & ~CLKCTRL_CR_AHBSEL_MASK;
+    control |= sysclk_src;
+    // Wait until the oscillators are not busy
+    while (CLK_BASE->CONTROL & CLKCTRL_CR_OBUSYF_MASK);
+    CLK_BASE->CONTROL = control;
+    // Update TPIU_ACPR
+    *((__io uint32 *) 0xE0040010) = ((50 * clk_get_sys_freq()) / 20000000) - 1;
+}
+
+void clk_set_prescalers(clk_prescaler prescaler, uint32 divider)
+{
+    uint32 control = CLK_BASE->CONTROL;
+    if (prescaler == CLK_PRESCALE_AHB) {
+        control &= ~CLKCTRL_CR_AHBDIV_MASK;
+        control |= divider << CLKCTRL_CR_AHBDIV_BIT;
+    }
+    else {
+        control &= ~CLKCTRL_CR_APBDIV_MASK;
+        control |= divider << CLKCTRL_CR_APBDIV_BIT;
+    }
+    // Wait until the oscillators are not busy
+    while (CLK_BASE->CONTROL & CLKCTRL_CR_OBUSYF_MASK);
+    CLK_BASE->CONTROL = control;
+}
+
+void clk_set_clk_variable(uint32 sys_clk)
+{
+    g_clk_sys_freq = sys_clk;
+}
+
+
+#define CLK_GET_DEV_BIT(id_in, bus_in, bit_out)                 \
+    do {                                                        \
+        if (bus_in == CLK_AHB) {                                \
+            bit_out = 1 << id_in;                               \
+        }                                                       \
+        else if (bus_in == CLK_APB0) {                          \
+            bit_out = 1 << (id_in - CLK_LAST_AHB_ENTRY_ - 1);   \
+        }                                                       \
+        else {                                                  \
+            bit_out = 1 << (id_in - CLK_LAST_APB0_ENTRY_ - 1);  \
+        }                                                       \
+    } while(0)
+
+
+
 
 #if 0
 

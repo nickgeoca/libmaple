@@ -21,7 +21,7 @@
 					<folderInfo id="0.1284144054." name="/" resourcePath="">
 						<toolChain id="com.crt.advproject.toolchain.exe.debug.558467259" name="Code Red MCU Tools" superClass="com.crt.advproject.toolchain.exe.debug">
 							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF;org.eclipse.cdt.core.GNU_ELF" id="com.crt.advproject.platform.exe.debug.2020326064" name="ARM-based MCU (Debug)" superClass="com.crt.advproject.platform.exe.debug"/>
-							<builder arguments="" buildPath="${workspace_loc:/libmaple-sim3/Default}" command="${PATH}/cs-make" id="com.crt.advproject.builder.exe.debug.1958311556" keepEnvironmentInBuildfile="false" name="Gnu Make Builder" superClass="com.crt.advproject.builder.exe.debug"/>
+							<builder buildPath="${workspace_loc:/libmaple-sim3/Default}" id="com.crt.advproject.builder.exe.debug.1958311556" keepEnvironmentInBuildfile="false" name="Gnu Make Builder" superClass="com.crt.advproject.builder.exe.debug"/>
 							<tool id="com.crt.advproject.cpp.exe.debug.1626268714" name="MCU C++ Compiler" superClass="com.crt.advproject.cpp.exe.debug">
 								<inputType id="com.crt.advproject.compiler.cpp.input.1310274753" superClass="com.crt.advproject.compiler.cpp.input"/>
 							</tool>

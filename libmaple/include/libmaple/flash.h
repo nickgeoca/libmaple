@@ -73,8 +73,6 @@ extern "C"{
  * Flash routines
  */
 
-void flash_set_latency(uint32 wait_states);
-
 
 
 /**

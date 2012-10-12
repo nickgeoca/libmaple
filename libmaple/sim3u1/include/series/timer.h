@@ -56,6 +56,9 @@ struct timer_bas_reg_map;
 #define TIMER1_BASE     ((timer_reg_map*)0x4000E180)
 #define TIMER2_BASE     ((timer_reg_map*)0x4000F180)
 #define TIMER3_BASE     ((timer_reg_map*)0x40010180)
+#define TIMER4_BASE     ((timer_reg_map*)0x40014000)
+#define TIMER5_BASE     ((timer_reg_map*)0x40015000)
+
 /* TIM2 option register */
 
 /** Timer 2 option register internal trigger 1 remap */
@@ -99,10 +102,6 @@ struct timer_bas_reg_map;
 /*
  * Device pointers
  */
-
-struct timer_dev;
-
-extern struct timer_dev *TIMER1;
 
 /*
  * Routines

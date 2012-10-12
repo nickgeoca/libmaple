@@ -202,13 +202,19 @@ static inline void flash_enable_features(uint32 feature_flags) {
  *                    FLASH_WAIT_STATE_0, FLASH_WAIT_STATE_1,
  *                    ..., FLASH_WAIT_STATE_7).
  */
-static inline void flash_set_latency(uint32 wait_states) {
-    uint32 val = FLASH_BASE->CFGR;
-
-    val &= ~FLASH_CFGR_SPMD_MASK;
-    val |= wait_states;
-
-    FLASH_BASE->CFGR = val;
+static inline void flash_set_latency(uint32 ahb_freq) {
+    uint32 spd_md = 3;
+    if (ahb_freq <= 26000000) {
+        spd_md = 0;
+    }
+    else if (ahb_freq <= 53000000) {
+        spd_md = 1;
+    }
+    else if (ahb_freq <= 80000000) {
+        spd_md = 2;
+    }
+    REG_WRITE_SET_CLR(FLASH_BASE->CFGR, 0, FLASH_CFGR_SPMD_MASK);
+    REG_WRITE_SET_CLR(FLASH_BASE->CFGR, 1, spd_md << FLASH_CFGR_SPMD_BIT);
 }
 
 #ifdef __cplusplus

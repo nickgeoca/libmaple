@@ -63,16 +63,17 @@ static void setup_timers(void);
  */
 
 void init(void) {
-
-    //setup_flash();
+    wirish::priv::series_init();
+    wirish::priv::board_setup_xbar();
     setup_clocks();
+    setup_flash();
     setup_nvic();
-    systick_init(SYSTICK_RELOAD_VAL);
+    systick_init(clk_get_sys_freq() / 1000 - 1);
     wirish::priv::board_setup_gpio();
     setup_adcs();
     setup_timers();
     //wirish::priv::board_setup_usb();
-    wirish::priv::series_init();
+
     boardInit();
 }
 
@@ -92,18 +93,54 @@ bool boardUsesPin(uint8 pin) {
  */
 
 static void setup_flash(void) {
+    clk_enable_dev(CLK_FLCTRL);
     // Turn on as many Flash "go faster" features as
     // possible. flash_enable_features() just ignores any flags it
     // can't support.
     flash_enable_features(FLASH_PREFETCH | FLASH_ICACHE | FLASH_DCACHE);
-    // Configure the wait states, assuming we're operating at "close
-    // enough" to 3.3V.
-    flash_set_latency(FLASH_CFGR_SPMD_MODE0);
 }
 
 
 static void setup_clocks(void) {
-    clk_init(CLOCK_SPEED_HZ, AHB_CLK_DIVIDER, APB_CLK_DIVIDER);
+    uint32 clk_freq = CLOCK_SPEED_HZ;
+    clk_sysclk_src src;
+    if (clk_freq == 20000000) {
+        src = CLK_SRC_LP;
+    }
+    else if (clk_freq == 2500000) {
+        src = CLK_SRC_LP_DIV;
+    }
+    else {
+        src = CLK_SRC_PLL;
+    }
+
+    clk_freq = clk_freq > 80000000 ? 80000000 : clk_freq;
+
+    /* If using pll, then calculate actual frequency changed from bit truncation */
+    clk_freq = (clk_freq >= 23000000) ? pll_get_actl_freq(RTC_XTAL_HZ, clk_freq) : clk_freq;
+
+    // Init pll and rtc
+    wirish::priv::board_setup_rtc();
+    clk_enable_dev(CLK_PLL);
+    pll_set_ref(PLL_SRC_RTC);
+
+    wirish::priv::board_setup_clock_prescalers(clk_freq);
+
+/*
+ * To change system frequency, call following in order:
+ *  1) pll_set_freq  - (if using pll)
+ *  2) clk_set_clk_variable
+ *  3) clk_switch_sysclk
+ *  4) clk_rcfg_devices
+ */
+
+    if (src == CLK_SRC_PLL) {
+        pll_set_freq(clk_freq);
+    }
+    clk_set_clk_variable(clk_freq);
+    clk_switch_sysclk(src);
+    clk_rcfg_devices();
+
 }
 
 /*
@@ -138,7 +175,7 @@ static void timer_default_config(timer_dev *dev) {
     //timer_pause(dev);
 
     //timer_generate_update(dev);
-    timer_resume(dev);
+    //timer_resume(dev);
 
 }
 

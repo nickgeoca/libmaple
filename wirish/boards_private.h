@@ -39,7 +39,7 @@
 
 #include <libmaple/rcc.h>
 #include <libmaple/adc.h>
-
+#include <wirish/wirish_time.h>
 /* Makes the PIN_MAP rows more human-readable. */
 #define PMAP_ROW(gpio_dev, gpio_bit, timer_dev, timer_ch, adc_dev, adc_ch, exti_trg) \
     { gpio_dev, timer_dev, adc_dev, gpio_bit, timer_ch, adc_ch, exti_trg}
@@ -59,11 +59,12 @@ namespace wirish {
          */
 
         void board_reset_pll(void);
-        void board_setup_clock_prescalers(void);
+        void board_setup_clock_prescalers(uint32 sys_freq);
+        void board_setup_xbar(void);
         void board_setup_gpio(void);
         void board_setup_usb(void);
         void series_init(void);
-
+        void board_setup_rtc(void);
     }
 }
 
