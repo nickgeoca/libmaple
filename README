@@ -1,126 +1,54 @@
-
-                   _ _ _                           _
-                  | (_) |__  _ __ ___   __ _ _ __ | | ___
-                  | | | '_ \| '_ ` _ \ / _` | '_ \| |/ _ \
-                  | | | |_) | | | | | | (_| | |_) | |  __/
-                  |_|_|_.__/|_| |_| |_|\__,_| .__/|_|\___|
-                                            |_|               by LeafLabs!
-                                                              leaflabs.com
-
-
-The latest version of this repository can be found here:
-
-    https://github.com/leaflabs/libmaple
-
-IMPORTANT: read HACKING _before_ submitting patches.
-
-General information
+Overview
 ------------------------------------------------------------------------------
+This repo is a work in progress for a libmaple port to the SiM3U1 MCU (ARM M3). 
 
-libmaple is a library for programming ST's STM32 line of Cortex M3
-microcontrollers.  It has a pure C layer, libmaple proper, which does
-most of the work, and a C++ layer, Wirish, which provides high-level
-convenience functions and a Wiring/Arduino-compatible interface.
+If your interested in contributing to the Silabs based project then email me at nickgeoca@gmail.com. Leaflabs is kind enough to acomodate Silabs in their libraries (thanks Leaflabs!) and we follow their standards. See the resources below:
+Leaflab's Coding Standard: http://leaflabs.com/docs/libmaple/coding-standard.html#libmaple-coding-standard
+Leaflab's libmaple Repo: https://github.com/leaflabs/libmaple
 
-libmaple is designed for portability, and currently runs on a variety
-of STM32F1 performance and value line MCUs, with experimental support
-for STM32F2 MCUs.
+The readme has the following instructions:
+ * Wiring Installation
+ * Silabs Bugs
+ * libmaple Port Tasks
+ 
 
-Using libmaple
+Wiring Installation
 ------------------------------------------------------------------------------
-
-The easiest way to use libmaple is in concert with the Maple IDE.
-Maple IDE, a sister project from LeafLabs, is an Arduino IDE fork
-usable for programming Maple boards, which includes libmaple and a
-compilation and upload toolchain:
-
-    http://leaflabs.com/docs/maple-ide-install.html
-
-Additionally, a HOWTO on setting up this library for use from the
-command line in a Unix environment is available here:
-
-    http://leaflabs.com/docs/unix-toolchain.html
-
-Documentation, Etc.
+ * Steps
+  1) Download repo
+  2) Flash bootloader and Wiring app
+  3) Install unix toolchain
+  4) Modify Wiring code!
+ 
+ * Download repo
+   * Download this repo. Use the first half of the instructions under the "Fetch libmaple and Compiler Toolchain" section at this link: http://static.leaflabs.com/pub/leaflabs/maple-docs/snapshots/2012-09-04/unix-toolchain-win-setup.html#id1
+ 
+ * Flash bootloader and Wiring app
+   * Connect the board to the PC with the debugger (powered on).
+   * Open a command prompt and cd to the repo. 
+   * Flash the bootloader and verify it runs:
+     * Run this command in the prompt: Si32FlashUtility/Si32FlashUtility -i si_boot.hex
+	 * Verify the LED blinks (it's brief)
+   * Flash the test Wiring app and verify it runs:
+     * Run this command in the prompt: Si32FlashUtility/Si32FlashUtility -i si_wiring.hex
+	 * Verify the LED blinks intermittently and UART (9600 baud, no flow ctrl) is spitting out data on D0/D1. J17 and J18 should select UART for D0/D1.
+ 
+ * Install unix toolchain
+   * Follow the instructions at this link: http://static.leaflabs.com/pub/leaflabs/maple-docs/snapshots/2012-09-04/unix-toolchain-win-setup.html#id1
+   * Replace the unix toolchain with the code red tools. Copy and paste code red into toolchain directory
+   * Verify it works. cd into the repo and run this command to clean, make, and flash all in one command: cs-make clean; cs-make -j3; Si32FlashUtility/Si32FlashUtility -i build/si_arduino.hex
+   * Result should be a successful build and flash.  
+   
+ * Modify Wiring Code!
+   * Change main.cpp and board.h
+   * For now the crossbar is static. A more powerful implementation will be done in the future. To change, goto gpio init function in gpio.c under /libmaple/sim3u1/
+ 
+ 
+Silabs Bugs
 ------------------------------------------------------------------------------
+ * view bugs...
 
-HTML documentation for the latest release of libmaple/Maple IDE is
-available here:
-
-    http://leaflabs.com/docs/
-
-libmaple is well documented via Doxygen comments.  The HTML
-documentation referenced above (which also includes the Doxygen
-output) is automatically generated from the source files in the
-leaflabs-docs repository.  In order to obtain the leaflabs-docs
-repository, visit:
-
-    http://github.com/leaflabs/leaflabs-docs/
-
-Repository Layout
+ 
+libmaple Port Tasks
 ------------------------------------------------------------------------------
-
-/build/
-
-    Compiler output
-
-/contrib/
-
-    Community-contributed resources.  LeafLabs doesn't maintain the
-    contents of this directory, so it may get stale.
-
-/examples/
-
-    Example code and test programs. Copy these to /main.cpp to compile them.
-
-/libmaple/
-
-    This is the meat of the library.  C only, no C++.  The
-    Arduino-like compatibility layer (in C++) is in /wirish/.
-
-/libraries/
-
-    Special-purpose libraries that don't merit inclusion in the
-    /libmaple/ and /wirish/ directories, which are intended for
-    general use.  Arduino-compatible libraries go here.
-
-/LICENSE
-
-    Licensing and copyright information.
-
-/main.cpp.example
-
-    main.cpp is required for a successful build but is non-existent by
-    default; use this file as a template for building your program. By
-    default, just blinks an LED.
-
-/Makefile
-
-    libmaple build instructions for GNU Make. (This is supplemented by
-    build-targets.mk, the rules.mk files throughout the tree, and the
-    files in support/make/).
-
-/notes/
-
-    Unstructured text notes that may be useful.
-
-/README
-
-    This file ;).
-
-/support/
-
-    Support files and scripts for various purposes.
-
-    gdb/              GDB scripts.
-    ld/               Linker scripts.
-    make/             Additional files used by the top-level Makefile.
-    scripts/          Miscellany.
-    doxygen/          Doxygen configuration.
-    stm32loader.py    Upload script for the STM32's built-in USART bootloader.
-
-/wirish/
-
-    Extra wrappers and functionality around the lower level code in
-    /libmaple/. These files implement an Arduino "Wiring"-like
-    library.
+ * view tasks...
