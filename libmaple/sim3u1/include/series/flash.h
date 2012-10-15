@@ -213,8 +213,8 @@ static inline void flash_set_latency(uint32 ahb_freq) {
     else if (ahb_freq <= 80000000) {
         spd_md = 2;
     }
-    REG_WRITE_SET_CLR(FLASH_BASE->CFGR, 0, FLASH_CFGR_SPMD_MASK);
-    REG_WRITE_SET_CLR(FLASH_BASE->CFGR, 1, spd_md << FLASH_CFGR_SPMD_BIT);
+    REG_SET_CLR(FLASH_BASE->CFGR, 0, FLASH_CFGR_SPMD_MASK);
+    REG_SET_CLR(FLASH_BASE->CFGR, 1, spd_md << FLASH_CFGR_SPMD_BIT);
 }
 
 #ifdef __cplusplus

@@ -43,7 +43,7 @@ void  __irq_adc1(void) {
     if (regs->STATUS & SARADC_STATUS_SCCI_MASK &&
                 regs->CONFIG & SARADC_CFGR_SCCIEN_MASK) {
         // Clear interrupt
-        REG_WRITE_SET_CLR(regs->STATUS, 0, SARADC_STATUS_SCCI_MASK);
+        REG_SET_CLR(regs->STATUS, 0, SARADC_STATUS_SCCI_MASK);
     }
     return;
 }
@@ -54,7 +54,7 @@ void  __irq_adc2(void) {
     if (regs->STATUS & SARADC_STATUS_SCCI_MASK &&
                 regs->CONFIG & SARADC_CFGR_SCCIEN_MASK) {
         // Clear interrupt
-        REG_WRITE_SET_CLR(regs->STATUS, 0, SARADC_STATUS_SCCI_MASK);
+        REG_SET_CLR(regs->STATUS, 0, SARADC_STATUS_SCCI_MASK);
     }
     return;
 }
@@ -74,22 +74,22 @@ static inline void adc_set_tslot_chnl(const adc_dev *dev, uint32 tslot, adc_tslo
 static inline void adc_set_grp_res(const adc_dev *dev, uint32 grp, adc_bit_res res)
 {
     volatile uint32 *reg = SARADC_CHAR_REG(dev->regs, grp);
-    REG_WRITE_SET_CLR(*reg, res, 1 << SARADC_CHAR_RSEL_BIT(grp));
+    REG_SET_CLR(*reg, res, 1 << SARADC_CHAR_RSEL_BIT(grp));
 }
 
 // Note: Only set one group characteristic at a time
 static inline void adc_set_grp_seqlen(const adc_dev *dev, uint32 grp, adc_smp_cnt cnt)
 {
     volatile uint32 *reg = SARADC_CHAR_REG(dev->regs, grp);
-    REG_WRITE_SET_CLR(*reg, 0, SARADC_CHAR_RPT_MASK(grp));
-    REG_WRITE_SET_CLR(*reg, 1, cnt << SARADC_CHAR_RPT_BIT(grp));
+    REG_SET_CLR(*reg, 0, SARADC_CHAR_RPT_MASK(grp));
+    REG_SET_CLR(*reg, 1, cnt << SARADC_CHAR_RPT_BIT(grp));
 }
 
 // Note: Only set one group characteristic at a time
 static inline void adc_set_grp_gain(const adc_dev *dev, uint32 grp, adc_grp_gain gn)
 {
     volatile uint32 *reg = SARADC_CHAR_REG(dev->regs, grp);
-    REG_WRITE_SET_CLR(*reg, gn, 1 << SARADC_CHAR_GN_BIT(grp));
+    REG_SET_CLR(*reg, gn, 1 << SARADC_CHAR_GN_BIT(grp));
 }
 
 /**
@@ -103,32 +103,32 @@ static inline void adc_set_grp_gain(const adc_dev *dev, uint32 grp, adc_grp_gain
 void adc_init(const adc_dev *dev) {
     adc_reg_map *regs = dev->regs;
     uint32 clk, i;
-    uint32 sar_clk = 5000000; // 16240000 FIXME [silabs]: saradc clock
+    uint32 sar_clk = 14000000; // 16240000 FIXME [silabs]: saradc clock
 
     // Enable clock
     clk_enable_dev(dev->clk_id);
 
     // Setup Peripheral
     // SAR clk to operate at 10 MHZ
-    REG_WRITE_SET_CLR(regs->CONFIG, 0, SARADC_CFGR_CLKDIV_MASK);
+    REG_SET_CLR(regs->CONFIG, 0, SARADC_CFGR_CLKDIV_MASK);
     clk = (2 * clk_get_bus_freq(dev->clk_id)) / sar_clk - 1;
-    REG_WRITE_SET_CLR(regs->CONFIG, 1, clk << SARADC_CFGR_CLKDIV_BIT);
-    REG_WRITE_SET_CLR(regs->CONFIG, 0, SARADC_CFGR_PACKMD_MASK);
-    REG_WRITE_SET_CLR(regs->CONFIG, 1, SARADC_CFGR_PACKMD_LOWER_ONLY);
+    REG_SET_CLR(regs->CONFIG, 1, clk << SARADC_CFGR_CLKDIV_BIT);
+    REG_SET_CLR(regs->CONFIG, 0, SARADC_CFGR_PACKMD_MASK);
+    REG_SET_CLR(regs->CONFIG, 1, SARADC_CFGR_PACKMD_LOWER_ONLY);
 
     // set conversion start to software only
-    REG_WRITE_SET_CLR(regs->CONTROL, 0, SARADC_CR_SCSEL_MASK);
-    REG_WRITE_SET_CLR(regs->CONTROL, 1, SARADC_CR_SCSEL_ADCNT0);
+    REG_SET_CLR(regs->CONTROL, 0, SARADC_CR_SCSEL_MASK);
+    REG_SET_CLR(regs->CONTROL, 1, SARADC_CR_SCSEL_ADCNT0);
     // Use burst mode for 12 bit resolution
-    REG_WRITE_SET_CLR(regs->CONFIG, 1, SARADC_CFGR_BCLKSEL_MASK); /**< Burst mode uses apb clk */
+    REG_SET_CLR(regs->CONFIG, 1, SARADC_CFGR_BCLKSEL_MASK); /**< Burst mode uses apb clk */
 
     // adc will run through one scan of all enabled time sequences
-    REG_WRITE_SET_CLR(regs->CONFIG, 0, SARADC_CFGR_SCANMD_MASK); /**< Autoscan mode once */
-    REG_WRITE_SET_CLR(regs->CONTROL, 1, SARADC_CR_VCMEN_MASK); /**< Enable vcm buffer */
-    REG_WRITE_SET_CLR(regs->CONTROL, 0, SARADC_CR_VREFSEL_MASK); /**< Select vref internal */
-    REG_WRITE_SET_CLR(regs->CONTROL, 1, SARADC_CR_TRKMD_DELAYED); /**< Delay tracking by 3 SAR clk cylces */
-    REG_WRITE_SET_CLR(regs->CONTROL, 1, SARADC_CR_BMTK_MASK); /**< Minimize burst mode delay (4/apb frequency), since trkmd delay is already set. */
-    REG_WRITE_SET_CLR(regs->CONTROL, 1, SARADC_CR_AD12BSSEL_ONE); /**< Sample once convert 4 times for 12-bit mode. */
+    REG_SET_CLR(regs->CONFIG, 0, SARADC_CFGR_SCANMD_MASK); /**< Autoscan mode once */
+    REG_SET_CLR(regs->CONTROL, 1, SARADC_CR_VCMEN_MASK); /**< Enable vcm buffer */
+    REG_SET_CLR(regs->CONTROL, 0, SARADC_CR_VREFSEL_MASK); /**< Select vref internal */
+    REG_SET_CLR(regs->CONTROL, 1, SARADC_CR_TRKMD_DELAYED); /**< Delay tracking by 3 SAR clk cylces */
+    REG_SET_CLR(regs->CONTROL, 1, SARADC_CR_BMTK_MASK); /**< Minimize burst mode delay (4/apb frequency), since trkmd delay is already set. */
+    REG_SET_CLR(regs->CONTROL, 1, SARADC_CR_AD12BSSEL_ONE); /**< Sample once convert 4 times for 12-bit mode. */
 
     // Setup group 0
     adc_set_grp_res(dev, ADC_GRP_0, ADC_10_bit);
@@ -150,19 +150,19 @@ void adc_init(const adc_dev *dev) {
     // Enable interrupt: Single conversion complete
     nvic_clr_pending_irq(dev->irq_num);
     nvic_irq_enable(dev->irq_num);
-    //REG_WRITE_SET_CLR(regs->CONFIG, 1, SARADC_CFGR_SCCIEN_MASK);
+    //REG_SET_CLR(regs->CONFIG, 1, SARADC_CFGR_SCCIEN_MASK);
 }
 
 void adc_disable(const adc_dev *dev) {
     adc_reg_map *regs = dev->regs;
     // DISAABLE INTERRUPTS
-    REG_WRITE_SET_CLR(regs->CONFIG, 0, SARADC_CFGR_FURIEN_MASK |
+    REG_SET_CLR(regs->CONFIG, 0, SARADC_CFGR_FURIEN_MASK |
             SARADC_CFGR_FORIEN_MASK | SARADC_CFGR_SDIEN_MASK | SARADC_CFGR_SCCIEN_MASK);
 
     nvic_clr_pending_irq(dev->irq_num);
 
     // DISABLE MODULE
-    REG_WRITE_SET_CLR(regs->CONTROL, SARADC_CR_ADCEN_DS, BIT(SARADC_CR_ADCEN_BIT));
+    REG_SET_CLR(regs->CONTROL, SARADC_CR_ADCEN_DS, BIT(SARADC_CR_ADCEN_BIT));
 
     // DISABLE CLOCK
     //clk_dev_disable(dev->clk_id);
@@ -212,17 +212,17 @@ uint16 adc_read(const adc_dev *dev, uint8 channel) {
     // Single read only uses timeslot 0
     adc_set_tslot_chnl(dev, 0, channel);
 
-    REG_WRITE_SET_CLR(regs->CONTROL, 1, SARADC_CR_BURSTEN_EN);
+    REG_SET_CLR(regs->CONTROL, 1, SARADC_CR_BURSTEN_EN);
 
     // a 1-to-0 transition on ACCMD bit will enable the accumulator for the next conversion
-    REG_WRITE_SET_CLR(regs->CONTROL, 0, SARADC_CR_ACCMD_MASK);
+    REG_SET_CLR(regs->CONTROL, 0, SARADC_CR_ACCMD_MASK);
     regs->ACC = 0;
 
     // Start conversion
-    REG_WRITE_SET_CLR(regs->CONTROL, 1, SARADC_CR_ADBUSY_MASK);
+    REG_SET_CLR(regs->CONTROL, 1, SARADC_CR_ADBUSY_MASK);
 
     while (~regs->FIFOSTATUS & SARADC_FIFOSTATUS_DRDYF_MASK);
-    REG_WRITE_SET_CLR(regs->STATUS, 0, SARADC_STATUS_SCCI_MASK);
+    REG_SET_CLR(regs->STATUS, 0, SARADC_STATUS_SCCI_MASK);
 
     val = regs->DATA * 3300 / 4095;
 

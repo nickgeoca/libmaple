@@ -90,7 +90,7 @@ static inline gpio_type gpio_get_type(gpio_dev *dev) {
  * @param val If true, set the pin.  If false, reset the pin.
  */
 static inline void gpio_write_bit(gpio_dev *dev, uint8 pin, uint8 val) {
-    REG_WRITE_SET_CLR(dev->regs->PB, val, 1 << pin);
+    REG_SET_CLR(dev->regs->PB, val, 1 << pin);
 }
 
 /**

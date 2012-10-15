@@ -120,7 +120,7 @@ extern const stm32_pin_info PIN_MAP[BOARD_NR_GPIO_PINS] = {
     PMAP_ROW(GPIOC,  12,   NULL,  0,  NULL,  ADCx,   0), /* D50/PC12                                               */
     PMAP_ROW(GPIOC,  13,   NULL,  0,  NULL,  ADCx,   0), /* D51/PC13                                               */
     PMAP_ROW(GPIOC,  14,   NULL,  0,  NULL,  ADCx,   0), /* D52/PC14                                               */
-// FIXME [silabs] PCA0 CEXn
+
     PMAP_ROW(GPIOA,   8,   NULL,  0,  ADC1,     7,   0), /* A0/PA8     ADC0          ADC0.7                        */
     PMAP_ROW(GPIOA,  11, TIMER2,  1,  ADC1,     9,   0), /* A1/PA11    ADC1          ADC0.9             PCA0_CEX0  */
     PMAP_ROW(GPIOB,   1,   NULL,  0,  ADC1,    11,   0), /* A2/PB1     ADC2          ADC0.11                       */

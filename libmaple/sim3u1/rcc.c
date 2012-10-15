@@ -70,8 +70,8 @@ void pll_freqency_lock(uint32 freq)
     PLL_BASE->CALCONFIG |= mode << PLL_CALCONFIG_RANGE_BIT;
 
     // Set to freqency lock mode
-    REG_WRITE_SET_CLR(PLL_BASE->CONTROL, 0, PLL_CR_OUTMD_MASK);
-    REG_WRITE_SET_CLR(PLL_BASE->CONTROL, 1, PLL_CR_OUTMD_FLL);
+    REG_SET_CLR(PLL_BASE->CONTROL, 0, PLL_CR_OUTMD_MASK);
+    REG_SET_CLR(PLL_BASE->CONTROL, 1, PLL_CR_OUTMD_FLL);
 
     // wait until pll is locked
     while (1) {
@@ -80,7 +80,7 @@ void pll_freqency_lock(uint32 freq)
             return;
         }
         // disable dco output
-        REG_WRITE_SET_CLR(PLL_BASE->CONTROL, 0, PLL_CR_OUTMD_MASK);
+        REG_SET_CLR(PLL_BASE->CONTROL, 0, PLL_CR_OUTMD_MASK);
 
         // Adjust range
         if ((PLL_BASE->CONTROL & PLL_CR_LLMTF_MASK) && (mode < 4)) {
@@ -94,7 +94,7 @@ void pll_freqency_lock(uint32 freq)
         PLL_BASE->CALCONFIG |= mode << PLL_CALCONFIG_RANGE_BIT;
 
         // set to freqency lock mode
-        REG_WRITE_SET_CLR(PLL_BASE->CONTROL, 1, PLL_CR_OUTMD_FLL);
+        REG_SET_CLR(PLL_BASE->CONTROL, 1, PLL_CR_OUTMD_FLL);
     }
 }
 
@@ -104,14 +104,14 @@ void pll_set_freq(uint32 freq)
     clk_set_clk_variable(20000000);
     clk_switch_sysclk(CLK_SRC_LP);
     // Disable digitally controlled oscillator
-    REG_WRITE_SET_CLR(PLL_BASE->CONTROL, 0, PLL_CR_OUTMD_MASK);
+    REG_SET_CLR(PLL_BASE->CONTROL, 0, PLL_CR_OUTMD_MASK);
     pll_set_prescaler(freq / 32768, 1);
     pll_freqency_lock(freq);
 }
 void pll_set_ref(uint32 ref)
 {
-    REG_WRITE_SET_CLR(PLL_BASE->CONTROL, 0, PLL_CR_REFSEL_MASK);
-    REG_WRITE_SET_CLR(PLL_BASE->CONTROL, 1, ref << PLL_CR_REFSEL_BIT);
+    REG_SET_CLR(PLL_BASE->CONTROL, 0, PLL_CR_REFSEL_MASK);
+    REG_SET_CLR(PLL_BASE->CONTROL, 1, ref << PLL_CR_REFSEL_BIT);
 }
 
 void pll_set_prescaler(uint32 num, uint32 denom)
@@ -265,13 +265,13 @@ void clk_enable_dev(clk_dev_id clock) {
 
     switch (bus) {
     case CLK_AHB:
-        REG_WRITE_SET_CLR(CLK_BASE->AHBCLKG, 1, bit);
+        REG_SET_CLR(CLK_BASE->AHBCLKG, 1, bit);
         break;
     case CLK_APB0:
-        REG_WRITE_SET_CLR(CLK_BASE->APBCLKG0, 1, bit);
+        REG_SET_CLR(CLK_BASE->APBCLKG0, 1, bit);
         break;
     case CLK_APB1:
-        REG_WRITE_SET_CLR(CLK_BASE->APBCLKG1, 1, bit);
+        REG_SET_CLR(CLK_BASE->APBCLKG1, 1, bit);
         break;
     }
 }
@@ -296,13 +296,13 @@ void clk_disable_dev(clk_dev_id clock) {
 
     switch (bus) {
     case CLK_AHB:
-        REG_WRITE_SET_CLR(CLK_BASE->AHBCLKG, 0, bit);
+        REG_SET_CLR(CLK_BASE->AHBCLKG, 0, bit);
         break;
     case CLK_APB0:
-        REG_WRITE_SET_CLR(CLK_BASE->APBCLKG0, 0, bit);
+        REG_SET_CLR(CLK_BASE->APBCLKG0, 0, bit);
         break;
     case CLK_APB1:
-        REG_WRITE_SET_CLR(CLK_BASE->APBCLKG1, 0, bit);
+        REG_SET_CLR(CLK_BASE->APBCLKG1, 0, bit);
         break;
     }
 }

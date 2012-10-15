@@ -130,12 +130,12 @@ void exti_attach_callback(exti_num num,
     /* Set trigger mode */
     switch (mode) {
     case EXTI_FALLING:
-        REG_WRITE_SET_CLR(EXTI_BASE->CONTROL0, 1, BIT(5 + bit_offset));
-        REG_WRITE_SET_CLR(EXTI_BASE->CONTROL0, 0, BIT(4 + bit_offset));
+        REG_SET_CLR(EXTI_BASE->CONTROL0, 1, BIT(5 + bit_offset));
+        REG_SET_CLR(EXTI_BASE->CONTROL0, 0, BIT(4 + bit_offset));
         break;
     default: // EXTI_RISING
-        REG_WRITE_SET_CLR(EXTI_BASE->CONTROL0, 1, BIT(5 + bit_offset));
-        REG_WRITE_SET_CLR(EXTI_BASE->CONTROL0, 1, BIT(4 + bit_offset));
+        REG_SET_CLR(EXTI_BASE->CONTROL0, 1, BIT(5 + bit_offset));
+        REG_SET_CLR(EXTI_BASE->CONTROL0, 1, BIT(4 + bit_offset));
         break;
     }
 
@@ -144,11 +144,11 @@ void exti_attach_callback(exti_num num,
     }
 
     /* Set trigger number */
-    REG_WRITE_SET_CLR(EXTI_BASE->CONTROL0,  0, 0xf << (bit_offset));
-    REG_WRITE_SET_CLR(EXTI_BASE->CONTROL0,  1, trig_num << (bit_offset));
+    REG_SET_CLR(EXTI_BASE->CONTROL0,  0, 0xf << (bit_offset));
+    REG_SET_CLR(EXTI_BASE->CONTROL0,  1, trig_num << (bit_offset));
 
     /* Unmask external interrupt request */
-    REG_WRITE_SET_CLR(EXTI_BASE->CONTROL0, 1, BIT(7 + bit_offset));
+    REG_SET_CLR(EXTI_BASE->CONTROL0, 1, BIT(7 + bit_offset));
 
     /* Enable the interrupt line */
     switch(num)
@@ -185,7 +185,7 @@ void exti_detach_interrupt(exti_num num) {
     }
 
     /* Mask the interrupt request */
-    REG_WRITE_SET_CLR(EXTI_BASE->CONTROL0, 0, BIT(7 + num * 8));
+    REG_SET_CLR(EXTI_BASE->CONTROL0, 0, BIT(7 + num * 8));
 
     /* Clear pending interrupts */
     switch(num)

@@ -117,7 +117,7 @@ static __always_inline void dispatch_adv(timer_dev *dev) {
     } while (irq_flags);
 
     // Clear pending flags
-    REG_WRITE_SET_CLR(regs->STATUS, 0, status);
+    REG_SET_CLR(regs->STATUS, 0, status);
 }
 
 static __always_inline void dispatch_general(timer_dev *dev) {

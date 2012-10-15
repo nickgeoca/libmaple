@@ -81,7 +81,7 @@ void gpio_init_xbar(void) {
     clk_enable_dev(CLK_PB);
 
     // Enable Crossbar 0 signals & set properties
-    REG_WRITE_SET_CLR(PBCFG_BASE->XBAR0H, 1, PBCFG_XBAR0H_XBAR0EN_MASK);
+    REG_SET_CLR(PBCFG_BASE->XBAR0H, 1, PBCFG_XBAR0H_XBAR0EN_MASK);
 
     // Skip list
     GPIOA->regs->std.PBSKIPEN = 0x0000FFFF;
@@ -93,10 +93,10 @@ void gpio_init_xbar(void) {
 void gpio_init_all(void) {
 
     // Enable Crossbar 0 signals & set properties
-    REG_WRITE_SET_CLR(PBCFG_BASE->XBAR0H, 1, PBCFG_XBAR0H_XBAR0EN_MASK);
+    REG_SET_CLR(PBCFG_BASE->XBAR0H, 1, PBCFG_XBAR0H_XBAR0EN_MASK);
 
     // Enable Crossbar 1 signals & set properties
-    REG_WRITE_SET_CLR(PBCFG_BASE->XBAR1, 1, PBCFG_XBAR1_XBAR1EN_MASK);
+    REG_SET_CLR(PBCFG_BASE->XBAR1, 1, PBCFG_XBAR1_XBAR1EN_MASK);
 
     // Skip list
     GPIOA->regs->std.PBSKIPEN = 0x0000FFFF ^ 0xe8c3;
@@ -105,16 +105,16 @@ void gpio_init_all(void) {
     GPIOD->regs->std.PBSKIPEN = 0x00007FFF ^ 0x0030;
 
     // Enable devices on Crossbar 0
-    REG_WRITE_SET_CLR(PBCFG_BASE->XBAR0L, 1,
+    REG_SET_CLR(PBCFG_BASE->XBAR0L, 1,
             PBCFG_XBAR0L_USART0EN_MASK | PBCFG_XBAR0L_USART1EN_MASK |
             PBCFG_XBAR0L_PCA0EN_MASK | PBCFG_XBAR0L_PCA1EN_MASK |
             PBCFG_XBAR0L_TMR0EXEN_MASK | PBCFG_XBAR0L_TMR0CTEN_MASK |
             PBCFG_XBAR0L_TMR1EXEN_MASK | PBCFG_XBAR0L_TMR1CTEN_MASK);
-    //REG_WRITE_SET_CLR(PBCFG_BASE->XBAR0H, 1,
+    //REG_SET_CLR(PBCFG_BASE->XBAR0H, 1,
     //        PBCFG_XBAR0H_UART0EN_MASK);
 
     // Enable UART0 on Crossbar 1
-    REG_WRITE_SET_CLR(PBCFG_BASE->XBAR1, 1,
+    REG_SET_CLR(PBCFG_BASE->XBAR1, 1,
             PBCFG_XBAR1_UART1EN_MASK);
 
     // Setup Port Bank 4
@@ -127,19 +127,19 @@ void gpio_init_all(void) {
     }
     GPIOE->regs->hd.PBLOCK = 0;
     // Set high impedance as the PB HD safe state
-    REG_WRITE_SET_CLR(GPIOE->regs->hd.PBSS, 0, PBHD_PBSS_PB0SSSEL_MASK | PBHD_PBSS_PB1SSSEL_MASK | PBHD_PBSS_PB2SSSEL_MASK |
+    REG_SET_CLR(GPIOE->regs->hd.PBSS, 0, PBHD_PBSS_PB0SSSEL_MASK | PBHD_PBSS_PB1SSSEL_MASK | PBHD_PBSS_PB2SSSEL_MASK |
     PBHD_PBSS_PB3SSSEL_MASK | PBHD_PBSS_PB4SSSEL_MASK | PBHD_PBSS_PB5SSSEL_MASK);
     // Enable bias
-    REG_WRITE_SET_CLR(GPIOE->regs->hd.PBDRV, 1, 1 << PBHD_PBDRV_PBBIASEN_BIT);
+    REG_SET_CLR(GPIOE->regs->hd.PBDRV, 1, 1 << PBHD_PBDRV_PBBIASEN_BIT);
     // Power level
-    REG_WRITE_SET_CLR(GPIOE->regs->hd.PBDRV, 0, 1 << PBHD_PBDRV_PBLVMD_BIT);
+    REG_SET_CLR(GPIOE->regs->hd.PBDRV, 0, 1 << PBHD_PBDRV_PBLVMD_BIT);
     // Enable drivers
-    REG_WRITE_SET_CLR(GPIOE->regs->hd.PBDRV, 1, PBHD_PBDRV_PBDRVEN_MASK);
+    REG_SET_CLR(GPIOE->regs->hd.PBDRV, 1, PBHD_PBDRV_PBDRVEN_MASK);
     // Slew rate fastest
-    REG_WRITE_SET_CLR(GPIOE->regs->hd.PBDRV, 0, PBHD_PBDRV_PBSLEW_MASK);
-    REG_WRITE_SET_CLR(GPIOE->regs->hd.PBDRV, 1, 0 << PBHD_PBDRV_PBSLEW_BIT);
+    REG_SET_CLR(GPIOE->regs->hd.PBDRV, 0, PBHD_PBDRV_PBSLEW_MASK);
+    REG_SET_CLR(GPIOE->regs->hd.PBDRV, 1, 0 << PBHD_PBDRV_PBSLEW_BIT);
     // Disable current limit
-    REG_WRITE_SET_CLR(GPIOE->regs->hd.PBILIMIT, 0, 0x1F);
+    REG_SET_CLR(GPIOE->regs->hd.PBILIMIT, 0, 0x1F);
 }
 
 /**
@@ -158,44 +158,44 @@ void gpio_set_modef(gpio_dev *dev,
     unsigned mask = 1 << bit;
 
     /* Mode */
-    REG_WRITE_SET_CLR(regs->PBMDSEL, mode & (1 << GPIO_PBMDSEL_BIT), mask);
+    REG_SET_CLR(regs->PBMDSEL, mode & (1 << GPIO_PBMDSEL_BIT), mask);
 
     /* High Drive GPIO */
     if (gpio_get_type(dev) == GPIO_HIGHDRIVE) {
         /* Drive strength */
-        REG_WRITE_SET_CLR(regs->hd.PBDRV, flags & (1 << GPIO_PBDRV_BIT), mask);
+        REG_SET_CLR(regs->hd.PBDRV, flags & (1 << GPIO_PBDRV_BIT), mask);
 
         /* Analog Pin */
         if (!(mode & (1 << GPIO_PBMDSEL_BIT))) {
-            REG_WRITE_SET_CLR(regs->PB, mode & (1 << GPIO_PB_BIT), mask);
+            REG_SET_CLR(regs->PB, mode & (1 << GPIO_PB_BIT), mask);
             return;
         }
 
         // Use PBOUTMD bit for the PBDEN register. Both define PP/OD
-        REG_WRITE_SET_CLR(regs->hd.PBDEN, (1 << GPIO_PBOUTMD_BIT) & mode,
+        REG_SET_CLR(regs->hd.PBDEN, (1 << GPIO_PBOUTMD_BIT) & mode,
                 (mask << PBHD_PBDEN_PBPDEN_BIT));
 
         // Always write N-Channel (low side)
-        REG_WRITE_SET_CLR(regs->hd.PBDEN, 1,
+        REG_SET_CLR(regs->hd.PBDEN, 1,
                 (mask << PBHD_PBDEN_PBNDEN_BIT));
 
     }
     else {
         /* Input type */
-        REG_WRITE_SET_CLR(regs->std.PBOUTMD, mode & (1 << GPIO_PBOUTMD_BIT), mask);
+        REG_SET_CLR(regs->std.PBOUTMD, mode & (1 << GPIO_PBOUTMD_BIT), mask);
 
         /* Analog Pin */
         if (!(mode & (1 << GPIO_PBMDSEL_BIT))) {
-            REG_WRITE_SET_CLR(regs->PB, mode & (1 << GPIO_PB_BIT), mask);
+            REG_SET_CLR(regs->PB, mode & (1 << GPIO_PB_BIT), mask);
             return;
         }
 
         /* Drive strength */
-        REG_WRITE_SET_CLR(regs->std.PBDRV, flags & (1 << GPIO_PBDRV_BIT), mask);
+        REG_SET_CLR(regs->std.PBDRV, flags & (1 << GPIO_PBDRV_BIT), mask);
 
     }
     /* Output value */
-    REG_WRITE_SET_CLR(regs->PB, mode & (1 << GPIO_PB_BIT), mask);
+    REG_SET_CLR(regs->PB, mode & (1 << GPIO_PB_BIT), mask);
 
 
 }

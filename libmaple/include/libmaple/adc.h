@@ -156,7 +156,7 @@ static inline void adc_set_reg_seqlen(const adc_dev *dev, uint8 length) {
  */
 static inline void adc_enable(const adc_dev *dev) {
     // Enable ADC
-    REG_WRITE_SET_CLR(dev->regs->CONTROL, SARADC_CR_ADCEN_EN, BIT(SARADC_CR_ADCEN_BIT));
+    REG_SET_CLR(dev->regs->CONTROL, SARADC_CR_ADCEN_EN, BIT(SARADC_CR_ADCEN_BIT));
 
 }
 

@@ -65,7 +65,7 @@ namespace wirish {
         }
 
         __weak void board_setup_clock_prescalers(uint32 sys_freq) {
-            uint32 apb_div = CLK_APB_HCLK_DIV_1;
+            uint32 apb_div = CLK_APB_HCLK_DIV_2;
             uint32 ahb_div = CLK_AHB_SYSCLK_DIV_1;
 
             // Set limit on apb bus to 50 MHz
@@ -110,20 +110,20 @@ namespace wirish {
             nvic_irq_enable(NVIC_RTC0ALRM);
 
             // enable high speed mode
-            REG_WRITE_SET_CLR(*(__io uint32 *)((uint32)rtc_base + 0x10), 1, 1 << 7);
+            REG_SET_CLR(*(__io uint32 *)((uint32)rtc_base + 0x10), 1, 1 << 7);
 
             // disable auto gain control
-            REG_WRITE_SET_CLR(*rtc_base, 0, 0x00040000);
+            REG_SET_CLR(*rtc_base, 0, 0x00040000);
             // enable bias doubler
-            REG_WRITE_SET_CLR(*rtc_base, 1, 1 << 16);
+            REG_SET_CLR(*rtc_base, 1, 1 << 16);
             // enable auto load cap stepping
-            REG_WRITE_SET_CLR(*rtc_base, 1, 1 << 3);
+            REG_SET_CLR(*rtc_base, 1, 1 << 3);
             // set clk source as rtc
-            REG_WRITE_SET_CLR(*rtc_base, 0, 1 << 30);
+            REG_SET_CLR(*rtc_base, 0, 1 << 30);
             // set as crystal oscillator
-            REG_WRITE_SET_CLR(*rtc_base, 1, 0x00020000);
+            REG_SET_CLR(*rtc_base, 1, 0x00020000);
             // enable module
-            REG_WRITE_SET_CLR(*rtc_base, 1, 1 << 31);
+            REG_SET_CLR(*rtc_base, 1, 1 << 31);
 
             // Wait at least 20 ms
             delay(20);

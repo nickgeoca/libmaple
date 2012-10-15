@@ -46,50 +46,65 @@ static inline void enable_irq(timer_dev *dev, uint8 interrupt);
  * Defer to the timer_private API for declaring these.
  */
 
+static const nvic_irq_num timer1_irqs[1] = {NVIC_EPCA1};
 static const timer_chnl_reg_map *t1_chnl_regs[6] = {TIMER1_CH0, TIMER1_CH1, TIMER1_CH2,
                                                TIMER1_CH3, TIMER1_CH4, TIMER1_CH5};
 static timer_dev timer1 = {
     .regs = TIMER1_BASE,
     .clk_id = CLK_EPCA1,
     .type = TIMER_ADVANCED,
+    .nvic_irqs.irq_count = 1,
+    .nvic_irqs.irq_array = timer1_irqs,
     .chnl_regs = t1_chnl_regs,
     .handlers = { [NR_ADV_HANDLERS - 1] = 0 }
 };
 timer_dev *TIMER1 = &timer1;
 
+static const nvic_irq_num timer2_irqs[1] = {NVIC_PCA1};
 static const timer_chnl_reg_map *t2_chnl_regs[2] = {TIMER2_CH0, TIMER2_CH1};
 static timer_dev timer2 = {
     .regs = TIMER2_BASE,
     .clk_id = CLK_PCA1,
     .type = TIMER_GENERAL,
+    .nvic_irqs.irq_count = 1,
+    .nvic_irqs.irq_array = timer2_irqs,
     .chnl_regs = t2_chnl_regs,
     .handlers = { [0] = 0 }
 };
 timer_dev *TIMER2 = &timer2;
 
+static const nvic_irq_num timer3_irqs[1] = {NVIC_PCA2};
 static const timer_chnl_reg_map *t3_chnl_regs[2] = {TIMER3_CH0, TIMER3_CH1};
 static timer_dev timer3 = {
     .regs = TIMER3_BASE,
     .clk_id = CLK_PCA2,
     .type = TIMER_GENERAL,
+    .nvic_irqs.irq_count = 1,
+    .nvic_irqs.irq_array = timer3_irqs,
     .chnl_regs = t3_chnl_regs,
     .handlers = { [0] = 0 }
 };
 timer_dev *TIMER3 = &timer3;
 
+static const nvic_irq_num timer4_irqs[2] = {NVIC_TIMER0L, NVIC_TIMER0H};
 static timer_dev timer4 = {
     .regs = TIMER4_BASE,
     .clk_id = CLK_TIMER1,
     .type = TIMER_BASIC,
+    .nvic_irqs.irq_count = 2,
+    .nvic_irqs.irq_array = timer4_irqs,
     .chnl_regs = 0,
     .handlers = { [0] = 0 }
 };
 timer_dev *TIMER4 = &timer4;
 
+static const nvic_irq_num timer5_irqs[2] = {NVIC_TIMER1L, NVIC_TIMER1H};
 static timer_dev timer5 = {
     .regs = TIMER5_BASE,
     .clk_id = CLK_TIMER2,
     .type = TIMER_BASIC,
+    .nvic_irqs.irq_count = 2,
+    .nvic_irqs.irq_array = timer5_irqs,
     .chnl_regs = 0,
     .handlers = { [0] = 0 }
 };
@@ -110,7 +125,7 @@ void timer_foreach(void (*fn)(timer_dev*)) {
     fn(TIMER4);
     fn(TIMER5);
 }
-
+#define TIMER_FREQENCY 1000000
 /**
  * Initialize a timer, and reset its register map.
  * @param dev Timer to initialize
@@ -119,51 +134,51 @@ void timer_init(timer_dev *dev) {
     timer_reg_map *regs = dev->regs;
     timer_basic_reg_map *regs_b = (timer_basic_reg_map*)(void*)&dev->regs->MODE;
     uint32 clk_div;
-    uint32 clk_freq = 1000000;
+    uint32 timer_freq = TIMER_FREQENCY;
     uint32 pwm_freq = 1000;
 
     clk_enable_dev(dev->clk_id);
 
-    if (dev->type == TIMER_BASIC) {
+    switch (dev->type) {
+    case TIMER_BASIC:
         // clk_div = 256 - clk_in / Fepca
-        clk_div = 256 - clk_get_bus_freq(dev->clk_id) / clk_freq;
+        clk_div = 256 - clk_get_bus_freq(dev->clk_id) / timer_freq;
         // Initialize registers
         regs_b->CONFIG = 0;
         regs_b->CLKDIV = 0;
         regs_b->COUNT = 0;
         regs_b->CAPTURE = 0;
         // Split timer mode
-        REG_WRITE_SET_CLR(regs_b->CONFIG, 1, 1 << 5);
+        REG_SET_CLR(regs_b->CONFIG, 1, TIMER_CFGR_SPLITEN_EN);
         // Select high timer clock source
-        REG_WRITE_SET_CLR(regs_b->CONFIG, 1, 2 << 16);
+        REG_SET_CLR(regs_b->CONFIG, 1, TIMER_CFGR_HCLK_TIMER_CLKDIV);
         // High pwm mode
-        REG_WRITE_SET_CLR(regs_b->CONFIG, 1, 9 << 24);
-        // Set clock divider
+        REG_SET_CLR(regs_b->CONFIG, 1, TIMER_CFGR_HMD_PWM);
+        // Set clock divider. Run at APB rate.
         regs_b->CLKDIV = 255;
 
-        // Set duty cycle: 0-65535
-        regs_b->CAPTURE |= 30000 << 16;
-        // Start high timer
-        REG_WRITE_SET_CLR(regs_b->CONFIG, 1, 0x20000000);
-    }
-    else {
+        break;
+    default:
         // clk_div = clk_in / Fepca - 1
-        clk_div = clk_get_bus_freq(dev->clk_id) / clk_freq - 1;
-        clk_freq = timer_actl_freq(dev, clk_freq);
-
-
+        clk_div = clk_get_bus_freq(dev->clk_id) / timer_freq - 1;
+        timer_freq = timer_actl_freq(dev, timer_freq);
 
         // Set clock speed
         regs->MODE &= ~EPCA_MODE_CLKSEL_MASK & ~EPCA_MODE_CLKDIV_MASK;
         regs->MODE |= EPCA_MODE_CLKSEL_APB | (clk_div << EPCA_MODE_CLKDIV_BIT);
 
         // Set PWM frequency
-        regs->LIMIT = clk_freq / pwm_freq;
+        regs->LIMIT = timer_freq / pwm_freq;
         regs->MODE &= ~EPCACH_MODE_COSEL_MASK & ~EPCA_MODE_HDOSEL_MASK;
         regs->MODE |= EPCACH_MODE_COSEL_TOGGLE_OUTPUT | EPCA_MODE_HDOSEL_NO_DIFF;
 
-        REG_WRITE_SET_CLR(regs->STATUS, 0, EPCA_STATUS_C0IOVFI_MASK | 1);
+        // Disable all interrupts
+        regs->STATUS = 0;
+        break;
     }
+    // Enable IRQ on NVIC
+    nvic_clr_pending_dev(&dev->nvic_irqs);
+    nvic_irq_enable_dev(&dev->nvic_irqs);
 }
 
 /**
@@ -175,7 +190,8 @@ void timer_init(timer_dev *dev) {
  * @param dev Timer to disable.
  */
 void timer_disable(timer_dev *dev) {
-
+    nvic_clr_pending_dev(&dev->nvic_irqs);
+    nvic_irq_disable_dev(&dev->nvic_irqs);
 }
 
 /**

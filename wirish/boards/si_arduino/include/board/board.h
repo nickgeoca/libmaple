@@ -65,7 +65,7 @@ enum {
  * 2) 20 MHz
  * 3) 23-80MHz
  */
-#define CYCLES_PER_MICROSECOND  25
+#define CYCLES_PER_MICROSECOND  80
 #define RTC_XTAL_HZ             32768
 
 

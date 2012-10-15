@@ -117,6 +117,41 @@ static inline void nvic_irq_disable_all(void) {
     NVIC_BASE->ICER[2] = 0xFFFFFFFF;
 }
 
+typedef struct nvic_irqs_t {
+    uint8 irq_count;
+    nvic_irq_num *irq_array;
+} nvic_irqs_t;
+
+static inline void nvic_irq_disable_dev(nvic_irqs_t *dev_irqs)
+{
+    int32 i = (int32)dev_irqs->irq_count;
+    nvic_irq_num irq_num;
+    while (i-- + 1) {
+        irq_num = dev_irqs->irq_array[i];
+        NVIC_BASE->ICPR[irq_num / 32] = BIT((uint32)irq_num & 0x1F);
+    }
+}
+
+static inline void nvic_irq_enable_dev(nvic_irqs_t *dev_irqs)
+{
+    int32 i = (int32)dev_irqs->irq_count;
+    nvic_irq_num irq_num;
+    while (i-- + 1) {
+        irq_num = dev_irqs->irq_array[i];
+        NVIC_BASE->ISER[irq_num / 32] = BIT(irq_num % 32);
+    }
+}
+
+static inline void nvic_clr_pending_dev(nvic_irqs_t *dev_irqs) {
+    int32 i = (int32)dev_irqs->irq_count;
+    nvic_irq_num irq_num;
+    while (i-- + 1) {
+        irq_num = dev_irqs->irq_array[i];
+        NVIC_BASE->ICPR[irq_num / 32] = BIT((uint32)irq_num & 0x1F);
+    }
+}
+
+
 #ifdef __cplusplus
 }
 #endif

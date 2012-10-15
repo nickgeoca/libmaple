@@ -160,6 +160,7 @@ typedef struct timer_dev {
     timer_reg_map *regs;         /**< Register map */
     clk_dev_id clk_id;          /**< RCC clock information */
     timer_type type;            /**< Timer's type */
+    nvic_irqs_t nvic_irqs;            /**<  */
     timer_chnl_reg_map **chnl_regs;
     voidFuncPtr handlers[];
 } timer_dev;
@@ -450,6 +451,127 @@ extern timer_dev *TIMER5;
                                             EPCA_STATUS_C3CCI_MASK | EPCA_STATUS_C4CCI_MASK | EPCA_STATUS_C5CCI_MASK)
 #define EPCA_STATUS_CXIOVFI_MASK           (EPCA_STATUS_C0IOVFI_MASK | EPCA_STATUS_C1IOVFI_MASK | EPCA_STATUS_C2IOVFI_MASK | \
                                             EPCA_STATUS_C3IOVFI_MASK | EPCA_STATUS_C4IOVFI_MASK | EPCA_STATUS_C5IOVFI_MASK)
+
+
+#define TIMER_CFGR_LCLK_MASK            0x00000003
+#define TIMER_CFGR_LMSTREN_MASK         0x00000010
+#define TIMER_CFGR_SPLITEN_MASK         0x00000020
+#define TIMER_CFGR_LEXIEN_MASK          0x00000040
+#define TIMER_CFGR_LOVFIEN_MASK         0x00000080
+#define TIMER_CFGR_LMD_MASK             0x00000700
+#define TIMER_CFGR_LSTATE_MASK          0x00001000
+#define TIMER_CFGR_LRUN_MASK            0x00002000
+#define TIMER_CFGR_LEXI_MASK            0x00004000
+#define TIMER_CFGR_LOVFI_MASK           0x00008000
+#define TIMER_CFGR_HCLK_MASK            0x00030000
+#define TIMER_CFGR_MSTRUN_MASK          0x00080000
+#define TIMER_CFGR_HMSTREN_MASK         0x00100000
+#define TIMER_CFGR_DBGMD_MASK           0x00200000
+#define TIMER_CFGR_HEXIEN_MASK          0x00400000
+#define TIMER_CFGR_HOVFIEN_MASK         0x00800000
+#define TIMER_CFGR_HMD_MASK             0x0F000000
+#define TIMER_CFGR_HSTATE_MASK          0x10000000
+#define TIMER_CFGR_HRUN_MASK            0x20000000
+#define TIMER_CFGR_HEXI_MASK            0x40000000
+#define TIMER_CFGR_HOVFI_MASK           0x80000000
+#define TIMER_CFGR_LCLK_BIT             0  /* LCLK<1:0>: Low Clock Source.                   */
+#define TIMER_CFGR_LMSTREN_BIT          4  /* LMSTREN<4>: Low Run Master Enable.             */
+#define TIMER_CFGR_SPLITEN_BIT          5  /* SPLITEN<5>: Split Mode Enable.                 */
+#define TIMER_CFGR_LEXIEN_BIT           6  /* LEXIEN<6>: Low Timer Extra Interrupt Enable.   */
+#define TIMER_CFGR_LOVFIEN_BIT          7  /* LOVFIEN<7>: Low Timer Overflow Interrupt Enable. */
+#define TIMER_CFGR_LMD_BIT              8  /* LMD<10:8>: Low Timer Mode.                     */
+#define TIMER_CFGR_LSTATE_BIT           12 /* LSTATE<12>: Low Multi Purpose State Indicator. */
+#define TIMER_CFGR_LRUN_BIT             13 /* LRUN<13>: Run Control Low.                     */
+#define TIMER_CFGR_LEXI_BIT             14 /* LEXI<14>: Low Timer Extra Interrupt Flag.      */
+#define TIMER_CFGR_LOVFI_BIT            15 /* LOVFI<15>: Low Timer Overflow Interrupt.       */
+#define TIMER_CFGR_HCLK_BIT             16 /* HCLK<17:16>: High Clock Source.                */
+#define TIMER_CFGR_MSTRUN_BIT           19 /* MSTRUN<19>: Master Run Control.                */
+#define TIMER_CFGR_HMSTREN_BIT          20 /* HMSTREN<20>: High Master Enable.               */
+#define TIMER_CFGR_DBGMD_BIT            21 /* DBGMD<21>: Timer Debug Mode.                   */
+#define TIMER_CFGR_HEXIEN_BIT           22 /* HEXIEN<22>: High Timer Extra Interrupt Enable. */
+#define TIMER_CFGR_HOVFIEN_BIT          23 /* HOVFIEN<23>: High Timer Overflow Interrupt Enable. */
+#define TIMER_CFGR_HMD_BIT              24 /* HMD<27:24>: High Timer Mode.                   */
+#define TIMER_CFGR_HSTATE_BIT           28 /* HSTATE<28>: High Multi Purpose State Indicator. */
+#define TIMER_CFGR_HRUN_BIT             29 /* HRUN<29>: High Run Control.                    */
+#define TIMER_CFGR_HEXI_BIT             30 /* HEXI<30>: High Timer Extra Interrupt Flag.     */
+#define TIMER_CFGR_HOVFI_BIT            31 /* HOVFI<31>: High Timer Overflow Interrupt Flag. */
+#define TIMER_CFGR_LCLK_APB             (0 << TIMER_CFGR_LCLK_BIT)
+#define TIMER_CFGR_LCLK_EXTOSCN         (1 << TIMER_CFGR_LCLK_BIT)
+#define TIMER_CFGR_LCLK_TIMER_CLKDIV    (2 << TIMER_CFGR_LCLK_BIT)
+#define TIMER_CFGR_LCLK_CT_FALLING_EDGE (3 << TIMER_CFGR_LCLK_BIT)
+#define TIMER_CFGR_LMSTREN_DS           (0 << TIMER_CFGR_LMSTREN_BIT)
+#define TIMER_CFGR_LMSTREN_EN           (1 << TIMER_CFGR_LMSTREN_BIT)
+#define TIMER_CFGR_SPLITEN_DS           (0 << TIMER_CFGR_SPLITEN_BIT)
+#define TIMER_CFGR_SPLITEN_EN           (1 << TIMER_CFGR_SPLITEN_BIT)
+#define TIMER_CFGR_LEXIEN_DS            (0 << TIMER_CFGR_LEXIEN_BIT)
+#define TIMER_CFGR_LEXIEN_EN            (1 << TIMER_CFGR_LEXIEN_BIT)
+#define TIMER_CFGR_LOVFIEN_DS           (0 << TIMER_CFGR_LOVFIEN_BIT)
+#define TIMER_CFGR_LOVFIEN_EN           (1 << TIMER_CFGR_LOVFIEN_BIT)
+#define TIMER_CFGR_LMD_AUTO_RELOAD      (0 << TIMER_CFGR_LMD_BIT)
+#define TIMER_CFGR_LMD_UP_DOWN          (1 << TIMER_CFGR_LMD_BIT)
+#define TIMER_CFGR_LMD_FALL_CAPTURE     (2 << TIMER_CFGR_LMD_BIT)
+#define TIMER_CFGR_LMD_RISE_CAPTURE     (3 << TIMER_CFGR_LMD_BIT)
+#define TIMER_CFGR_LMD_LOW_CAPTURE      (4 << TIMER_CFGR_LMD_BIT)
+#define TIMER_CFGR_LMD_HIGH_CAPTURE     (5 << TIMER_CFGR_LMD_BIT)
+#define TIMER_CFGR_LMD_DC_CAPTURE       (6 << TIMER_CFGR_LMD_BIT)
+#define TIMER_CFGR_LMD_ONESHOT          (7 << TIMER_CFGR_LMD_BIT)
+#define TIMER_CFGR_LSTATE_NOT_SET       (0 << TIMER_CFGR_LSTATE_BIT)
+#define TIMER_CFGR_LSTATE_SET           (1 << TIMER_CFGR_LSTATE_BIT)
+#define TIMER_CFGR_LRUN_STOP            (0 << TIMER_CFGR_LRUN_BIT)
+#define TIMER_CFGR_LRUN_START           (1 << TIMER_CFGR_LRUN_BIT)
+#define TIMER_CFGR_LEXI_NOT_SET         (0 << TIMER_CFGR_LEXI_BIT)
+#define TIMER_CFGR_LEXI_SET             (1 << TIMER_CFGR_LEXI_BIT)
+#define TIMER_CFGR_LOVFI_NOT_SET        (0 << TIMER_CFGR_LOVFI_BIT)
+#define TIMER_CFGR_LOVFI_SET            (1 << TIMER_CFGR_LOVFI_BIT)
+#define TIMER_CFGR_HCLK_APB             (0 << TIMER_CFGR_HCLK_BIT)
+#define TIMER_CFGR_HCLK_EXTOSCN         (1 << TIMER_CFGR_HCLK_BIT)
+#define TIMER_CFGR_HCLK_TIMER_CLKDIV    (2 << TIMER_CFGR_HCLK_BIT)
+#define TIMER_CFGR_HCLK_CT_FALLING_EDGE (3 << TIMER_CFGR_HCLK_BIT)
+#define TIMER_CFGR_MSTRUN_STOP          (0 << TIMER_CFGR_MSTRUN_BIT)
+#define TIMER_CFGR_MSTRUN_START         (1 << TIMER_CFGR_MSTRUN_BIT)
+#define TIMER_CFGR_HMSTREN_DS           (0 << TIMER_CFGR_HMSTREN_BIT)
+#define TIMER_CFGR_HMSTREN_EN           (1 << TIMER_CFGR_HMSTREN_BIT)
+#define TIMER_CFGR_DBGMD_RUN            (0 << TIMER_CFGR_DBGMD_BIT)
+#define TIMER_CFGR_DBGMD_HALT           (1 << TIMER_CFGR_DBGMD_BIT)
+#define TIMER_CFGR_HEXIEN_DS            (0 << TIMER_CFGR_HEXIEN_BIT)
+#define TIMER_CFGR_HEXIEN_EN            (1 << TIMER_CFGR_HEXIEN_BIT)
+#define TIMER_CFGR_HOVFIEN_DS           (0 << TIMER_CFGR_HOVFIEN_BIT)
+#define TIMER_CFGR_HOVFIEN_EN           (1 << TIMER_CFGR_HOVFIEN_BIT)
+#define TIMER_CFGR_HMD_AUTO_RELOAD      (0 << TIMER_CFGR_HMD_BIT)
+#define TIMER_CFGR_HMD_UP_DOWN          (1 << TIMER_CFGR_HMD_BIT)
+#define TIMER_CFGR_HMD_FALL_CAPTURE     (2 << TIMER_CFGR_HMD_BIT)
+#define TIMER_CFGR_HMD_RISE_CAPTURE     (3 << TIMER_CFGR_HMD_BIT)
+#define TIMER_CFGR_HMD_LOW_CAPTURE      (4 << TIMER_CFGR_HMD_BIT)
+#define TIMER_CFGR_HMD_HIGH_CAPTURE     (5 << TIMER_CFGR_HMD_BIT)
+#define TIMER_CFGR_HMD_DC_CAPTURE       (6 << TIMER_CFGR_HMD_BIT)
+#define TIMER_CFGR_HMD_ONESHOT          (7 << TIMER_CFGR_HMD_BIT)
+#define TIMER_CFGR_HMD_TOGGLE           (8 << TIMER_CFGR_HMD_BIT)
+#define TIMER_CFGR_HMD_PWM              (9 << TIMER_CFGR_HMD_BIT)
+#define TIMER_CFGR_HSTATE_NOT_SET       (0 << TIMER_CFGR_HSTATE_BIT)
+#define TIMER_CFGR_HSTATE_SET           (1 << TIMER_CFGR_HSTATE_BIT)
+#define TIMER_CFGR_HRUN_STOP            (0 << TIMER_CFGR_HRUN_BIT)
+#define TIMER_CFGR_HRUN_START           (1 << TIMER_CFGR_HRUN_BIT)
+#define TIMER_CFGR_HEXI_NOT_SET         (0 << TIMER_CFGR_HEXI_BIT)
+#define TIMER_CFGR_HEXI_SET             (1 << TIMER_CFGR_HEXI_BIT)
+#define TIMER_CFGR_HOVFI_NOT_SET        (0U << TIMER_CFGR_HOVFI_BIT)
+#define TIMER_CFGR_HOVFI_SET            (1U << TIMER_CFGR_HOVFI_BIT)
+
+#define TIMER_CLKDIV_CLKDIVRL_MASK      0x000000FF
+#define TIMER_CLKDIV_CLKDIVCT_MASK      0x00FF0000
+#define TIMER_CLKDIV_CLKDIVRL_BIT       0  /* CLKDIVRL<7:0>: Clock Divider Reload Value.     */
+#define TIMER_CLKDIV_CLKDIVCT_BIT       16 /* CLKDIVCT<23:16>: Clock Divider Counter.        */
+
+#define TIMER_COUNT_LCOUNT_MASK         0x0000FFFF
+#define TIMER_COUNT_HCOUNT_MASK         0xFFFF0000
+#define TIMER_COUNT_LCOUNT_BIT          0  /* LCOUNT<15:0>: Low Timer Count.                 */
+#define TIMER_COUNT_HCOUNT_BIT          16 /* HCOUNT<31:16>: High Timer Count.               */
+
+#define TIMER_CAPTURE_LCCR_MASK         0x0000FFFF
+#define TIMER_CAPTURE_HCCR_MASK         0xFFFF0000
+#define TIMER_CAPTURE_LCCR_BIT          0  /* LCCR<15:0>: Low Timer Capture/Reload.          */
+#define TIMER_CAPTURE_HCCR_BIT          16 /* HCCR<31:16>: High Timer Capture/Reload.        */
+
+
 /*
  * Convenience routines
  */
@@ -489,8 +611,8 @@ typedef enum timer_channel {
     TIMER_CH2 = 2, /**< Channel 2 */
     TIMER_CH3 = 3, /**< Channel 3 */
     TIMER_CH4 = 4, /**< Channel 4 */
-    TIMER_CH5 = 5, /**< Channel 4 */
-    TIMER_CH6 = 6, /**< Channel 4 */
+    TIMER_CH5 = 5, /**< Channel 5 */
+    TIMER_CH6 = 6, /**< Channel 6 */
 } timer_channel;
 
 
@@ -565,7 +687,17 @@ static inline void timer_disable_all(void) {
  * @param dev Device whose counter to pause.
  */
 static inline void timer_pause(timer_dev *dev) {
-    REG_WRITE_SET_CLR(dev->regs->STATUS, EPCA_STATUS_RUN_STOP, EPCA_STATUS_RUN_START);
+    timer_basic_reg_map *regs_b;
+    switch (dev->type) {
+    case TIMER_BASIC:
+        regs_b = (timer_basic_reg_map*)(void*)&dev->regs->MODE;
+        REG_SET_CLR(regs_b->CONFIG, 1, 0x20000000);
+        break;
+    default:
+        REG_SET_CLR(dev->regs->STATUS, EPCA_STATUS_RUN_STOP, EPCA_STATUS_RUN_START);
+        break;
+    }
+
 }
 
 /**
@@ -576,7 +708,16 @@ static inline void timer_pause(timer_dev *dev) {
  * @param dev Device whose counter to resume
  */
 static inline void timer_resume(timer_dev *dev) {
-    REG_WRITE_SET_CLR(dev->regs->STATUS, 1, EPCA_STATUS_RUN_START);
+    timer_basic_reg_map *regs_b;
+    switch (dev->type) {
+    case TIMER_BASIC:
+        regs_b = (timer_basic_reg_map*)(void*)&dev->regs->MODE;
+        REG_SET_CLR(regs_b->CONFIG, 1, 0x20000000);
+        break;
+    default:
+        REG_SET_CLR(dev->regs->STATUS, EPCA_STATUS_RUN_START, EPCA_STATUS_RUN_START);
+        break;
+    }
 }
 
 static inline uint32 timer_actl_freq(timer_dev *dev, uint32 tmr_clk) {
@@ -627,7 +768,15 @@ static inline void timer_set_count(timer_dev *dev, uint16 value) {
  * @see timer_generate_update()
  */
 static inline uint16 timer_get_prescaler(timer_dev *dev) {
-    return 0;
+    timer_reg_map *regs = dev->regs;
+    timer_basic_reg_map *regs_b = (timer_basic_reg_map*)(void*)&dev->regs->MODE;
+    switch (dev->type) {
+    case TIMER_BASIC:
+        return 256 - regs_b->CLKDIV;
+    default:
+        // psc = clk_in / Fepca - 1
+        return 1 + ((regs->MODE & ~EPCA_MODE_CLKDIV_MASK) >> EPCA_MODE_CLKDIV_BIT);
+    }
 }
 
 /**
@@ -641,7 +790,18 @@ static inline uint16 timer_get_prescaler(timer_dev *dev) {
  * @see timer_generate_update()
  */
 static inline void timer_set_prescaler(timer_dev *dev, uint16 psc) {
-
+    timer_reg_map *regs = dev->regs;
+    timer_basic_reg_map *regs_b = (timer_basic_reg_map*)(void*)&dev->regs->MODE;
+    switch (dev->type) {
+    case TIMER_BASIC:
+        regs_b->CLKDIV = 255 / (psc + 1);
+        break;
+    default:
+        // psc = clk_in / Fepca - 1
+        regs->MODE &= ~EPCA_MODE_CLKDIV_MASK;
+        regs->MODE |= psc << EPCA_MODE_CLKDIV_BIT;
+        break;
+    }
 }
 
 /**
@@ -649,6 +809,15 @@ static inline void timer_set_prescaler(timer_dev *dev, uint16 psc) {
  * @param dev Timer whose reload value to return
  */
 static inline uint16 timer_get_reload(timer_dev *dev) {
+    timer_reg_map *regs = dev->regs;
+    timer_basic_reg_map *regs_b = (timer_basic_reg_map*)(void*)&dev->regs->MODE;
+    switch (dev->type) {
+    case TIMER_BASIC:
+        return 0;
+    default:
+        return regs->LIMIT & EPCA_LIMIT_MASK;
+    }
+
     return 0;
 }
 
@@ -659,7 +828,15 @@ static inline uint16 timer_get_reload(timer_dev *dev) {
  * @see timer_generate_update()
  */
 static inline void timer_set_reload(timer_dev *dev, uint16 arr) {
-
+    timer_reg_map *regs = dev->regs;
+    timer_basic_reg_map *regs_b = (timer_basic_reg_map*)(void*)&dev->regs->MODE;
+    switch (dev->type) {
+    case TIMER_BASIC:
+        break;
+    default:
+        regs->LIMIT = arr;
+        break;
+    }
 }
 
 /**
@@ -680,13 +857,24 @@ static inline uint16 timer_get_compare(timer_dev *dev, uint8 channel) {
 static inline void timer_set_compare(timer_dev *dev,
                                      uint8 channel,
                                      uint16 value) {
-    timer_chnl_reg_map *reg = dev->chnl_regs[channel - 1];
-    uint32 limit = timer_actl_freq(dev, 1000000) / 1000;
-
-    reg->MODE &= ~EPCACH_MODE_COSEL_MASK;
-    REG_WRITE_SET_CLR(reg->CONTROL, 1, 1);
-    // CCAPV = 2 * limit * (1 - DC)
-    reg->CCAPV = 2 * limit * value / 65535;
+    timer_chnl_reg_map *reg;
+    timer_basic_reg_map *regs_b;
+    uint32 limit;
+    switch (dev->type) {
+    case TIMER_BASIC:
+        regs_b = (timer_basic_reg_map*)(void*)&dev->regs->MODE;
+        // Set duty cycle: 0-65535
+        regs_b->CAPTURE |= value << 16;
+        break;
+    default:
+        limit = timer_actl_freq(dev, 1000000) / 1000;
+        reg = dev->chnl_regs[channel - 1];
+        reg->MODE &= ~EPCACH_MODE_COSEL_MASK;
+        REG_SET_CLR(reg->CONTROL, 1, 1);
+        // CCAPV = 2 * limit * (1 - DC)
+        reg->CCAPV = 2 * limit * value / 65535;
+        break;
+    }
 }
 
 /**
@@ -749,16 +937,16 @@ static inline void timer_enable_irq(timer_dev *dev, uint8 interrupt) {
     switch (dev->type) {
     case TIMER_ADVANCED:
         if (interrupt <= TIMER_CC6_INTERRUPT) {
-            REG_WRITE_SET_CLR(dev->chnl_regs[interrupt]->CONTROL, 1, EPCACH_CR_CCIEN_MASK);
+            REG_SET_CLR(dev->chnl_regs[interrupt]->CONTROL, 1, EPCACH_CR_CCIEN_MASK);
         }
         else if (interrupt == TIMER_OVERFLOW_INTERRUPT) {
-            REG_WRITE_SET_CLR(dev->regs->CONTROL, 1, EPCACH_CR_CCIEN_MASK);
+            REG_SET_CLR(dev->regs->CONTROL, 1, EPCACH_CR_CCIEN_MASK);
         }
         else if (interrupt == TIMER_HALT_INTERRUPT) {
-            REG_WRITE_SET_CLR(dev->regs->CONTROL, 1, EPCACH_CR_CCIEN_MASK);
+            REG_SET_CLR(dev->regs->CONTROL, 1, EPCACH_CR_CCIEN_MASK);
         }
         else if (interrupt >= TIMER_OVFL1_INTERRUPT) {
-            REG_WRITE_SET_CLR(dev->chnl_regs[interrupt - TIMER_OVFL1_INTERRUPT]->CONTROL, 1, EPCACH_CR_CIOVFIEN_MASK);
+            REG_SET_CLR(dev->chnl_regs[interrupt - TIMER_OVFL1_INTERRUPT]->CONTROL, 1, EPCACH_CR_CIOVFIEN_MASK);
         }
         break;
     case TIMER_GENERAL:
@@ -780,16 +968,16 @@ static inline void timer_disable_irq(timer_dev *dev, uint8 interrupt) {
     switch (dev->type) {
     case TIMER_ADVANCED:
         if (interrupt <= TIMER_CC6_INTERRUPT) {
-            REG_WRITE_SET_CLR(dev->chnl_regs[interrupt]->CONTROL, 0, EPCACH_CR_CCIEN_MASK);
+            REG_SET_CLR(dev->chnl_regs[interrupt]->CONTROL, 0, EPCACH_CR_CCIEN_MASK);
         }
         else if (interrupt == TIMER_OVERFLOW_INTERRUPT) {
-            REG_WRITE_SET_CLR(dev->regs->CONTROL, 0, EPCACH_CR_CCIEN_MASK);
+            REG_SET_CLR(dev->regs->CONTROL, 0, EPCACH_CR_CCIEN_MASK);
         }
         else if (interrupt == TIMER_HALT_INTERRUPT) {
-            REG_WRITE_SET_CLR(dev->regs->CONTROL, 0, EPCACH_CR_CCIEN_MASK);
+            REG_SET_CLR(dev->regs->CONTROL, 0, EPCACH_CR_CCIEN_MASK);
         }
         else if (interrupt >= TIMER_OVFL1_INTERRUPT) {
-            REG_WRITE_SET_CLR(dev->chnl_regs[interrupt - TIMER_OVFL1_INTERRUPT]->CONTROL, 0, EPCACH_CR_CIOVFIEN_MASK);
+            REG_SET_CLR(dev->chnl_regs[interrupt - TIMER_OVFL1_INTERRUPT]->CONTROL, 0, EPCACH_CR_CIOVFIEN_MASK);
         }
         break;
     case TIMER_GENERAL:

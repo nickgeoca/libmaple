@@ -103,7 +103,7 @@ void usart_set_baud_rate(usart_dev *dev, uint32 clock_speed, uint32 baud) {
     }
     ASSERT(clock_speed);
     // Full duplex mode
-    REG_WRITE_SET_CLR(dev->regs->MODE, 0, 0x08000000);
+    REG_SET_CLR(dev->regs->MODE, 0, 0x08000000);
     /* Convert desired baud rate to baud rate register setting. */
     tmp = clock_speed / (2 * baud) - 1;
     dev->regs->BAUDRATE = tmp | (tmp << 16);
@@ -151,25 +151,29 @@ void usart_init(usart_dev *dev) {
     usart_reg_map *regs = dev->regs;
     rb_init(dev->rb, USART_RX_BUF_SIZE, dev->rx_buf);
 
-    nvic_clr_pending_irq(dev->irq_num);
-    nvic_irq_enable(dev->irq_num);
+    // Clocking must be enabled to modify registers
+    clk_enable_dev(dev->clk_id);
 
-    // 8-bit, 1stop, no-parity
+    // Configuration: 8-bit, 1stop, no-parity
 
     // tx configuration
-    REG_WRITE_SET_CLR(regs->CONFIG, 0,
+    REG_SET_CLR(regs->CONFIG, 0,
             UART_CFGR_TDATLN_MASK | UART_CFGR_TPAREN_MASK | UART_CFGR_TSTPMD_MASK | UART_CFGR_TINVEN_MASK);
-    REG_WRITE_SET_CLR(regs->CONFIG, 1,
+    REG_SET_CLR(regs->CONFIG, 1,
             UART_CFGR_TDATLN_8_BITS | UART_CFGR_TSTRTEN_EN | UART_CFGR_TSTPEN_EN | (1 << UART_CFGR_TSTPMD_BIT));
 
     // rx configuration
-    REG_WRITE_SET_CLR(regs->CONFIG, 0,
+    REG_SET_CLR(regs->CONFIG, 0,
             UART_CFGR_RDATLN_MASK | UART_CFGR_RSTPMD_MASK | UART_CFGR_RINVEN_MASK);
-    REG_WRITE_SET_CLR(regs->CONFIG, 1,
+    REG_SET_CLR(regs->CONFIG, 1,
             UART_CFGR_RDATLN_8_BITS | UART_CFGR_RSTRTEN_EN | UART_CFGR_RSTPEN_EN | (1 << UART_CFGR_RSTPMD_BIT));
 
     // Interrupt when a single byte is in rx buffer
-    REG_WRITE_SET_CLR(regs->FIFOCN, 0 , 0x00000030);
+    REG_SET_CLR(regs->FIFOCN, 0 , 0x00000030);
+
+    // Enable IRQ on NVIC
+    nvic_clr_pending_irq(dev->irq_num);
+    nvic_irq_enable(dev->irq_num);
 }
 
 /**
@@ -194,13 +198,11 @@ typedef enum SI32_UART_STOP_BITS_Enum
 void usart_enable(usart_dev *dev) {;
     usart_reg_map *regs = dev->regs;
 
-    clk_enable_dev(dev->clk_id);
-
     // Enable tx/rx
-    REG_WRITE_SET_CLR(regs->CONTROL, 1 , UART_CR_REN_EN | UART_CR_TEN_EN);
+    REG_SET_CLR(regs->CONTROL, 1 , UART_CR_REN_EN | UART_CR_TEN_EN);
 
     // Enable Interupts
-    REG_WRITE_SET_CLR(regs->CONTROL, 1, UART_CR_RDREQIEN_EN);
+    REG_SET_CLR(regs->CONTROL, 1, UART_CR_RDREQIEN_EN);
 
 }
 
@@ -212,7 +214,7 @@ void usart_disable(usart_dev *dev) {
     usart_reg_map *regs = dev->regs;
 
     // DISABLE INTERRUPTS
-    REG_WRITE_SET_CLR(regs->CONTROL, 0, UART_CR_RDREQIEN_EN);
+    REG_SET_CLR(regs->CONTROL, 0, UART_CR_RDREQIEN_EN);
     nvic_clr_pending_irq(dev->irq_num);
 
     // DISABLE UART0 CLOCK

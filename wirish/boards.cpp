@@ -93,7 +93,6 @@ bool boardUsesPin(uint8 pin) {
  */
 
 static void setup_flash(void) {
-    clk_enable_dev(CLK_FLCTRL);
     // Turn on as many Flash "go faster" features as
     // possible. flash_enable_features() just ignores any flags it
     // can't support.
@@ -119,6 +118,9 @@ static void setup_clocks(void) {
     /* If using pll, then calculate actual frequency changed from bit truncation */
     clk_freq = (clk_freq >= 23000000) ? pll_get_actl_freq(RTC_XTAL_HZ, clk_freq) : clk_freq;
 
+    // Enable flash controller clock so we can modify registers to change speed mode
+    clk_enable_dev(CLK_FLCTRL);
+
     // Init pll and rtc
     wirish::priv::board_setup_rtc();
     clk_enable_dev(CLK_PLL);
@@ -129,18 +131,19 @@ static void setup_clocks(void) {
 /*
  * To change system frequency, call following in order:
  *  1) pll_set_freq  - (if using pll)
- *  2) clk_set_clk_variable
- *  3) clk_switch_sysclk
- *  4) clk_rcfg_devices
+ *  2) Get the last clock freqency
+ *  3) clk_set_clk_variable
+ *  4) clk_switch_sysclk/clk_rcfg_devices - order depends on if we scale up or down.
  */
 
     if (src == CLK_SRC_PLL) {
         pll_set_freq(clk_freq);
     }
+    uint32 last_clk_freq = clk_get_sys_freq();
     clk_set_clk_variable(clk_freq);
-    clk_switch_sysclk(src);
-    clk_rcfg_devices();
-
+    // If new clock is faster, then reconfigure first. This way an under clocked flash speed mode won't cause a crash.
+    last_clk_freq < clk_freq ? clk_rcfg_devices() : clk_switch_sysclk(src);
+    !(last_clk_freq < clk_freq) ? clk_rcfg_devices() : clk_switch_sysclk(src);
 }
 
 /*
@@ -172,10 +175,8 @@ static void setup_adcs(void) {
 
 static void timer_default_config(timer_dev *dev) {
     timer_init(dev);
-    //timer_pause(dev);
-
-    //timer_generate_update(dev);
-    //timer_resume(dev);
+    timer_pause(dev);
+    timer_resume(dev);
 
 }
 
