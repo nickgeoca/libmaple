@@ -103,7 +103,7 @@ namespace wirish {
             gpio_set_modef(GPIOA, 10, GPIO_ANALOG, GPIO_DRIVE_WEAK);
 
             // Enable clock
-            clk_enable_dev(CLK_MISC2);
+            clk_enable_dev(CLK_MISC0);
 
             // Clear interrupts
             nvic_clr_pending_irq(NVIC_RTC0ALRM);

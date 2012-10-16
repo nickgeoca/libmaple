@@ -36,6 +36,8 @@
 extern "C" {
 #endif
 
+#include <../../../wirish/boards/si_arduino/include/board/board.h>
+
 /*
  * Chip configuration
  */
@@ -46,9 +48,11 @@ extern "C" {
 #ifndef STM32_PCLK2
 #define STM32_PCLK2                     60000000U
 #endif
-#define CLOCK_SPEED_MHZ__ 20
+
+
+
 #ifndef STM32_DELAY_US_MULT
-#define STM32_DELAY_US_MULT             (7 * CLOCK_SPEED_MHZ__ / 20)/* FIXME: dummy value. */
+#define STM32_DELAY_US_MULT             (7 * CYCLES_PER_MICROSECOND / 20)/* FIXME: dummy value. */
 #endif
 
 /*

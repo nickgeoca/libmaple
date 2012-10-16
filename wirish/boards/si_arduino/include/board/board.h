@@ -73,7 +73,7 @@ enum {
 #define BOARD_BUTTON_PIN        0
 
 /* Pin number for the built-in LED. */
-#define BOARD_LED_PIN           PC10
+#define BOARD_LED_PIN           D13
 
 /* Number of USARTs/UARTs whose pins are broken out to headers. */
 #define BOARD_NR_USARTS         4

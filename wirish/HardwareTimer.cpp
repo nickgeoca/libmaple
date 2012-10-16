@@ -45,11 +45,9 @@ extern "C" {
     static timer_dev **this_devp;
     static clk_dev_id this_id;
     static void set_this_dev(timer_dev *dev) {
-#if 0
         if (dev->clk_id == this_id) {
             *this_devp = dev;
         }
-#endif
     }
 }
 
@@ -58,17 +56,17 @@ extern "C" {
  */
 
 HardwareTimer::HardwareTimer(uint8 timerNum) {
-#if 0
-    rcc_clk_id timerID = (rcc_clk_id)(RCC_TIMER1 + (timerNum - 1));
+    clk_dev_id timerID = (clk_dev_id)(CLK_EPCA1 + (timerNum - 1));
+    // Increment one timerID if not a PCA based timer
+    //timerID += timerID >= CLK_SSG ? 1 : 0;
     this->dev = NULL;
-    noInterrupts(); // Hack to ensure we're the only ones using
+    //noInterrupts(); // Hack to ensure we're the only ones using
                     // set_this_dev() and friends. TODO: use a lock.
     this_id = timerID;
     this_devp = &this->dev;
     timer_foreach(set_this_dev);
-    interrupts();
+    //interrupts();
     ASSERT(this->dev != NULL);
-#endif
 }
 
 void HardwareTimer::pause(void) {
@@ -148,5 +146,5 @@ void HardwareTimer::refresh(void) {
 
 /* -- Deprecated predefined instances -------------------------------------- */
 
-HardwareTimer Timer1(1);
+//HardwareTimer Timer1(1);
 
