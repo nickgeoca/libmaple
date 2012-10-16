@@ -934,22 +934,24 @@ static inline void timer_dma_disable_req(timer_dev *dev, uint8 channel) {
  * @see timer_channel
  */
 static inline void timer_enable_irq(timer_dev *dev, uint8 interrupt) {
+    uint32 chnl;
     switch (dev->type) {
     case TIMER_ADVANCED:
+        if (interrupt == TIMER_HALT_INTERRUPT) {
+            REG_SET_CLR(dev->regs->CONTROL, 1, EPCACH_CR_CCIEN_MASK);
+            break;
+        }
+        // Fall through if timer advanced is not a halt irq
+    case TIMER_GENERAL:
         if (interrupt <= TIMER_CC6_INTERRUPT) {
-            REG_SET_CLR(dev->chnl_regs[interrupt]->CONTROL, 1, EPCACH_CR_CCIEN_MASK);
+            REG_SET_CLR(dev->chnl_regs[chnl]->CONTROL, 1, EPCACH_CR_CCIEN_MASK);
         }
         else if (interrupt == TIMER_OVERFLOW_INTERRUPT) {
             REG_SET_CLR(dev->regs->CONTROL, 1, EPCACH_CR_CCIEN_MASK);
         }
-        else if (interrupt == TIMER_HALT_INTERRUPT) {
-            REG_SET_CLR(dev->regs->CONTROL, 1, EPCACH_CR_CCIEN_MASK);
-        }
         else if (interrupt >= TIMER_OVFL1_INTERRUPT) {
-            REG_SET_CLR(dev->chnl_regs[interrupt - TIMER_OVFL1_INTERRUPT]->CONTROL, 1, EPCACH_CR_CIOVFIEN_MASK);
+            REG_SET_CLR(dev->chnl_regs[chnl]->CONTROL, 1, EPCACH_CR_CIOVFIEN_MASK);
         }
-        break;
-    case TIMER_GENERAL:
         break;
     case TIMER_BASIC:
         break;
