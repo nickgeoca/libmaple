@@ -7,31 +7,42 @@ Leaflab's Coding Standard: http://leaflabs.com/docs/libmaple/coding-standard.htm
 Leaflab's libmaple Repo: https://github.com/leaflabs/libmaple
 
 The readme has the following instructions:
+ * Bootloader Installation
  * Wiring Installation
  * Silabs Bugs
  * libmaple Port Tasks
  
-
+ 
+Bootloader Installation
+------------------------------------------------------------------------------
+ * Steps
+  1) Download repository
+  2) Flash Bootloader
+  3) Test Bootloader
+  
+ * Download repository
+   * Download this repo using Git. 
+   * (Here's one Git Client for Windows: http://git-scm.com/downloads/guis)
+ 
+ * Flash bootloader
+   * Connect the board to the PC with the debugger, then power on.
+   * Open a command prompt and cd to the local repository. 
+   * Flash the bootloader and verify it runs:
+     * Run this command in the prompt: Si32FlashUtility/Si32FlashUtility -i si_boot.hex
+	 * Verify the LED blinks when it starts
+ 
+ * Test Bootloader
+     * Flash the test program on the board: Si32FlashUtility/Si32FlashUtility -i si_wiring.hex
+	 * Restart the board and verify the test app runs. The results as follows:
+	   * LED blinks intermittently
+	   * UART (9600 baud, no flow ctrl) is spitting out data on D0/D1. J17 and J18 should select UART for D0/D1. 
+ 
+ 
 Wiring Installation
 ------------------------------------------------------------------------------
  * Steps
-  1) Download repo
-  2) Flash bootloader and Wiring app
-  3) Install unix toolchain
-  4) Modify Wiring code!
- 
- * Download repo
-   * Download this repo. Use the first half of the instructions under the "Fetch libmaple and Compiler Toolchain" section at this link: http://static.leaflabs.com/pub/leaflabs/maple-docs/snapshots/2012-09-04/unix-toolchain-win-setup.html#id1
- 
- * Flash bootloader and Wiring app
-   * Connect the board to the PC with the debugger (powered on).
-   * Open a command prompt and cd to the repo. 
-   * Flash the bootloader and verify it runs:
-     * Run this command in the prompt: Si32FlashUtility/Si32FlashUtility -i si_boot.hex
-	 * Verify the LED blinks (it's brief)
-   * Flash the test Wiring app and verify it runs:
-     * Run this command in the prompt: Si32FlashUtility/Si32FlashUtility -i si_wiring.hex
-	 * Verify the LED blinks intermittently and UART (9600 baud, no flow ctrl) is spitting out data on D0/D1. J17 and J18 should select UART for D0/D1.
+  1) Install unix toolchain
+  2) Modify Wiring code!
  
  * Install unix toolchain
    * Follow the instructions at this link: http://static.leaflabs.com/pub/leaflabs/maple-docs/snapshots/2012-09-04/unix-toolchain-win-setup.html#id1
