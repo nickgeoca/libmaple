@@ -20,25 +20,21 @@ Bootloader Installation
   2) Flash Bootloader
   3) Test Bootloader
   
- * Download Repository
-   * Download this repo using Git. 
-   * (Here's one Git Client for Windows: http://git-scm.com/downloads/guis)
+	* Download Repository
+		* Download this repo using Git. 
+		* (Here's one Git Client for Windows: http://git-scm.com/downloads/guis)
  
- * Flash Bootloader
-   * Connect the board to the PC with the debugger, then power on.
-   * Flash the bootloader and verify it runs:
-	 * Execute the Si32Flash_boot.bat file located in \GitHub\libmaple\Si32FlashUtility\
-     * (Alternately, open a command prompt, change to the Si32FlashUtility directory, and run this command: Si32FlashUtility -i .\SiM3U167_ACB_Rev000\si_boot.hex)
-	 * Verify the LED blinks when it starts
+	* Flash Bootloader
+		* Connect the board to the PC with the debugger, then power on.
+		* Flash the bootloader by running the Si32Flash_boot.bat file located in \GitHub\libmaple\Si32FlashUtility\
+		* Verify the LED blinks when it starts
  
- * Test Bootloader
-   * Connect the board to the PC with the debugger, then power on.
-   * Flash the test program on the board and verify it runs: 
-	 * Execute the Si32Flash_wiring.bat file located in \GitHub\libmaple\Si32FlashUtility\
-     * (Alternately, open a command prompt, change to the Si32FlashUtility directory, and run this command: Si32FlashUtility -i .\SiM3U167_ACB_Rev000\si_arduino.hex)
-	 * Restart the board and verify the test app operates as follows:
-	   * LED blinks intermittently
-	   * UART (9600 baud, no flow ctrl) is spitting out data on D0/D1. J17 and J18 should select UART for D0/D1. 
+	* Test Bootloader
+		* Connect the board to the PC with the debugger, then power on.
+		* Flash the test program on the board by running the Si32Flash_wiring.bat file located in \GitHub\libmaple\Si32FlashUtility\
+		* Restart the board and verify the test app operates as follows:
+			* LED blinks intermittently
+			* UART (115200 baud, 8 data bits, 1 stop bit, no parity bit, no flow control) is spitting out data on D0/D1. J17 and J18 should select UART for D0/D1. 
  
  
 Wiring Installation
