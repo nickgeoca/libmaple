@@ -49,15 +49,15 @@ extern "C" {
  */
 
 /** SiM3U167 series. */
-#define SIM3_SERIES_U1 0
+#define SIM3U1_SERIES_67 0
 /** STM32F1 series. */
-#define STM32_SERIES_F1 0
+#define STM32_SERIES_F1 1
 /** STM32F2 series. */
-#define STM32_SERIES_F2 1
+#define STM32_SERIES_F2 2
 /** STM32L1 series. */
-#define STM32_SERIES_L1 2
+#define STM32_SERIES_L1 3
 /** STM32F4 series. */
-#define STM32_SERIES_F4 3
+#define STM32_SERIES_F4 4
 
 /* The series header is responsible for defining:
  *

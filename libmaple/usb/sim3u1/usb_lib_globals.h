@@ -1,8 +1,7 @@
 /******************************************************************************
  * The MIT License
  *
- * Copyright (c) 2010 Perry Hung.
- * Copyright (c) 2011 LeafLabs, LLC.
+ * Copyright (c) 2011 LeafLabs LLC.
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -12,8 +11,8 @@
  * of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
@@ -25,39 +24,29 @@
  * SOFTWARE.
  *****************************************************************************/
 
-/**
- * @file libmaple/include/libmaple/delay.h
- * @brief Delay implementation
- */
+#ifndef _USB_LIB_GLOBALS_H_
+#define _USB_LIB_GLOBALS_H_
 
-#ifndef _LIBMAPLE_DELAY_H_
-#define _LIBMAPLE_DELAY_H_
+/* usb_lib headers */
+#include "usb_type.h"
+#include "usb_core.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <libmaple/libmaple_types.h>
-#include <libmaple/stm32.h>
+extern USER_STANDARD_REQUESTS  User_Standard_Requests;
+extern USER_STANDARD_REQUESTS *pUser_Standard_Requests;
 
-/**
- * @brief Delay the given number of microseconds.
- *
- * @param us Number of microseconds to delay.
- */
-static inline void delay_us(uint32 us) {
-    us *= STM32_DELAY_US_MULT;
+extern DEVICE_PROP  Device_Property;
+extern DEVICE_PROP *pProperty;
 
-    /* fudge for function call overhead  */
-    us--;
+extern DEVICE_INFO  Device_Info;
+extern DEVICE_INFO *pInformation;
 
-    asm volatile("   mov r0, %[us]          \n\t"
-                 "1: subs r0, #1            \n\t"
-                 "   bhi 1b                 \n\t"
-                 :
-                 : [us] "r" (us)
-                 : "r0");
-}
+extern DEVICE Device_Table;
+extern u16 SaveRState;
+extern u16 SaveTState;
 
 #ifdef __cplusplus
 }

@@ -27,6 +27,16 @@ cSRCS_$(d) += usb_lib/usb_regs.c
 endif
 endif
 
+ifeq ($(MCU_SERIES), sim3u1)
+cSRCS_$(d) += $(MCU_SERIES)/usb.c
+cSRCS_$(d) += $(MCU_SERIES)/usb_reg_map.c
+cSRCS_$(d) += $(MCU_SERIES)/usb_cdcacm.c
+cSRCS_$(d) += usb_lib/usb_core.c
+cSRCS_$(d) += usb_lib/usb_init.c
+cSRCS_$(d) += usb_lib/usb_mem.c
+cSRCS_$(d) += usb_lib/usb_regs.c
+endif
+
 sFILES_$(d) := $(sSRCS_$(d):%=$(d)/%)
 cFILES_$(d) := $(cSRCS_$(d):%=$(d)/%)
 

@@ -60,12 +60,12 @@ HardwareTimer::HardwareTimer(uint8 timerNum) {
     // Increment one timerID if not a PCA based timer
     //timerID += timerID >= CLK_SSG ? 1 : 0;
     this->dev = NULL;
-    //noInterrupts(); // Hack to ensure we're the only ones using
+    noInterrupts(); // Hack to ensure we're the only ones using
                     // set_this_dev() and friends. TODO: use a lock.
     this_id = timerID;
     this_devp = &this->dev;
     timer_foreach(set_this_dev);
-    //interrupts();
+    interrupts();
     ASSERT(this->dev != NULL);
 }
 
@@ -143,8 +143,4 @@ void HardwareTimer::detachInterrupt(int channel) {
 void HardwareTimer::refresh(void) {
     timer_generate_update(this->dev);
 }
-
-/* -- Deprecated predefined instances -------------------------------------- */
-
-//HardwareTimer Timer1(1);
 

@@ -209,6 +209,11 @@ uint16 adc_read(const adc_dev *dev, uint8 channel) {
     uint32 val;
     uint32 prev_chnl = (regs->SQ3210 & SARADC_SQ3210_TS0MUX_MASK) >> SARADC_SQ3210_TS0MUX_BIT;
 
+    // Clear the FIFO
+    while (regs->FIFOSTATUS & SARADC_FIFOSTATUS_FIFOLVL_MASK) {
+        val = regs->DATA;
+    }
+
     // Single read only uses timeslot 0
     adc_set_tslot_chnl(dev, 0, channel);
 
@@ -221,9 +226,7 @@ uint16 adc_read(const adc_dev *dev, uint8 channel) {
     // Start conversion
     REG_SET_CLR(regs->CONTROL, 1, SARADC_CR_ADBUSY_MASK);
 
-    while (~regs->FIFOSTATUS & SARADC_FIFOSTATUS_DRDYF_MASK);
-    REG_SET_CLR(regs->STATUS, 0, SARADC_STATUS_SCCI_MASK);
-
+    while (!(regs->FIFOSTATUS & SARADC_FIFOSTATUS_FIFOLVL_MASK));
     val = regs->DATA * 3300 / 4095;
 
     // Set previous channel

@@ -33,6 +33,10 @@ ifeq ($(MCU_SERIES), stm32f1)
 cppSRCS_$(d) += usb_serial.cpp	# HACK: this is currently STM32F1 only.
 cppSRCS_$(d) += HardwareSPI.cpp	# FIXME: port to F2 and fix wirish.h
 endif
+ifeq ($(MCU_SERIES), sim3u1)
+cppSRCS_$(d) += usb_serial.cpp
+cppSRCS_$(d) += HardwareSPI.cpp
+endif
 cppSRCS_$(d) += wirish_analog.cpp
 cppSRCS_$(d) +=	wirish_digital.cpp
 cppSRCS_$(d) +=	wirish_math.cpp

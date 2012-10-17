@@ -1,7 +1,6 @@
 /******************************************************************************
  * The MIT License
  *
- * Copyright (c) 2010 Perry Hung.
  * Copyright (c) 2011 LeafLabs, LLC.
  *
  * Permission is hereby granted, free of charge, to any person
@@ -25,42 +24,19 @@
  * SOFTWARE.
  *****************************************************************************/
 
-/**
- * @file libmaple/include/libmaple/delay.h
- * @brief Delay implementation
- */
+#include "usb_reg_map.h"
 
-#ifndef _LIBMAPLE_DELAY_H_
-#define _LIBMAPLE_DELAY_H_
+/* TODO these could use some improvement; they're fairly
+ * straightforward ports of the analogous ST code.  The PMA blit
+ * routines in particular are obvious targets for performance
+ * measurement and tuning. */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+void usb_copy_to_pma(const uint8 *buf, uint16 len, uint16 pma_offset) {
 
-#include <libmaple/libmaple_types.h>
-#include <libmaple/stm32.h>
-
-/**
- * @brief Delay the given number of microseconds.
- *
- * @param us Number of microseconds to delay.
- */
-static inline void delay_us(uint32 us) {
-    us *= STM32_DELAY_US_MULT;
-
-    /* fudge for function call overhead  */
-    us--;
-
-    asm volatile("   mov r0, %[us]          \n\t"
-                 "1: subs r0, #1            \n\t"
-                 "   bhi 1b                 \n\t"
-                 :
-                 : [us] "r" (us)
-                 : "r0");
 }
 
-#ifdef __cplusplus
+void usb_copy_from_pma(uint8 *buf, uint16 len, uint16 pma_offset) {
 }
-#endif
 
-#endif
+void usb_set_ep_rx_count(uint8 ep, uint16 count) {
+}

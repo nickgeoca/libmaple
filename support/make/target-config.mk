@@ -32,6 +32,9 @@ ifeq ($(MCU_SERIES), stm32f1)
 LD_SERIES_PATH := $(LD_SERIES_PATH)/$(MCU_F1_LINE)
 endif
 
+ifeq ($(MCU_SERIES), sim3u1)
+TARGET_FLAGS += -mcpu=cortex-m3 -march=armv7-m
+endif
 ifeq ($(MCU_SERIES), stm32f1)
 TARGET_FLAGS += -mcpu=cortex-m3 -march=armv7-m
 endif

@@ -108,7 +108,7 @@ uint8 USBSerial::getRTS(void) {
 }
 
 #if BOARD_HAVE_SERIALUSB
-USBSerial SerialUSB;
+// USBSerial SerialUSB; // TODO [silabs]: add usbserial
 #endif
 
 /*

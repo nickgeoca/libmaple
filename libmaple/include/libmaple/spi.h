@@ -387,7 +387,7 @@ static inline void spi_irq_disable(spi_dev *dev, uint32 interrupt_flags) {
  *         Otherwise, SPI_DFF_16_BIT.
  */
 static inline spi_cfg_flag spi_dff(spi_dev *dev) {
-    return 0;
+    return (spi_cfg_flag)0;
 }
 
 /**
