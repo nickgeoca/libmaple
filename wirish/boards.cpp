@@ -103,20 +103,23 @@ static void setup_flash(void) {
 static void setup_clocks(void) {
     uint32 clk_freq = CLOCK_SPEED_HZ;
     clk_sysclk_src src;
-    if (clk_freq == 20000000) {
-        src = CLK_SRC_LP;
-    }
-    else if (clk_freq == 2500000) {
-        src = CLK_SRC_LP_DIV;
-    }
-    else {
-        src = CLK_SRC_PLL;
-    }
 
+    // Overclock guard
     clk_freq = clk_freq > 80000000 ? 80000000 : clk_freq;
 
-    /* If using pll, then calculate actual frequency changed from bit truncation */
-    clk_freq = (clk_freq >= 23000000) ? pll_get_actl_freq(RTC_XTAL_HZ, clk_freq) : clk_freq;
+    if (CYCLES_PER_MICROSECOND == 2.5) {
+        clk_freq = 2500000;
+        src = CLK_SRC_LP_DIV;
+    }
+    else if (CYCLES_PER_MICROSECOND > 23) {
+        // If using pll, then calculate actual frequency changed from bit truncation
+        clk_freq = (clk_freq >= 23000000) ? pll_get_actl_freq(RTC_XTAL_HZ, clk_freq) : clk_freq;
+        src = CLK_SRC_PLL;
+    }
+    else {
+        clk_freq = 20000000;
+        src = CLK_SRC_LP;
+    }
 
     // Enable flash controller clock so we can modify registers to change speed mode
     clk_enable_dev(CLK_FLCTRL);

@@ -5,6 +5,12 @@
 
 void init(void);
 
+HardwareTimer Timer1(1);
+HardwareTimer Timer2(2);
+HardwareTimer Timer3(3);
+HardwareTimer Timer4(4);
+HardwareTimer Timer5(5);
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Exti code
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -36,7 +42,6 @@ void extiCallback1(void *var) {
 // ADC code
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void measure_adc_noise(uint8 pin, uint32 smpl_cnt) {
-    const int N = 250;
     uint16 x;
     float mean = 0;
     float delta = 0;
@@ -77,7 +82,7 @@ void initUARTs(void) {
 
 void serial2_Display(void)
 {
-    const int N = 250;
+    const int N = 20;
 
     // UART Rx
     DISPLAY_CURSOR_UP(1);
@@ -109,14 +114,53 @@ void serial2_Display(void)
         measure_adc_noise(boardADCPins[i], N);
 
     // Move cursor up
-    DISPLAY_CURSOR_UP(BOARD_NR_ADC_PINS + 8);
+    DISPLAY_CURSOR_UP(BOARD_NR_ADC_PINS + 9);
+
+    //
+    Serial2.print("\t\t\t\t\t\t\t\t");
+    Serial2.print("Timer Prescalers: T1-");
+    Serial2.print(Timer1.getPrescaleFactor());
+    Serial2.print(" | T2-");
+    Serial2.print(Timer2.getPrescaleFactor());
+    Serial2.print(" | T3-");
+    Serial2.print(Timer3.getPrescaleFactor());
+    Serial2.print(" | T4-");
+    Serial2.print(Timer4.getPrescaleFactor());
+    Serial2.print(" | T5-");
+    Serial2.println(Timer5.getPrescaleFactor());
+    Serial2.print("\t\t\t\t\t\t\t\t");
+    Serial2.print("Timer Overflow Values: T1-");
+    Serial2.print(Timer1.getOverflow());
+    Serial2.print(" | T2-");
+    Serial2.print(Timer2.getOverflow());
+    Serial2.print(" | T3-");
+    Serial2.print(Timer3.getOverflow());
+    Serial2.print(" | T4-");
+    Serial2.print(Timer4.getOverflow());
+    Serial2.print(" | T5-");
+    Serial2.println(Timer5.getOverflow());
+    Serial2.print("\t\t\t\t\t\t\t\t");
+    Serial2.print("Timer Compare Values: T1C1-");
+    Serial2.print(Timer1.getCompare(1));
+    Serial2.print(" | T1C2-");
+    Serial2.print(Timer1.getCompare(2));
+    Serial2.print(" | T2C1-");
+    Serial2.print(Timer2.getCompare(1));
+    Serial2.print(" | T2C2-");
+    Serial2.print(Timer2.getCompare(2));
+    Serial2.print(" | T3C1-");
+    Serial2.println(Timer3.getCompare(1));
+    DISPLAY_CURSOR_UP(2);
 }
 
 void serial2_Start(void)
 {
     Serial2.println("\f\tExample Program");
     Serial2.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-    Serial2.println(" * PWM\tD30 - D35, A1, D22 - D24, A9, A11");
+    Serial2.print("Board freqency: ");
+    Serial2.println(clk_get_sys_freq());
+    Serial2.println(" * Timers\tD30 - D35, A1, D22 - D24, A9, A11");
+    Serial2.println("     * Ground D40 to turn off timers (PWM)");
     Serial2.println(" * ADC\tsee ADC output pins");
     Serial2.println(" * SysTick");
     Serial2.println(" * UART2");
@@ -139,6 +183,24 @@ void tglLed(void)
     rate = ((rate + 24) % 50) + 1;
 }
 
+void D40D41_inputFnct(void)
+{
+    if (digitalRead(D40)) {
+        Timer1.pause();
+        Timer2.pause();
+        Timer3.pause();
+        Timer4.pause();
+        Timer5.pause();
+    }
+    else {
+        Timer1.resume();
+        Timer2.resume();
+        Timer3.resume();
+        Timer4.resume();
+        Timer5.resume();
+    }
+
+}
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Wiring setup/loop
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -163,6 +225,9 @@ void setup() {
     // Uart
     initUARTs();
     serial2_Start();
+
+    // Timer1 operations
+    pinMode(D40, INPUT);
 }
 
 void loop () {
@@ -171,6 +236,11 @@ void loop () {
 
     delay(750);
     serial2_Display();
+
+    D40D41_inputFnct();
+    Timer1.setOverflow(500);
+    Timer2.setOverflow(500);
+    Timer3.setOverflow(500);
 }
 
 

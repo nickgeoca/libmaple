@@ -65,7 +65,7 @@ namespace wirish {
         }
 
         __weak void board_setup_clock_prescalers(uint32 sys_freq) {
-            uint32 apb_div = CLK_APB_HCLK_DIV_2;
+            uint32 apb_div = CLK_APB_HCLK_DIV_1;
             uint32 ahb_div = CLK_AHB_SYSCLK_DIV_1;
 
             // Set limit on apb bus to 50 MHz

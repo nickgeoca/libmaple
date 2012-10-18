@@ -58,7 +58,7 @@ extern "C" {
 HardwareTimer::HardwareTimer(uint8 timerNum) {
     clk_dev_id timerID = (clk_dev_id)(CLK_EPCA1 + (timerNum - 1));
     // Increment one timerID if not a PCA based timer
-    //timerID += timerID >= CLK_SSG ? 1 : 0;
+    timerID = clk_dev_id((uint32)timerID + (timerID >= CLK_SSG ? 1 : 0));
     this->dev = NULL;
     noInterrupts(); // Hack to ensure we're the only ones using
                     // set_this_dev() and friends. TODO: use a lock.

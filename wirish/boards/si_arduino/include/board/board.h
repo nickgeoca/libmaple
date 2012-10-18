@@ -46,10 +46,7 @@ enum {
     PB8, PB9, PB10, PB11, PB12, PB13, PB14, PB15, PA12
 };
 
-/* Set of all possible pin names; not all boards have all these (note
- * that we use the Dx convention since all of the Maple's pins are
- * "digital" pins (e.g. can be used with digitalRead() and
- * digitalWrite()), but not all of them are connected to ADCs. */
+/* Board pins */
 enum {
     D0, D1, D2, D3, D4, D5, D6, D7, D8, D9, D10,
     D11, D12, D13, D14, D15, D16, D17, D18, D19,
@@ -61,11 +58,16 @@ enum {
 };
 
 /* System clock options:
- * 1) 2.5 MHz
+ * 1) 2.5 MHz - This speed is not well supported by the peripherals. ex: baud rate must be lowered to ~56k
  * 2) 20 MHz
  * 3) 23-80MHz
+ *
+ * Note: Bus speeds are configurable in boards_setup.cpp.
+ *       They are configured to work as fast as possible,
+ *       so modification isn't necessary.
  */
-#define CYCLES_PER_MICROSECOND  80
+#define CYCLES_PER_MICROSECOND  73.75
+//33.1415926
 #define RTC_XTAL_HZ             32768
 
 

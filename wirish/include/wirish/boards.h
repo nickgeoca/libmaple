@@ -105,8 +105,8 @@ bool boardUsesPin(uint8 pin);
 #define CLOCK_SPEED_MHZ                 CYCLES_PER_MICROSECOND
 #define CLOCK_SPEED_HZ                  (CLOCK_SPEED_MHZ * 1000000UL)
 
-#ifndef SYSTICK_RELOAD_VAL  // FIXME [silabs]: systick reload value
-#define SYSTICK_RELOAD_VAL              (1000 * CLOCK_SPEED_MHZ - 1)
+#ifndef SYSTICK_RELOAD_VAL
+#define SYSTICK_RELOAD_VAL              (CLOCK_SPEED_HZ / 1000 - 1)
 #endif
 
 #ifndef BOARD_BUTTON_PRESSED_LEVEL

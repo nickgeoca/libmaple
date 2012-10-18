@@ -691,7 +691,7 @@ static inline void timer_pause(timer_dev *dev) {
     switch (dev->type) {
     case TIMER_BASIC:
         regs_b = (timer_basic_reg_map*)(void*)&dev->regs->MODE;
-        REG_SET_CLR(regs_b->CONFIG, 1, 0x20000000);
+        REG_SET_CLR(regs_b->CONFIG, 0, 0x20000000);
         break;
     default:
         REG_SET_CLR(dev->regs->STATUS, EPCA_STATUS_RUN_STOP, EPCA_STATUS_RUN_START);
@@ -775,7 +775,7 @@ static inline uint16 timer_get_prescaler(timer_dev *dev) {
         return 256 - regs_b->CLKDIV;
     default:
         // psc = clk_in / Fepca - 1
-        return 1 + ((regs->MODE & ~EPCA_MODE_CLKDIV_MASK) >> EPCA_MODE_CLKDIV_BIT);
+        return 1 + ((regs->MODE & EPCA_MODE_CLKDIV_MASK) >> EPCA_MODE_CLKDIV_BIT);
     }
 }
 
@@ -833,6 +833,9 @@ static inline void timer_set_reload(timer_dev *dev, uint16 arr) {
     switch (dev->type) {
     case TIMER_BASIC:
         break;
+    case TIMER_ADVANCED:
+        regs->adv.LIMITUPD = arr;
+        break;
     default:
         regs->LIMIT = arr;
         break;
@@ -888,7 +891,16 @@ static inline void timer_set_compare(timer_dev *dev,
  * @param dev Timer device to generate an update for.
  */
 static inline void timer_generate_update(timer_dev *dev) {
-
+    timer_chnl_reg_map *reg;
+    timer_basic_reg_map *regs_b;
+    uint32 limit;
+    switch (dev->type) {
+    case TIMER_BASIC:
+        break;
+    default:
+        //reg->CCAPVUPD = 2 * limit * value / 65535;
+        break;
+    }
 }
 
 /**
