@@ -188,10 +188,11 @@ void timerControl(void) {
     Serial2.print("0-pause 1-resume 2-prescl 3-ovflow 4-cmpr .exit: ");
     mode = Serial2.read();
     mode -= 0x30;
-    if (mode > 4) {
-        return;
-    }
     Serial2.println(int(mode));
+
+    if (mode > 4) {
+        goto exit;
+    }
 
     Serial2.print("Enter timer #: \r");
     tNum = Serial2.read();
@@ -231,7 +232,7 @@ void timerControl(void) {
     }
 exit:
     Serial2.print('\r');
-    DISPLAY_ERASE(50);
+    DISPLAY_ERASE(55);
     DISPLAY_CURSOR_UP(1);
     return;
 }
@@ -252,7 +253,7 @@ void cmdProc(void)
         timerControl();
         Serial2.flush();
     }
-    DISPLAY_ERASE(50);
+    DISPLAY_ERASE(55);
     Serial2.print('\r');
     Serial2.flush();
     return;

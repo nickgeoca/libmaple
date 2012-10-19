@@ -103,23 +103,30 @@ void exti_attach_callback(exti_num num,
                           void *arg,
                           exti_trigger_mode mode) {
     uint32 bit_offset, trig_used = 1;
+    uint32 control_reg = EXTI_BASE->CONTROL0;
     ASSERT(handler);
 
-    /* The trig num starts at one in the Wiring API */
+    // The trig num starts at one in the Wiring API
     trig_num -= 1;
 
-    /* If an active exti is using the same trigger, then use it.
-     * Else use an unused exti if possible
-     */
-    if ((EXTI_BASE->CONTROL0 & 0xf) == trig_num && EXTI_BASE->CONTROL0 & BIT(7)) {
+    // Trigger is used by an EXTI 0?
+    if ((control_reg & 0xf) == trig_num && control_reg & BIT(7)) {
         num = 0;
     }
-    else if ((EXTI_BASE->CONTROL0 >> 8 & 0xf) == trig_num && EXTI_BASE->CONTROL0 & BIT(15)) {
+    // Trigger is used by an EXTI 1?
+    else if ((control_reg >> 8 & 0xf) == trig_num && control_reg & BIT(15)) {
         num = 1;
     }
+    // Trigger is not used
     else {
         trig_used = 0;
-        num =  (EXTI_BASE->CONTROL0 & BIT(7)) ? 1 : 0;
+        // Exit if both EXTIs are used
+        if (control_reg & (BIT(7) | BIT(15)) ==
+                (BIT(7) | BIT(15))) {
+            return;
+        }
+        // Choose the unused EXTI
+        num = (control_reg & BIT(7)) ? 1 : 0;
     }
     bit_offset = num ? 8 : 0;
 

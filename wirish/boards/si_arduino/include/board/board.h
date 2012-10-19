@@ -66,7 +66,7 @@ enum {
  *       They are configured to work as fast as possible,
  *       so modification isn't necessary.
  */
-#define CYCLES_PER_MICROSECOND  73.75
+#define CYCLES_PER_MICROSECOND  50
 
 #define RTC_XTAL_HZ             32768
 
