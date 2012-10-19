@@ -1,3 +1,3 @@
-Si32FlashUtility -i .\SiM3U167_ACB_Rev000\si_arduino.hex
+Si32FlashUtility -i .\SiM3U167_ACB_Rev000\si_wiring.hex
 
 PAUSE
