@@ -10,6 +10,10 @@ HardwareTimer Timer2(2);
 HardwareTimer Timer3(3);
 HardwareTimer Timer4(4);
 HardwareTimer Timer5(5);
+const char g_clrBuff[] = {0x1b, 0x5b, 0x41, 0x00};
+#define DISPLAY_CURSOR_DN(n) do{for (int i = 0; i < n; i++) Serial2.println(""); } while(0)
+#define DISPLAY_CURSOR_UP(n) do{for (int i = 0; i < n; i++) Serial2.print(g_clrBuff); Serial2.print((char)'\r');} while(0)
+#define DISPLAY_ERASE(n) do{for (int i = 0; i < n; i++) Serial2.print((char)' '); for (int i = 0; i < n; i++) Serial2.print((char)'\b');} while(0)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Exti code
@@ -18,10 +22,6 @@ const uint32 exti_D38Info[] = {38, 0};
 void *exti_varD38 = (void *)exti_D38Info;
 void *cback_var2;
 void *cback_var3;
-
-#define DISPLAY_CURSOR_DN(n) do{for (int i = 0; i < n; i++) Serial2.println(""); } while(0)
-#define DISPLAY_CURSOR_UP(n) do{for (int i = 0; i < n; i++) Serial2.print((char)141); Serial2.print((char)'\r');} while(0)
-#define DISPLAY_ERASE(n) do{for (int i = 0; i < n; i++) Serial2.print((char)' '); for (int i = 0; i < n; i++) Serial2.print((char)'\b');} while(0)
 #define DISPLAY_LOC_EXTI 21
 
 void extiCallback1(void *var) {
