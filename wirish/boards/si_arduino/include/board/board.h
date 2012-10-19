@@ -67,7 +67,7 @@ enum {
  *       so modification isn't necessary.
  */
 #define CYCLES_PER_MICROSECOND  73.75
-//33.1415926
+
 #define RTC_XTAL_HZ             32768
 
 

@@ -125,7 +125,7 @@ void timer_foreach(void (*fn)(timer_dev*)) {
     fn(TIMER4);
     fn(TIMER5);
 }
-#define TIMER_FREQENCY 1000000
+
 /**
  * Initialize a timer, and reset its register map.
  * @param dev Timer to initialize
@@ -133,16 +133,11 @@ void timer_foreach(void (*fn)(timer_dev*)) {
 void timer_init(timer_dev *dev) {
     timer_reg_map *regs = dev->regs;
     timer_basic_reg_map *regs_b = (timer_basic_reg_map*)(void*)&dev->regs->MODE;
-    uint32 clk_div;
-    uint32 timer_freq = TIMER_FREQENCY;
-    uint32 pwm_freq = 1000;
 
     clk_enable_dev(dev->clk_id);
 
     switch (dev->type) {
     case TIMER_BASIC:
-        // clk_div = 256 - clk_in / Fepca
-        clk_div = 256 - clk_get_bus_freq(dev->clk_id) / timer_freq;
         // Initialize registers
         regs_b->CONFIG = 0;
         regs_b->CLKDIV = 0;
@@ -159,16 +154,13 @@ void timer_init(timer_dev *dev) {
 
         break;
     default:
-        // clk_div = clk_in / Fepca - 1
-        clk_div = clk_get_bus_freq(dev->clk_id) / timer_freq - 1;
-        timer_freq = timer_actl_freq(dev, timer_freq);
 
         // Set clock speed
         regs->MODE &= ~EPCA_MODE_CLKSEL_MASK & ~EPCA_MODE_CLKDIV_MASK;
-        regs->MODE |= EPCA_MODE_CLKSEL_APB | (clk_div << EPCA_MODE_CLKDIV_BIT);
+        regs->MODE |= EPCA_MODE_CLKSEL_APB | (0 << EPCA_MODE_CLKDIV_BIT);
 
         // Set PWM frequency
-        regs->LIMIT = timer_freq / pwm_freq;
+        regs->LIMIT = 0;
         regs->MODE &= ~EPCACH_MODE_COSEL_MASK & ~EPCA_MODE_HDOSEL_MASK;
         regs->MODE |= EPCACH_MODE_COSEL_TOGGLE_OUTPUT | EPCA_MODE_HDOSEL_NO_DIFF;
 

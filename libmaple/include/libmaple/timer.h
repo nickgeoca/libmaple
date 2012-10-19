@@ -772,10 +772,10 @@ static inline uint16 timer_get_prescaler(timer_dev *dev) {
     timer_basic_reg_map *regs_b = (timer_basic_reg_map*)(void*)&dev->regs->MODE;
     switch (dev->type) {
     case TIMER_BASIC:
-        return 256 - regs_b->CLKDIV;
+        return 255 - (regs_b->CLKDIV & 255);
     default:
         // psc = clk_in / Fepca - 1
-        return 1 + ((regs->MODE & EPCA_MODE_CLKDIV_MASK) >> EPCA_MODE_CLKDIV_BIT);
+        return ((regs->MODE & EPCA_MODE_CLKDIV_MASK) >> EPCA_MODE_CLKDIV_BIT);
     }
 }
 
@@ -794,10 +794,17 @@ static inline void timer_set_prescaler(timer_dev *dev, uint16 psc) {
     timer_basic_reg_map *regs_b = (timer_basic_reg_map*)(void*)&dev->regs->MODE;
     switch (dev->type) {
     case TIMER_BASIC:
-        regs_b->CLKDIV = 255 / (psc + 1);
+        // limit psc
+        if (psc > 255) {
+            psc = 255;
+        }
+        regs_b->CLKDIV = 255 - psc;
         break;
     default:
-        // psc = clk_in / Fepca - 1
+        // limit psc
+        if (psc > 1023) {
+            psc = 1023;
+        }
         regs->MODE &= ~EPCA_MODE_CLKDIV_MASK;
         regs->MODE |= psc << EPCA_MODE_CLKDIV_BIT;
         break;
@@ -813,7 +820,7 @@ static inline uint16 timer_get_reload(timer_dev *dev) {
     timer_basic_reg_map *regs_b = (timer_basic_reg_map*)(void*)&dev->regs->MODE;
     switch (dev->type) {
     case TIMER_BASIC:
-        return 0;
+        return 65535;
     default:
         return regs->LIMIT & EPCA_LIMIT_MASK;
     }
@@ -848,7 +855,18 @@ static inline void timer_set_reload(timer_dev *dev, uint16 arr) {
  * @param channel Channel whose compare value to get.
  */
 static inline uint16 timer_get_compare(timer_dev *dev, uint8 channel) {
-    return 0;
+    timer_chnl_reg_map *reg;
+    timer_basic_reg_map *regs_b;
+    uint32 limit;
+    channel -= 1;
+    switch (dev->type) {
+    case TIMER_BASIC:
+        regs_b = (timer_basic_reg_map*)(void*)&dev->regs->MODE;
+        return (uint16)(regs_b->CAPTURE >> 16);
+    default:
+        reg = dev->chnl_regs[channel];
+        return (uint16)reg->CCAPV;
+    }
 }
 
 /**
@@ -862,20 +880,16 @@ static inline void timer_set_compare(timer_dev *dev,
                                      uint16 value) {
     timer_chnl_reg_map *reg;
     timer_basic_reg_map *regs_b;
-    uint32 limit;
+    channel -= 1;
     switch (dev->type) {
     case TIMER_BASIC:
         regs_b = (timer_basic_reg_map*)(void*)&dev->regs->MODE;
-        // Set duty cycle: 0-65535
+        regs_b->CAPTURE &= 0xFFFF;
         regs_b->CAPTURE |= value << 16;
         break;
     default:
-        limit = timer_actl_freq(dev, 1000000) / 1000;
-        reg = dev->chnl_regs[channel - 1];
-        reg->MODE &= ~EPCACH_MODE_COSEL_MASK;
-        REG_SET_CLR(reg->CONTROL, 1, 1);
-        // CCAPV = 2 * limit * (1 - DC)
-        reg->CCAPV = 2 * limit * value / 65535;
+        reg = dev->chnl_regs[channel];
+        reg->CCAPVUPD = value;
         break;
     }
 }

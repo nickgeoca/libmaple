@@ -1,4 +1,4 @@
-// Demo/test code.
+// Demo code.
 
 #include <string.h>
 #include <wirish/wirish.h>
@@ -86,15 +86,11 @@ void serial2_Display(void)
 
     // UART Rx
     DISPLAY_CURSOR_UP(1);
-    Serial2.println("- UART2 Rx");
-    DISPLAY_ERASE(15);
-    while (Serial2.available()) {
-        Serial2.print((char)Serial2.read());
-    }
-    Serial2.println("\n");
+    Serial2.println("- Command Processor:");
+
 
     // SysTick
-    Serial2.println("- SysTick");
+    Serial2.println("\n\n- SysTick");
     Serial2.print("System Time: ");
     uint32 ms = millis();
     Serial2.print(ms / 1000);
@@ -127,6 +123,7 @@ void serial2_Display(void)
     Serial2.print(" | T4-");
     Serial2.print(Timer4.getPrescaleFactor());
     Serial2.print(" | T5-");
+    DISPLAY_ERASE(6);
     Serial2.println(Timer5.getPrescaleFactor());
     Serial2.print("\t\t\t\t\t\t\t\t");
     Serial2.print("Timer Overflow Values: T1-");
@@ -138,6 +135,7 @@ void serial2_Display(void)
     Serial2.print(" | T4-");
     Serial2.print(Timer4.getOverflow());
     Serial2.print(" | T5-");
+    DISPLAY_ERASE(6);
     Serial2.println(Timer5.getOverflow());
     Serial2.print("\t\t\t\t\t\t\t\t");
     Serial2.print("Timer Compare Values: T1C1-");
@@ -148,8 +146,9 @@ void serial2_Display(void)
     Serial2.print(Timer2.getCompare(1));
     Serial2.print(" | T2C2-");
     Serial2.print(Timer2.getCompare(2));
-    Serial2.print(" | T3C1-");
-    Serial2.println(Timer3.getCompare(1));
+    Serial2.print(" | T5Cx-");
+    DISPLAY_ERASE(6);
+    Serial2.println(Timer5.getCompare(1));
     DISPLAY_CURSOR_UP(2);
 }
 
@@ -160,11 +159,11 @@ void serial2_Start(void)
     Serial2.print("Board freqency: ");
     Serial2.println(clk_get_sys_freq());
     Serial2.println(" * Timers\tD30 - D35, A1, D22 - D24, A9, A11");
-    Serial2.println("     * Ground D40 to turn off timers (PWM)");
     Serial2.println(" * ADC\tsee ADC output pins");
     Serial2.println(" * SysTick");
     Serial2.println(" * UART2");
     Serial2.println(" * EXTI2\tshort D38 & D39");
+    Serial2.println("Enter 1 to control Timers");
     Serial2.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
 }
 
@@ -183,24 +182,82 @@ void tglLed(void)
     rate = ((rate + 24) % 50) + 1;
 }
 
-void D40D41_inputFnct(void)
-{
-    if (digitalRead(D40)) {
-        Timer1.pause();
-        Timer2.pause();
-        Timer3.pause();
-        Timer4.pause();
-        Timer5.pause();
+void timerControl(void) {
+    HardwareTimer *timerArray[] = {&Timer1, &Timer2, &Timer3, &Timer4, &Timer5};
+    char mode, tNum, cNum;
+    Serial2.print("0-pause 1-resume 2-prescl 3-ovflow 4-cmpr .exit: ");
+    mode = Serial2.read();
+    mode -= 0x30;
+    if (mode > 4) {
+        return;
     }
-    else {
-        Timer1.resume();
-        Timer2.resume();
-        Timer3.resume();
-        Timer4.resume();
-        Timer5.resume();
-    }
+    Serial2.println(int(mode));
 
+    Serial2.print("Enter timer #: \r");
+    tNum = Serial2.read();
+    tNum -= 0x31;
+    if (tNum > 5) {
+        goto exit;
+    }
+    if (mode == 0) {
+        timerArray[tNum]->pause();
+        goto exit;
+    }
+    if (mode == 1) {
+        timerArray[tNum]->resume();
+        goto exit;
+    }
+    DISPLAY_ERASE(20);
+    if (mode > 3) {
+        Serial2.print("Enter chnl#: \r");
+        cNum = Serial2.read();
+        cNum -= 0x30;
+    }
+    DISPLAY_ERASE(20);
+    Serial2.print("Use to change: '-','+',<other>");
+    char tmp;
+    while ((tmp = Serial2.read()) == '-' || tmp == '+') {
+        switch (mode) {
+        case 2:
+            timerArray[tNum]->setPrescaleFactor(timerArray[tNum]->getPrescaleFactor() + (tmp == '+' ? 1 : -1));
+            break;
+        case 3:
+            timerArray[tNum]->setOverflow(timerArray[tNum]->getOverflow() + (tmp == '+' ? 20 : -20));
+            break;
+        case 4:
+            timerArray[tNum]->setCompare(cNum, timerArray[tNum]->getCompare(cNum) + (tmp == '+' ? 200 : -200));
+            break;
+        }
+    }
+exit:
+    Serial2.print('\r');
+    DISPLAY_ERASE(50);
+    DISPLAY_CURSOR_UP(1);
+    return;
 }
+
+void cmdProc(void)
+{
+    char mode;
+    int numChars;
+
+    if (!Serial2.available()) {
+        return;
+    }
+    mode = Serial2.read();
+
+    Serial2.flush();
+
+    if (mode == '1') {
+        timerControl();
+        Serial2.flush();
+    }
+    DISPLAY_ERASE(50);
+    Serial2.print('\r');
+    Serial2.flush();
+    return;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Wiring setup/loop
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -226,8 +283,21 @@ void setup() {
     initUARTs();
     serial2_Start();
 
-    // Timer1 operations
-    pinMode(D40, INPUT);
+    // Timer init
+    HardwareTimer *timerArray[] = {&Timer1, &Timer2, &Timer3, &Timer4, &Timer5};
+    for (int i = 0; i < 5; i++) {
+        timerArray[i]->setPrescaleFactor(1);
+        timerArray[i]->setOverflow(10000);
+    }
+    for (int i = 1; i <= 6; i++) {
+        timerArray[0]->setCompare(i, 5000);
+    }
+    for (int i = 1; i <= 2; i++) {
+        timerArray[1]->setCompare(i, 5000);
+        timerArray[2]->setCompare(i, 5000);
+    }
+    timerArray[3]->setCompare(1, 30000);
+    timerArray[4]->setCompare(1, 30000);
 }
 
 void loop () {
@@ -237,10 +307,7 @@ void loop () {
     delay(750);
     serial2_Display();
 
-    D40D41_inputFnct();
-    Timer1.setOverflow(500);
-    Timer2.setOverflow(500);
-    Timer3.setOverflow(500);
+    cmdProc();
 }
 
 
