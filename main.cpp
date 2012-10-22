@@ -22,7 +22,7 @@ const uint32 exti_D38Info[] = {38, 0};
 void *exti_varD38 = (void *)exti_D38Info;
 void *cback_var2;
 void *cback_var3;
-#define DISPLAY_LOC_EXTI 21
+#define DISPLAY_LOC_EXTI 24
 
 void extiCallback1(void *var) {
     static int cntr = 0;
@@ -109,12 +109,8 @@ void serial2_Display(void)
     for (int i = 0; i < BOARD_NR_ADC_PINS; i++)
         measure_adc_noise(boardADCPins[i], N);
 
-    // Move cursor up
-    DISPLAY_CURSOR_UP(BOARD_NR_ADC_PINS + 9);
-
-    //
-    Serial2.print("\t\t\t\t\t\t\t\t");
-    Serial2.print("Timer Prescalers: T1-");
+    // Timers
+    Serial2.print("\nTimer Prescalers: T1-");
     Serial2.print(Timer1.getPrescaleFactor());
     Serial2.print(" | T2-");
     Serial2.print(Timer2.getPrescaleFactor());
@@ -125,7 +121,6 @@ void serial2_Display(void)
     Serial2.print(" | T5-");
     DISPLAY_ERASE(6);
     Serial2.println(Timer5.getPrescaleFactor());
-    Serial2.print("\t\t\t\t\t\t\t\t");
     Serial2.print("Timer Overflow Values: T1-");
     Serial2.print(Timer1.getOverflow());
     Serial2.print(" | T2-");
@@ -137,7 +132,6 @@ void serial2_Display(void)
     Serial2.print(" | T5-");
     DISPLAY_ERASE(6);
     Serial2.println(Timer5.getOverflow());
-    Serial2.print("\t\t\t\t\t\t\t\t");
     Serial2.print("Timer Compare Values: T1C1-");
     Serial2.print(Timer1.getCompare(1));
     Serial2.print(" | T1C2-");
@@ -149,11 +143,15 @@ void serial2_Display(void)
     Serial2.print(" | T5Cx-");
     DISPLAY_ERASE(6);
     Serial2.println(Timer5.getCompare(1));
-    DISPLAY_CURSOR_UP(2);
+
+    // Move cursor up
+    DISPLAY_CURSOR_UP(BOARD_NR_ADC_PINS + 12);
 }
 
 void serial2_Start(void)
 {
+    char formFeed[] = {0x1B, 0x5B, 0x32, 0x4A, 0x00};
+    Serial2.print(formFeed);
     Serial2.println("\f\tExample Program");
     Serial2.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
     Serial2.print("Board freqency: ");
@@ -162,7 +160,7 @@ void serial2_Start(void)
     Serial2.println(" * ADC\tsee ADC output pins");
     Serial2.println(" * SysTick");
     Serial2.println(" * UART2");
-    Serial2.println(" * EXTI2\tshort D38 & D39");
+    Serial2.println(" * EXTI\tshort D38 & D39");
     Serial2.println("Enter 1 to control Timers");
     Serial2.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
 }

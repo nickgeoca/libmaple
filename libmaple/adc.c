@@ -103,7 +103,7 @@ static inline void adc_set_grp_gain(const adc_dev *dev, uint32 grp, adc_grp_gain
 void adc_init(const adc_dev *dev) {
     adc_reg_map *regs = dev->regs;
     uint32 clk, i;
-    uint32 sar_clk = 10000000; // slowed down for 2.5MHz clk; max: 16240000
+    uint32 sar_clk = 16240000; // slowed down for 2.5MHz clk; max: 16240000
 
     // Enable clock
     clk_enable_dev(dev->clk_id);
