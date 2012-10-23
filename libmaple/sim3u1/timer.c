@@ -61,29 +61,32 @@
 
 void __irq_epca1(void) {
     dispatch_adv(TIMER1);
+    return;
 }
 
 void __irq_pca1(void) {
-
+    dispatch_general(TIMER2);
+    return;
 }
 
 void __irq_pca2(void) {
-
+    dispatch_general(TIMER3);
+    return;
 }
 
 void __irq_tim1_low(void) {
-
+    return;
 }
 
 void __irq_tim1_high(void) {
-
+    return;
 }
 
 void __irq_tim2_low(void) {
-
+    return;
 }
 
 void __irq_tim2_high(void) {
-
+    return;
 }
 

@@ -111,7 +111,7 @@ uint16 HardwareTimer::setPeriod(uint32 microseconds) {
         return this->getOverflow();
     }
 
-    uint32 period_cyc = microseconds * CYCLES_PER_MICROSECOND;
+    uint32 period_cyc = microseconds * CYCLES_PER_MICROSECOND / 2;
     uint16 prescaler = (uint16)(period_cyc / MAX_RELOAD + 1);
     uint16 overflow = (uint16)((period_cyc + (prescaler / 2)) / prescaler);
     this->setPrescaleFactor(prescaler);

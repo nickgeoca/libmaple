@@ -87,9 +87,9 @@ static __always_inline void dispatch_single_irq(timer_dev *dev,
 
 #define adv_irq_enabled(bit, dev) \
             ( \
-            bit <= TIMER_OVERFLOW_INTERRUPT ? adv_chnl_cc_irq_enabled(bit, dev) : /* chnl cap/cmp interrupt     */ \
-            bit <= TIMER_HALT_INTERRUPT  ? adv_ovfi_irq_enabled(dev)         : /* timer overflow interrupt   */ \
-            bit <= TIMER_OVFL1_INTERRUPT    ? adv_halt_irq_enabled(dev)         : /* halt interrupt             */ \
+            bit <= TIMER_CC6_INTERRUPT ? adv_chnl_cc_irq_enabled(bit, dev) : /* chnl cap/cmp interrupt     */ \
+            bit <= TIMER_OVERFLOW_INTERRUPT  ? adv_ovfi_irq_enabled(dev)         : /* timer overflow interrupt   */ \
+            bit <= TIMER_HALT_INTERRUPT    ? adv_halt_irq_enabled(dev)         : /* halt interrupt             */ \
             adv_chnl_ovfi_irq_enabled(bit - TIMER_OVFL1_INTERRUPT, dev)           /* chnl overflow interrupt    */ \
             )
 
@@ -102,7 +102,6 @@ static __always_inline void dispatch_single_irq(timer_dev *dev,
 static __always_inline void dispatch_adv(timer_dev *dev) {
     timer_reg_map *regs = dev->regs;
     uint32 status = regs->STATUS & EPCA_IRQ_FLAGS_MASK;
-    uint32 control = regs->CONTROL & EPCA_IRQ_FLAGS_MASK;
     uint32 irq_flags;
     uint32 bit;
 
@@ -119,9 +118,42 @@ static __always_inline void dispatch_adv(timer_dev *dev) {
     // Clear pending flags
     REG_SET_CLR(regs->STATUS, 0, status);
 }
-
+#define PCA_STATUS_CXCCI_MASK   (3)
+#define PCA_STATUS_OVFI_MASK    (1 << 7)
+#define PCA_STATUS_CXIOVFI_MASK (3 << 10)
+#define PCA_IRQ_FLAGS_MASK     (PCA_STATUS_CXCCI_MASK | PCA_STATUS_OVFI_MASK | PCA_STATUS_CXIOVFI_MASK)
+#define PCA_IRQ_CXCCI_SHIFT    0
+#define PCA_IRQ_OVFI_SHIFT     (4 + PCA_IRQ_CXCCI_SHIFT)
+#define PCA_IRQ_CXIOVFI_SHIFT  (2 + PCA_IRQ_OVFI_SHIFT)
+#define get_gen_irq_flags(reg) \
+            ((PCA_STATUS_CXCCI_MASK & reg)  >> PCA_IRQ_CXCCI_SHIFT | \
+            (PCA_STATUS_OVFI_MASK & reg)    >> PCA_IRQ_OVFI_SHIFT  | \
+            (PCA_STATUS_CXIOVFI_MASK & reg) >> PCA_IRQ_CXIOVFI_SHIFT);
+#define gen_irq_enabled(bit, dev) \
+            ( \
+            bit <= TIMER_GEN_CC2_IRQ ? adv_chnl_cc_irq_enabled(bit, dev) : /* chnl cap/cmp interrupt     */ \
+            bit <= TIMER_GEN_OVERFLOW_IRQ ? adv_ovfi_irq_enabled(dev)         : /* timer overflow interrupt   */ \
+            adv_chnl_ovfi_irq_enabled(bit - TIMER_GEN_OVFL1_IRQ, dev)        /* chnl overflow interrupt    */ \
+            )
 static __always_inline void dispatch_general(timer_dev *dev) {
+    timer_reg_map *regs = dev->regs;
 
+    uint32 status = regs->STATUS & PCA_IRQ_FLAGS_MASK;
+    uint32 irq_flags;
+    uint32 bit;
+
+    irq_flags = get_gen_irq_flags(status);
+    // Service interrupts
+    do {
+        bit = __builtin_ctz(irq_flags);
+        irq_flags ^= 1 << bit;
+        if (dev->handlers[bit] && gen_irq_enabled(bit, dev)) {
+            dev->handlers[bit]();
+        }
+    } while (irq_flags);
+
+    // Clear pending flags
+    REG_SET_CLR(regs->STATUS, 0, status);
 }
 
 static __always_inline void dispatch_basic(timer_dev *dev) {

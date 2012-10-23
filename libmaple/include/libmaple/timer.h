@@ -659,6 +659,13 @@ typedef enum timer_interrupt_id {
     TIMER_OVFL6_INTERRUPT,          /**< Intermediate overflow 6 interrupt. Used in n-bit PWM mode. */
 } timer_interrupt_id;
 
+typedef enum timer_general_interrupt_id {
+    TIMER_GEN_CC1_IRQ,            /**< Capture/compare 1 interrupt. */
+    TIMER_GEN_CC2_IRQ,            /**< Capture/compare 2 interrupt. */
+    TIMER_GEN_OVERFLOW_IRQ,       /**< Occurs when the timer reached the limit register. */
+    TIMER_GEN_OVFL1_IRQ,          /**< Intermediate overflow 1 interrupt. Used in n-bit PWM mode. */
+    TIMER_GEN_OVFL2_IRQ,          /**< Intermediate overflow 2 interrupt. Used in n-bit PWM mode. */
+} timer_general_interrupt_id;
 
 void timer_attach_interrupt(timer_dev *dev,
                             uint8 interrupt,
@@ -865,7 +872,8 @@ static inline uint16 timer_get_compare(timer_dev *dev, uint8 channel) {
         return (uint16)(regs_b->CAPTURE >> 16);
     default:
         reg = dev->chnl_regs[channel];
-        return (uint16)reg->CCAPV;
+        // Divide 2 because DC = (overflow - .5 * compare) / overflow
+        return (uint16)reg->CCAPVUPD / 2;
     }
 }
 
@@ -889,7 +897,8 @@ static inline void timer_set_compare(timer_dev *dev,
         break;
     default:
         reg = dev->chnl_regs[channel];
-        reg->CCAPVUPD = value;
+        // Times 2 because DC = (overflow - .5 * compare) / overflow
+        reg->CCAPVUPD = value * 2;
         break;
     }
 }
@@ -905,16 +914,7 @@ static inline void timer_set_compare(timer_dev *dev,
  * @param dev Timer device to generate an update for.
  */
 static inline void timer_generate_update(timer_dev *dev) {
-    timer_chnl_reg_map *reg;
-    timer_basic_reg_map *regs_b;
-    uint32 limit;
-    switch (dev->type) {
-    case TIMER_BASIC:
-        break;
-    default:
-        //reg->CCAPVUPD = 2 * limit * value / 65535;
-        break;
-    }
+    return;
 }
 
 /**
@@ -960,26 +960,37 @@ static inline void timer_dma_disable_req(timer_dev *dev, uint8 channel) {
  * @see timer_channel
  */
 static inline void timer_enable_irq(timer_dev *dev, uint8 interrupt) {
-    uint32 chnl;
+    interrupt -= 1;
     switch (dev->type) {
     case TIMER_ADVANCED:
-        if (interrupt == TIMER_HALT_INTERRUPT) {
-            REG_SET_CLR(dev->regs->CONTROL, 1, EPCACH_CR_CCIEN_MASK);
-            break;
-        }
-        // Fall through if timer advanced is not a halt irq
-    case TIMER_GENERAL:
+
         if (interrupt <= TIMER_CC6_INTERRUPT) {
-            REG_SET_CLR(dev->chnl_regs[chnl]->CONTROL, 1, EPCACH_CR_CCIEN_MASK);
+            REG_SET_CLR(dev->chnl_regs[interrupt]->CONTROL, 1, EPCACH_CR_CCIEN_MASK);
         }
         else if (interrupt == TIMER_OVERFLOW_INTERRUPT) {
-            REG_SET_CLR(dev->regs->CONTROL, 1, EPCACH_CR_CCIEN_MASK);
+            REG_SET_CLR(dev->regs->CONTROL, 1, EPCA_CR_OVFIEN_MASK);
+        }
+        else if (interrupt == TIMER_HALT_INTERRUPT) {
+            REG_SET_CLR(dev->regs->CONTROL, 1, EPCA_CR_HALTIEN_MASK);
         }
         else if (interrupt >= TIMER_OVFL1_INTERRUPT) {
-            REG_SET_CLR(dev->chnl_regs[chnl]->CONTROL, 1, EPCACH_CR_CIOVFIEN_MASK);
+            REG_SET_CLR(dev->chnl_regs[interrupt - TIMER_OVFL1_INTERRUPT]->CONTROL, 1, EPCACH_CR_CIOVFIEN_MASK);
+        }
+        break;
+        // Fall through if timer advanced is not a halt irq
+    case TIMER_GENERAL:
+        if (interrupt <= TIMER_GEN_CC2_IRQ) {
+            REG_SET_CLR(dev->chnl_regs[interrupt]->CONTROL, 1, EPCACH_CR_CCIEN_MASK);
+        }
+        else if (interrupt == TIMER_GEN_OVERFLOW_IRQ) {
+            REG_SET_CLR(dev->regs->CONTROL, 1, EPCACH_CR_CCIEN_MASK);
+        }
+        else if (interrupt <= TIMER_GEN_OVFL2_IRQ) {
+            REG_SET_CLR(dev->chnl_regs[interrupt - TIMER_GEN_OVFL1_IRQ]->CONTROL, 1, EPCACH_CR_CIOVFIEN_MASK);
         }
         break;
     case TIMER_BASIC:
+        // TODO [silabs]: Timer basic irq
         break;
     }
 }
@@ -993,52 +1004,32 @@ static inline void timer_enable_irq(timer_dev *dev, uint8 interrupt) {
  * @see timer_channel
  */
 static inline void timer_disable_irq(timer_dev *dev, uint8 interrupt) {
+    uint32 channel = interrupt - 1;
     switch (dev->type) {
     case TIMER_ADVANCED:
+        if (interrupt == TIMER_HALT_INTERRUPT) {
+            REG_SET_CLR(dev->regs->CONTROL, 0, EPCACH_CR_CCIEN_MASK);
+            break;
+        }
+        // Fall through if timer advanced is not a halt irq
+    case TIMER_GENERAL:
         if (interrupt <= TIMER_CC6_INTERRUPT) {
-            REG_SET_CLR(dev->chnl_regs[interrupt]->CONTROL, 0, EPCACH_CR_CCIEN_MASK);
+            REG_SET_CLR(dev->chnl_regs[channel]->CONTROL, 0, EPCACH_CR_CCIEN_MASK);
         }
         else if (interrupt == TIMER_OVERFLOW_INTERRUPT) {
             REG_SET_CLR(dev->regs->CONTROL, 0, EPCACH_CR_CCIEN_MASK);
         }
-        else if (interrupt == TIMER_HALT_INTERRUPT) {
-            REG_SET_CLR(dev->regs->CONTROL, 0, EPCACH_CR_CCIEN_MASK);
-        }
         else if (interrupt >= TIMER_OVFL1_INTERRUPT) {
-            REG_SET_CLR(dev->chnl_regs[interrupt - TIMER_OVFL1_INTERRUPT]->CONTROL, 0, EPCACH_CR_CIOVFIEN_MASK);
+            REG_SET_CLR(dev->chnl_regs[channel - TIMER_OVFL1_INTERRUPT]->CONTROL, 0, EPCACH_CR_CIOVFIEN_MASK);
         }
-        break;
-    case TIMER_GENERAL:
         break;
     case TIMER_BASIC:
+        // TODO [silabs]: Timer basic irq
         break;
     }
 }
 
-/**
- * @brief Enable a timer channel's capture/compare signal.
- *
- * If the channel is configured as output, the corresponding output
- * compare signal will be output on the corresponding output pin.  If
- * the channel is configured as input, enables capture of the counter
- * value into the input capture/compare register.
- *
- * @param dev Timer device, must have type TIMER_ADVANCED or TIMER_GENERAL.
- * @param channel Channel to enable, from 1 to 4.
- */
-static inline void timer_cc_enable(timer_dev *dev, uint8 channel) {
 
-}
-
-/**
- * @brief Disable a timer channel's output compare or input capture signal.
- * @param dev Timer device, must have type TIMER_ADVANCED or TIMER_GENERAL.
- * @param channel Channel to disable, from 1 to 4.
- * @see timer_cc_enable()
- */
-static inline void timer_cc_disable(timer_dev *dev, uint8 channel) {
-
-}
 
 /**
  * @brief Get a channel's capture/compare output polarity
@@ -1048,6 +1039,15 @@ static inline void timer_cc_disable(timer_dev *dev, uint8 channel) {
  * @see timer_cc_set_polarity()
  */
 static inline uint8 timer_cc_get_pol(timer_dev *dev, uint8 channel) {
+    uint32 shift;
+    channel -= 1;
+    timer_basic_reg_map *regs_b = (timer_basic_reg_map*)(void*)&dev->regs->MODE;
+    switch (dev->type) {
+    case TIMER_BASIC:
+        return regs_b->CONFIG & (channel == 1 ? TIMER_CFGR_HMD_MASK : TIMER_CFGR_LMD_MASK);
+    default:
+        return dev->chnl_regs[channel]->CONTROL & EPCACH_CR_COUTST_MASK;
+    }
     return 0;
 }
 
@@ -1069,7 +1069,15 @@ static inline uint8 timer_cc_get_pol(timer_dev *dev, uint8 channel) {
  * @param pol New polarity, 0 or 1.
  */
 static inline void timer_cc_set_pol(timer_dev *dev, uint8 channel, uint8 pol) {
-
+    uint32 shift;
+    channel -= 1;
+    timer_basic_reg_map *regs_b = (timer_basic_reg_map*)(void*)&dev->regs->MODE;
+    switch (dev->type) {
+    case TIMER_BASIC:
+        REG_SET_CLR(regs_b->CONFIG, pol, channel == 1 ? TIMER_CFGR_HMD_MASK : TIMER_CFGR_LMD_MASK);
+    default:
+        REG_SET_CLR(dev->chnl_regs[channel]->CONTROL, pol,  EPCACH_CR_COUTST_MASK);
+    }
 }
 
 /**
@@ -1128,53 +1136,41 @@ static inline void timer_dma_set_base_addr(timer_dev *dev,
 
 }
 
-/**
- * Timer output compare modes.
- */
-typedef enum timer_oc_mode {
-    /**
-     * Frozen: comparison between output compare register and counter
-     * has no effect on the outputs. */
-    TIMER_OC_MODE_FROZEN = 0 << 4,
-    /**
-     * OCxREF signal is forced high when the count matches the channel
-     * capture/compare register. */
-    TIMER_OC_MODE_ACTIVE_ON_MATCH = 1 << 4,
-    /**
-     * OCxREF signal is forced low when the counter matches the
-     * channel capture/compare register. */
-    TIMER_OC_MODE_INACTIVE_ON_MATCH = 2 << 4,
-    /**
-     * OCxREF toggles when counter matches the channel capture/compare
-     * register. */
-    TIMER_OC_MODE_TOGGLE = 3 << 4,
-    /** OCxREF is forced low. */
-    TIMER_OC_MODE_FORCE_INACTIVE = 4 << 4,
-    /** OCxREF is forced high. */
-    TIMER_OC_MODE_FORCE_ACTIVE = 5 << 4,
-    /**
-     * PWM mode 1.  In upcounting, channel is active as long as count
-     * is less than channel capture/compare register, else inactive.
-     * In downcounting, channel is inactive as long as count exceeds
-     * capture/compare register, else active. */
-    TIMER_OC_MODE_PWM_1 = 6 << 4,
-    /**
-     * PWM mode 2. In upcounting, channel is inactive as long as count
-     * is less than capture/compare register, else active.  In
-     * downcounting, channel is active as long as count exceeds
-     * capture/compare register, else inactive. */
-    TIMER_OC_MODE_PWM_2 = 7 << 4,
-} timer_oc_mode;
+
 
 /**
- * Timer output compare mode flags.
- * @see timer_oc_set_mode()
+ * Timer modes. If selected an output-based mode, then set a output compare function by bitwise ORing.
  */
-typedef enum timer_oc_mode_flags {
-    TIMER_OC_CE = 1U << 7,       /**< Output compare clear enable. */
-    TIMER_OC_PE = 1U << 3,       /**< Output compare preload enable. */
-    TIMER_OC_FE = 1U << 2,       /**< Output compare fast enable. */
-} timer_oc_mode_flags;
+typedef enum timer_mode_arch {
+
+// Regular Timers
+    // Operating modes
+    TIMER_MODE_PWM_EDGE = EPCACH_MODE_CMD_EDGE_PWM,
+    TIMER_MODE_PWM_CNTR = EPCACH_MODE_CMD_CENTER_ALIGNED_PWM,
+    TIMER_MODE_SQR_WAVE = EPCACH_MODE_CMD_HF_SQUARE_WAVE,
+    TIMER_MODE_TMR_CPTR = EPCACH_MODE_CMD_TIMER_CAPTURE,
+    TIMER_MODE_PWM_NBIT = EPCACH_MODE_CMD_N_BIT_PWM,
+
+    // Output compare functions
+    TIMER_OC_TGL = EPCACH_MODE_COSEL_TOGGLE_OUTPUT, /**< Toggle output. */
+    TIMER_OC_SET = EPCACH_MODE_COSEL_SET_OUTPUT,    /**< Set output.    */
+    TIMER_OC_CLR = EPCACH_MODE_COSEL_CLEAR_OUTPUT,  /**< Clear output.  */
+    TIMER_OC_OFF = EPCACH_MODE_COSEL_NO_CHANGE,     /**< No change.     */
+
+// Basic Timers
+    // Basic Timer Modes
+    TIMER_BASIC_MODE_AUTO_RELOAD = 0,
+    TIMER_BASIC_MODE_UPDOWN = 1,
+    TIMER_BASIC_MODE_FALL_CPTR = 2,
+    TIMER_BASIC_MODE_RISE_CPTR = 3,
+    TIMER_BASIC_MODE_LOW_CPTR = 4,
+    TIMER_BASIC_MODE_HIGH_CPTR = 5,
+    TIMER_BASIC_MODE_DC_CPTR = 6,
+    TIMER_BASIC_MODE_TOGGLE = 8,
+    TIMER_BASIC_MODE_PWM = 9,
+} timer_mode_arch;
+
+
 
 /**
  * @brief Configure a channel's output compare mode.
@@ -1186,11 +1182,26 @@ typedef enum timer_oc_mode_flags {
  * @see timer_oc_mode
  * @see timer_oc_mode_flags
  */
-static inline void timer_oc_set_mode(timer_dev *dev,
+static inline void timer_mode_select(timer_dev *dev,
                                      uint8 channel,
-                                     timer_oc_mode mode,
-                                     uint8 flags) {
-
+                                     timer_mode_arch mode) {
+    uint32 shift;
+    timer_basic_reg_map *regs_b = (timer_basic_reg_map*)(void*)&dev->regs->MODE;
+    channel -= 1;
+    switch (dev->type) {
+    case TIMER_BASIC:
+        if (channel == 0 && mode > TIMER_BASIC_MODE_DC_CPTR) {
+            return;
+        }
+        REG_SET_CLR(regs_b->CONFIG, 0, channel == 1 ? TIMER_CFGR_HMD_MASK : TIMER_CFGR_LMD_MASK);
+        shift = channel == 1 ? TIMER_CFGR_HMD_BIT : TIMER_CFGR_LMD_BIT;
+        REG_SET_CLR(regs_b->CONFIG, 1, mode << shift);
+        break;
+    default:
+        dev->chnl_regs[channel]->MODE &= EPCACH_MODE_CMD_MASK | EPCACH_MODE_COSEL_MASK;
+        dev->chnl_regs[channel]->MODE |= mode;
+        break;
+    }
 }
 
 #ifdef __cplusplus

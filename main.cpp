@@ -15,29 +15,26 @@ const char g_clrBuff[] = {0x1b, 0x5b, 0x41, 0x00};
 #define DISPLAY_CURSOR_UP(n) do{for (int i = 0; i < n; i++) Serial2.print(g_clrBuff); Serial2.print((char)'\r');} while(0)
 #define DISPLAY_ERASE(n) do{for (int i = 0; i < n; i++) Serial2.print((char)' '); for (int i = 0; i < n; i++) Serial2.print((char)'\b');} while(0)
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// Exti code
-///////////////////////////////////////////////////////////////////////////////////////////////////
-const uint32 exti_D38Info[] = {38, 0};
-void *exti_varD38 = (void *)exti_D38Info;
-void *cback_var2;
-void *cback_var3;
-#define DISPLAY_LOC_EXTI 24
+#define DISPLAY_INFO_CURSOR_UP BOARD_NR_ADC_PINS + 16
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Callbacks
+///////////////////////////////////////////////////////////////////////////////////////////////////
+const uint32 exti_D38Info = 38;
+void *exti_varD38 = (void *)exti_D38Info;
+__io uint32 g_extiCounter = 0;
+__io uint32 g_extiLastPin = 0;
 void extiCallback1(void *var) {
-    static int cntr = 0;
-    uint32 *varInt = (uint32 *)var;
-    // EXTI
-    DISPLAY_CURSOR_DN(DISPLAY_LOC_EXTI + varInt[1] * 4);
-    Serial2.println("- EXTI");
-    Serial2.print("Pin D");
-    Serial2.println(varInt[0]);
-    Serial2.print("Counter: ");
-    Serial2.print(cntr++);
-    DISPLAY_CURSOR_UP(DISPLAY_LOC_EXTI + 2 + varInt[1] * 4);
+    g_extiLastPin = (uint32 )var;
+    g_extiCounter +=1;
 }
 
-
+__io uint32 g_timerCounter = 0;
+void timerOutputCmpCallback(void)
+{
+    g_timerCounter += 1;
+}
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // ADC code
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -102,7 +99,7 @@ void serial2_Display(void)
     delay(5);
     uint32 t2 = micros();
     Serial2.print(t2 - t1);
-    Serial2.println("us\n\n");
+    Serial2.println("us\n");
 
     // ADC
     Serial2.println("- ADC");
@@ -110,7 +107,8 @@ void serial2_Display(void)
         measure_adc_noise(boardADCPins[i], N);
 
     // Timers
-    Serial2.print("\nTimer Prescalers: T1-");
+    Serial2.println("\n- Timers");
+    Serial2.print("Prescalers: T1-");
     Serial2.print(Timer1.getPrescaleFactor());
     Serial2.print(" | T2-");
     Serial2.print(Timer2.getPrescaleFactor());
@@ -121,7 +119,7 @@ void serial2_Display(void)
     Serial2.print(" | T5-");
     DISPLAY_ERASE(6);
     Serial2.println(Timer5.getPrescaleFactor());
-    Serial2.print("Timer Overflow Values: T1-");
+    Serial2.print("Overflow Values: T1-");
     Serial2.print(Timer1.getOverflow());
     Serial2.print(" | T2-");
     Serial2.print(Timer2.getOverflow());
@@ -132,7 +130,7 @@ void serial2_Display(void)
     Serial2.print(" | T5-");
     DISPLAY_ERASE(6);
     Serial2.println(Timer5.getOverflow());
-    Serial2.print("Timer Compare Values: T1C1-");
+    Serial2.print("Compare Values: T1C1-");
     Serial2.print(Timer1.getCompare(1));
     Serial2.print(" | T1C2-");
     Serial2.print(Timer1.getCompare(2));
@@ -143,9 +141,19 @@ void serial2_Display(void)
     Serial2.print(" | T5Cx-");
     DISPLAY_ERASE(6);
     Serial2.println(Timer5.getCompare(1));
+    Serial2.print("IRQ Counter: ");
+    Serial2.println(g_timerCounter);
+
+    // EXTI
+    Serial2.println("\n- EXTI");
+    Serial2.print("IRQ Counter: ");
+    Serial2.print(g_extiCounter);
+    Serial2.print("  (last changed by Pin D");
+    Serial2.print(g_extiLastPin);
+    Serial2.println(')');
 
     // Move cursor up
-    DISPLAY_CURSOR_UP(BOARD_NR_ADC_PINS + 12);
+    DISPLAY_CURSOR_UP(DISPLAY_INFO_CURSOR_UP);
 }
 
 void serial2_Start(void)
@@ -261,13 +269,6 @@ void cmdProc(void)
 // Wiring setup/loop
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void setup() {
-
-    // Setup pwm
-    for (int i = 0; i < BOARD_NR_PWM_PINS; i++) {
-        pinMode(boardPWMPins[i], PWM);
-        pwmWrite(boardPWMPins[i], 65535 * (i + 1) / (BOARD_NR_PWM_PINS + 5));
-    }
-
     // Setup analog pins
     for (int i = 0; i < BOARD_NR_ADC_PINS; i++)
         pinMode(boardADCPins[i], INPUT_ANALOG);
@@ -283,20 +284,36 @@ void setup() {
     serial2_Start();
 
     // Timer init
+    for (int i = 0; i < BOARD_NR_PWM_PINS; i++) {
+        pinMode(boardPWMPins[i], PWM);
+        pwmWrite(boardPWMPins[i], 65535 * (i + 1) / (BOARD_NR_PWM_PINS + 5));
+    }
+
     HardwareTimer *timerArray[] = {&Timer1, &Timer2, &Timer3, &Timer4, &Timer5};
     for (int i = 0; i < 5; i++) {
         timerArray[i]->setPrescaleFactor(1);
         timerArray[i]->setOverflow(10000);
     }
     for (int i = 1; i <= 6; i++) {
-        timerArray[0]->setCompare(i, 5000);
+        timerArray[0]->setMode(i, TIMER_PWM);
+        timerArray[0]->setCompare(i, 4000);
     }
     for (int i = 1; i <= 2; i++) {
-        timerArray[1]->setCompare(i, 5000);
-        timerArray[2]->setCompare(i, 5000);
+        timerArray[1]->setMode(i, TIMER_PWM);
+        timerArray[2]->setMode(i, TIMER_PWM);
+        timerArray[1]->setCompare(i, 4000);
+        timerArray[2]->setCompare(i, 4000);
     }
+    timerArray[3]->setMode(1, TIMER_PWM);
     timerArray[3]->setCompare(1, 30000);
+    timerArray[4]->setMode(1, TIMER_PWM);
     timerArray[4]->setCompare(1, 30000);
+    timerArray[0]->setPeriod(300);
+    timerArray[1]->setPrescaleFactor(1024);
+    timerArray[1]->setMode(1, TIMER_OUTPUT_COMPARE);
+    timerArray[1]->attachInterrupt(1, timerOutputCmpCallback);
+
+
 }
 
 void loop () {

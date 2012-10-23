@@ -40,6 +40,7 @@ static void output_compare_mode(timer_dev *dev, uint8 channel);
 
 static inline void enable_irq(timer_dev *dev, uint8 interrupt);
 #define NR_ADV_HANDLERS                 14
+#define NR_GEN_HANDLERS                 5
 /*
  * Devices
  *
@@ -69,7 +70,7 @@ static timer_dev timer2 = {
     .nvic_irqs.irq_count = 1,
     .nvic_irqs.irq_array = timer2_irqs,
     .chnl_regs = t2_chnl_regs,
-    .handlers = { [0] = 0 }
+    .handlers = { [NR_GEN_HANDLERS - 1] = 0 }
 };
 timer_dev *TIMER2 = &timer2;
 
@@ -82,7 +83,7 @@ static timer_dev timer3 = {
     .nvic_irqs.irq_count = 1,
     .nvic_irqs.irq_array = timer3_irqs,
     .chnl_regs = t3_chnl_regs,
-    .handlers = { [0] = 0 }
+    .handlers = { [NR_GEN_HANDLERS - 1] = 0 }
 };
 timer_dev *TIMER3 = &timer3;
 
@@ -145,10 +146,9 @@ void timer_init(timer_dev *dev) {
         regs_b->CAPTURE = 0;
         // Split timer mode
         REG_SET_CLR(regs_b->CONFIG, 1, TIMER_CFGR_SPLITEN_EN);
-        // Select high timer clock source
-        REG_SET_CLR(regs_b->CONFIG, 1, TIMER_CFGR_HCLK_TIMER_CLKDIV);
-        // High pwm mode
-        REG_SET_CLR(regs_b->CONFIG, 1, TIMER_CFGR_HMD_PWM);
+        // Set the low and high timer clock sources to the APB with prescaler.
+        REG_SET_CLR(regs_b->CONFIG, 1, TIMER_CFGR_HCLK_TIMER_CLKDIV | TIMER_CFGR_LCLK_TIMER_CLKDIV);
+
         // Set clock divider. Run at APB rate.
         regs_b->CLKDIV = 255;
 
@@ -198,12 +198,6 @@ void timer_disable(timer_dev *dev) {
  * @param mode New timer mode for channel
  */
 void timer_set_mode(timer_dev *dev, uint8 channel, timer_mode mode) {
-    ASSERT_FAULT(channel > 0 && channel <= 4);
-
-    /* TODO decide about the basic timers */
-    ASSERT(dev->type != TIMER_BASIC);
-    if (dev->type == TIMER_BASIC)
-        return;
 
     switch (mode) {
     case TIMER_DISABLED:
@@ -230,8 +224,15 @@ void timer_set_mode(timer_dev *dev, uint8 channel, timer_mode mode) {
  * @return Nonzero if dev has channel, zero otherwise.
  */
 int timer_has_cc_channel(timer_dev *dev, uint8 channel) {
+    if (dev == TIMER1 && channel <= 6) {
+        return 1;
+    }
+    else if (channel <= 2) {
+        return 1;
+    }
     return 0;
 }
+
 
 /**
  * @brief Attach a timer interrupt.
@@ -246,7 +247,7 @@ int timer_has_cc_channel(timer_dev *dev, uint8 channel) {
 void timer_attach_interrupt(timer_dev *dev,
                             uint8 interrupt,
                             voidFuncPtr handler) {
-    dev->handlers[interrupt] = handler;
+    dev->handlers[interrupt - 1] = handler;
     timer_enable_irq(dev, interrupt);
     enable_irq(dev, interrupt);
 }
@@ -276,22 +277,58 @@ static void disable_channel(timer_dev *dev, uint8 channel) {
 
 static void pwm_mode(timer_dev *dev, uint8 channel) {
     timer_disable_irq(dev, channel);
-    timer_oc_set_mode(dev, channel, TIMER_OC_MODE_PWM_1, TIMER_OC_PE);
+    switch (dev->type) {
+    case TIMER_BASIC:
+        timer_mode_select(dev, channel, TIMER_BASIC_MODE_PWM);
+        break;
+    default:
+        timer_mode_select(dev, channel, TIMER_MODE_PWM_EDGE | TIMER_OC_TGL);
+        break;
+    }
+
     timer_cc_enable(dev, channel);
 }
 
 static void output_compare_mode(timer_dev *dev, uint8 channel) {
+    switch (dev->type) {
+    case TIMER_BASIC:
+        timer_mode_select(dev, channel, TIMER_BASIC_MODE_PWM);
+        break;
+    default:
+        timer_mode_select(dev, channel, TIMER_MODE_PWM_EDGE | TIMER_OC_TGL);
+        break;
+    }
+    timer_cc_enable(dev, channel);
+}
 
+static void input_capture_mode(timer_dev *dev, uint8 channel) {
+    switch (dev->type) {
+    case TIMER_BASIC:
+        break;
+    default:
+
+        break;
+    }
+    timer_mode_select(dev, channel, TIMER_MODE_TMR_CPTR);
+    timer_cc_enable(dev, channel);
 }
 
 static void enable_adv_irq(timer_dev *dev, timer_interrupt_id id);
 static void enable_bas_gen_irq(timer_dev *dev);
 
 static inline void enable_irq(timer_dev *dev, timer_interrupt_id iid) {
-    if (dev->type == TIMER_BASIC) {
-        enable_bas_gen_irq(dev);
-    } else {
+    switch (dev->type) {
+    case TIMER_BASIC:
+        if (dev == TIMER4) {
+            nvic_irq_enable(iid == 0 ? NVIC_TIMER0L : NVIC_TIMER0H);
+        }
+        else {
+            nvic_irq_enable(iid == 0 ? NVIC_TIMER1L : NVIC_TIMER1H);
+        }
+        break;
+    default:
         enable_adv_irq(dev, iid);
+        break;
     }
 }
 
@@ -319,13 +356,67 @@ static void enable_adv_irq(timer_dev *dev, timer_interrupt_id id) {
  * shared by all interrupts supported by a particular timer. */
 static void enable_bas_gen_irq(timer_dev *dev) {
     if (dev == TIMER4) {
-        // nvic_irq_enable(NVIC_TIMER0L);
-        // nvic_irq_enable(NVIC_TIMER0H);
-    }
-    else {
-        // nvic_irq_enable(NVIC_TIMER1L);
-        // nvic_irq_enable(NVIC_TIMER1H);
+
     }
 
-    // FIXME: enable bas gen irq
+}
+
+//uint16 g_timer_last_mode[10];
+
+/**
+ * @brief Enable a timer channel's capture/compare signal.
+ *
+ * If the channel is configured as output, the corresponding output
+ * compare signal will be output on the corresponding output pin.  If
+ * the channel is configured as input, enables capture of the counter
+ * value into the input capture/compare register.
+ *
+ * @param dev Timer device, must have type TIMER_ADVANCED or TIMER_GENERAL.
+ * @param channel Channel to enable, from 1 to 4.
+ */
+void timer_cc_enable(timer_dev *dev, uint8 channel) {
+    timer_basic_reg_map *regs_b = (timer_basic_reg_map*)(void*)&dev->regs->MODE;
+    uint16 mode;
+    channel -= 1;
+    switch (dev->type) {
+    case TIMER_BASIC:
+        REG_SET_CLR(regs_b->CONFIG, 1, channel == 1 ? TIMER_CFGR_HRUN_MASK : TIMER_CFGR_LRUN_MASK);
+        break;
+    default:
+#if 0 // todo[silabs]: fix cc_enable/cc_disable
+        mode = dev->regs->MODE;
+        if (dev == TIMER3) {
+            g_timer_last_mode[channel + 8] = mode;
+        }
+        else if (dev == TIMER2) {
+            g_timer_last_mode[channel + 2] = mode;
+        }
+        else {
+            g_timer_last_mode[channel] = mode;
+        }
+        timer_set_compare(dev, channel + 1, 0);
+#endif
+        break;
+
+    }
+}
+
+/**
+ * @brief Disable a timer channel's output compare or input capture signal.
+ * @param dev Timer device, must have type TIMER_ADVANCED or TIMER_GENERAL.
+ * @param channel Channel to disable, from 1 to 4.
+ * @see timer_cc_enable()
+ */
+void timer_cc_disable(timer_dev *dev, uint8 channel) {
+    timer_basic_reg_map *regs_b = (timer_basic_reg_map*)(void*)&dev->regs->MODE;
+    uint32 value;
+    channel -= 1;
+    switch (dev->type) {
+    case TIMER_BASIC:
+        REG_SET_CLR(regs_b->CONFIG, 0, channel == 1 ? TIMER_CFGR_HRUN_MASK : TIMER_CFGR_LRUN_MASK);
+        break;
+    default:
+
+        break;
+    }
 }
