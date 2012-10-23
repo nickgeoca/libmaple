@@ -138,7 +138,7 @@ void serial2_Display(void)
     Serial2.print(Timer2.getCompare(1));
     Serial2.print(" | T2C2-");
     Serial2.print(Timer2.getCompare(2));
-    Serial2.print(" | T5Cx-");
+    Serial2.print(" | T5C1-");
     DISPLAY_ERASE(6);
     Serial2.println(Timer5.getCompare(1));
     Serial2.print("IRQ Counter: ");
@@ -309,10 +309,9 @@ void setup() {
     timerArray[4]->setMode(1, TIMER_PWM);
     timerArray[4]->setCompare(1, 30000);
     timerArray[0]->setPeriod(300);
-    timerArray[1]->setPrescaleFactor(1024);
-    timerArray[1]->setMode(1, TIMER_OUTPUT_COMPARE);
-    timerArray[1]->attachInterrupt(1, timerOutputCmpCallback);
-
+    timerArray[3]->setPrescaleFactor(1024);
+    timerArray[3]->setMode(1, TIMER_OUTPUT_COMPARE);
+    timerArray[3]->attachInterrupt(1, timerOutputCmpCallback);
 
 }
 

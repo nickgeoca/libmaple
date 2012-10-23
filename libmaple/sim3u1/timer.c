@@ -75,18 +75,22 @@ void __irq_pca2(void) {
 }
 
 void __irq_tim1_low(void) {
+    //dispatch_basic_low(TIMER4);
     return;
 }
 
 void __irq_tim1_high(void) {
+    dispatch_basic_high(TIMER4);
     return;
 }
 
 void __irq_tim2_low(void) {
+    //dispatch_basic_low(TIMER5);
     return;
 }
 
 void __irq_tim2_high(void) {
+    dispatch_basic_high(TIMER5);
     return;
 }
 

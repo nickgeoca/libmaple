@@ -156,8 +156,37 @@ static __always_inline void dispatch_general(timer_dev *dev) {
     REG_SET_CLR(regs->STATUS, 0, status);
 }
 
-static __always_inline void dispatch_basic(timer_dev *dev) {
+static __always_inline void dispatch_basic_high(timer_dev *dev) {
+    timer_basic_reg_map *regs_b = (timer_basic_reg_map*)(void*)&dev->regs->MODE;
+    uint32 config = regs_b->CONFIG;
+    uint32 flags = config & (TIMER_CFGR_HOVFI_MASK | TIMER_CFGR_HEXI_MASK);
 
+    if (flags & TIMER_CFGR_HOVFI_MASK && dev->handlers[TIMER_BASIC_HIGH_OVFI_IRQ] &&
+            config & TIMER_CFGR_HOVFIEN_MASK) {
+        dev->handlers[TIMER_BASIC_HIGH_OVFI_IRQ]();
+    }
+    else if (flags & TIMER_CFGR_HEXI_MASK && dev->handlers[TIMER_BASIC_HIGH_EXTRA_IRQ] &&
+            config & TIMER_CFGR_HEXIEN_MASK) {
+        dev->handlers[TIMER_BASIC_HIGH_EXTRA_IRQ]();
+    }
+
+    REG_SET_CLR(regs_b->CONFIG, 0, flags);
+}
+
+static __always_inline void dispatch_basic_low(timer_dev *dev) {
+#if 0
+    timer_basic_reg_map *regs_b = (timer_basic_reg_map*)(void*)&dev->regs->MODE;
+    uint32 flags = regs_b->CONFIG & (TIMER_CFGR_LOVFIEN_MASK | TIMER_CFGR_LEXIEN_MASK);
+
+    if (flags & TIMER_CFGR_LOVFIEN_MASK && dev->handlers[TIMER_BASIC_LOW_OVFI_IRQ]) {
+        dev->handlers[TIMER_BASIC_LOW_OVFI_IRQ]();
+    }
+    else if (flags & TIMER_CFGR_LEXIEN_MASK && dev->handlers[TIMER_BASIC_LOW_EXTRA_IRQ]) {
+        dev->handlers[TIMER_BASIC_LOW_EXTRA_IRQ]();
+    }
+
+    REG_SET_CLR(regs_b->CONFIG, 0, flags);
+#endif
 }
 
 #endif

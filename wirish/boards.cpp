@@ -179,8 +179,12 @@ static void setup_adcs(void) {
 static void timer_default_config(timer_dev *dev) {
     timer_init(dev);
     timer_pause(dev);
+    // Set channel polarities to 0
+    uint32 chnl = 1;
+    while (timer_has_cc_channel(dev, chnl)) {
+        timer_cc_set_pol(dev, chnl++, 0);
+    }
     timer_resume(dev);
-
 }
 
 static void setup_timers(void) {

@@ -667,6 +667,14 @@ typedef enum timer_general_interrupt_id {
     TIMER_GEN_OVFL2_IRQ,          /**< Intermediate overflow 2 interrupt. Used in n-bit PWM mode. */
 } timer_general_interrupt_id;
 
+typedef enum timer_basic_interrupt_id {
+    TIMER_BASIC_HIGH_OVFI_IRQ,      /**< High timer overflow.        */
+    TIMER_BASIC_HIGH_EXTRA_IRQ,     /**< High timer extra interrupt. */
+    TIMER_BASIC_LOW_OVFI_IRQ,       /**< Low timer overflow.         */
+    TIMER_BASIC_LOW_EXTRA_IRQ,      /**< Low timer extra interrupt.  */
+} timer_basic_interrupt_id;
+
+
 void timer_attach_interrupt(timer_dev *dev,
                             uint8 interrupt,
                             voidFuncPtr handler);
@@ -951,6 +959,47 @@ static inline void timer_dma_disable_req(timer_dev *dev, uint8 channel) {
 
 }
 
+static inline void timer_irq_set_clr(timer_dev *dev, uint8 interrupt, uint8 set) {
+    timer_basic_reg_map *regs_b = (timer_basic_reg_map*)(void*)&dev->regs->MODE;
+    interrupt -= 1;
+    switch (dev->type) {
+    case TIMER_ADVANCED:
+
+        if (interrupt <= TIMER_CC6_INTERRUPT) {
+            REG_SET_CLR(dev->chnl_regs[interrupt]->CONTROL, set, EPCACH_CR_CCIEN_MASK);
+        }
+        else if (interrupt == TIMER_OVERFLOW_INTERRUPT) {
+            REG_SET_CLR(dev->regs->CONTROL, set, EPCA_CR_OVFIEN_MASK);
+        }
+        else if (interrupt == TIMER_HALT_INTERRUPT) {
+            REG_SET_CLR(dev->regs->CONTROL, set, EPCA_CR_HALTIEN_MASK);
+        }
+        else if (interrupt >= TIMER_OVFL1_INTERRUPT) {
+            REG_SET_CLR(dev->chnl_regs[interrupt - TIMER_OVFL1_INTERRUPT]->CONTROL, set, EPCACH_CR_CIOVFIEN_MASK);
+        }
+        break;
+    case TIMER_GENERAL:
+        if (interrupt <= TIMER_GEN_CC2_IRQ) {
+            REG_SET_CLR(dev->chnl_regs[interrupt]->CONTROL, set, EPCACH_CR_CCIEN_MASK);
+        }
+        else if (interrupt == TIMER_GEN_OVERFLOW_IRQ) {
+            REG_SET_CLR(dev->regs->CONTROL, set, EPCACH_CR_CCIEN_MASK);
+        }
+        else if (interrupt <= TIMER_GEN_OVFL2_IRQ) {
+            REG_SET_CLR(dev->chnl_regs[interrupt - TIMER_GEN_OVFL1_IRQ]->CONTROL, set, EPCACH_CR_CIOVFIEN_MASK);
+        }
+        break;
+    case TIMER_BASIC:
+        if (interrupt == TIMER_BASIC_HIGH_OVFI_IRQ) {
+            REG_SET_CLR(regs_b->CONFIG, set, TIMER_CFGR_HOVFIEN_MASK);
+        }
+        else if (interrupt == TIMER_BASIC_HIGH_EXTRA_IRQ) {
+            REG_SET_CLR(regs_b->CONFIG, set, TIMER_CFGR_HEXIEN_MASK);
+        }
+        break;
+    }
+}
+
 /**
  * @brief Enable a timer interrupt.
  * @param dev Timer device.
@@ -960,39 +1009,7 @@ static inline void timer_dma_disable_req(timer_dev *dev, uint8 channel) {
  * @see timer_channel
  */
 static inline void timer_enable_irq(timer_dev *dev, uint8 interrupt) {
-    interrupt -= 1;
-    switch (dev->type) {
-    case TIMER_ADVANCED:
-
-        if (interrupt <= TIMER_CC6_INTERRUPT) {
-            REG_SET_CLR(dev->chnl_regs[interrupt]->CONTROL, 1, EPCACH_CR_CCIEN_MASK);
-        }
-        else if (interrupt == TIMER_OVERFLOW_INTERRUPT) {
-            REG_SET_CLR(dev->regs->CONTROL, 1, EPCA_CR_OVFIEN_MASK);
-        }
-        else if (interrupt == TIMER_HALT_INTERRUPT) {
-            REG_SET_CLR(dev->regs->CONTROL, 1, EPCA_CR_HALTIEN_MASK);
-        }
-        else if (interrupt >= TIMER_OVFL1_INTERRUPT) {
-            REG_SET_CLR(dev->chnl_regs[interrupt - TIMER_OVFL1_INTERRUPT]->CONTROL, 1, EPCACH_CR_CIOVFIEN_MASK);
-        }
-        break;
-        // Fall through if timer advanced is not a halt irq
-    case TIMER_GENERAL:
-        if (interrupt <= TIMER_GEN_CC2_IRQ) {
-            REG_SET_CLR(dev->chnl_regs[interrupt]->CONTROL, 1, EPCACH_CR_CCIEN_MASK);
-        }
-        else if (interrupt == TIMER_GEN_OVERFLOW_IRQ) {
-            REG_SET_CLR(dev->regs->CONTROL, 1, EPCACH_CR_CCIEN_MASK);
-        }
-        else if (interrupt <= TIMER_GEN_OVFL2_IRQ) {
-            REG_SET_CLR(dev->chnl_regs[interrupt - TIMER_GEN_OVFL1_IRQ]->CONTROL, 1, EPCACH_CR_CIOVFIEN_MASK);
-        }
-        break;
-    case TIMER_BASIC:
-        // TODO [silabs]: Timer basic irq
-        break;
-    }
+    timer_irq_set_clr(dev, interrupt, 1);
 }
 
 /**
@@ -1004,29 +1021,7 @@ static inline void timer_enable_irq(timer_dev *dev, uint8 interrupt) {
  * @see timer_channel
  */
 static inline void timer_disable_irq(timer_dev *dev, uint8 interrupt) {
-    uint32 channel = interrupt - 1;
-    switch (dev->type) {
-    case TIMER_ADVANCED:
-        if (interrupt == TIMER_HALT_INTERRUPT) {
-            REG_SET_CLR(dev->regs->CONTROL, 0, EPCACH_CR_CCIEN_MASK);
-            break;
-        }
-        // Fall through if timer advanced is not a halt irq
-    case TIMER_GENERAL:
-        if (interrupt <= TIMER_CC6_INTERRUPT) {
-            REG_SET_CLR(dev->chnl_regs[channel]->CONTROL, 0, EPCACH_CR_CCIEN_MASK);
-        }
-        else if (interrupt == TIMER_OVERFLOW_INTERRUPT) {
-            REG_SET_CLR(dev->regs->CONTROL, 0, EPCACH_CR_CCIEN_MASK);
-        }
-        else if (interrupt >= TIMER_OVFL1_INTERRUPT) {
-            REG_SET_CLR(dev->chnl_regs[channel - TIMER_OVFL1_INTERRUPT]->CONTROL, 0, EPCACH_CR_CIOVFIEN_MASK);
-        }
-        break;
-    case TIMER_BASIC:
-        // TODO [silabs]: Timer basic irq
-        break;
-    }
+    timer_irq_set_clr(dev, interrupt, 0);
 }
 
 
@@ -1040,13 +1035,19 @@ static inline void timer_disable_irq(timer_dev *dev, uint8 interrupt) {
  */
 static inline uint8 timer_cc_get_pol(timer_dev *dev, uint8 channel) {
     uint32 shift;
+    uint32 pol;
     channel -= 1;
     timer_basic_reg_map *regs_b = (timer_basic_reg_map*)(void*)&dev->regs->MODE;
     switch (dev->type) {
     case TIMER_BASIC:
-        return regs_b->CONFIG & (channel == 1 ? TIMER_CFGR_HMD_MASK : TIMER_CFGR_LMD_MASK);
+        return regs_b->CONFIG & TIMER_CFGR_HMD_MASK;
     default:
-        return dev->chnl_regs[channel]->CONTROL & EPCACH_CR_COUTST_MASK;
+        pol = dev->chnl_regs[channel]->CONTROL & EPCACH_CR_COUTST_MASK;
+        // Errata: Channels 4&5 (Wiring 5&6) polarities are reversed.
+        if (channel >= 4) {
+            pol = !pol;
+        }
+        return pol;
     }
     return 0;
 }
@@ -1074,9 +1075,15 @@ static inline void timer_cc_set_pol(timer_dev *dev, uint8 channel, uint8 pol) {
     timer_basic_reg_map *regs_b = (timer_basic_reg_map*)(void*)&dev->regs->MODE;
     switch (dev->type) {
     case TIMER_BASIC:
-        REG_SET_CLR(regs_b->CONFIG, pol, channel == 1 ? TIMER_CFGR_HMD_MASK : TIMER_CFGR_LMD_MASK);
+        REG_SET_CLR(regs_b->CONFIG, pol, TIMER_CFGR_HMD_MASK);
+        break;
     default:
+        // Errata: Channels 4&5 (Wiring 5&6) polarities are reversed.
+        if (channel >= 4) {
+            pol = !pol;
+        }
         REG_SET_CLR(dev->chnl_regs[channel]->CONTROL, pol,  EPCACH_CR_COUTST_MASK);
+        break;
     }
 }
 
@@ -1190,12 +1197,8 @@ static inline void timer_mode_select(timer_dev *dev,
     channel -= 1;
     switch (dev->type) {
     case TIMER_BASIC:
-        if (channel == 0 && mode > TIMER_BASIC_MODE_DC_CPTR) {
-            return;
-        }
-        REG_SET_CLR(regs_b->CONFIG, 0, channel == 1 ? TIMER_CFGR_HMD_MASK : TIMER_CFGR_LMD_MASK);
-        shift = channel == 1 ? TIMER_CFGR_HMD_BIT : TIMER_CFGR_LMD_BIT;
-        REG_SET_CLR(regs_b->CONFIG, 1, mode << shift);
+        REG_SET_CLR(regs_b->CONFIG, 0, TIMER_CFGR_HMD_MASK);
+        REG_SET_CLR(regs_b->CONFIG, 1, mode << TIMER_CFGR_HMD_BIT);
         break;
     default:
         dev->chnl_regs[channel]->MODE &= EPCACH_MODE_CMD_MASK | EPCACH_MODE_COSEL_MASK;

@@ -41,6 +41,7 @@ static void output_compare_mode(timer_dev *dev, uint8 channel);
 static inline void enable_irq(timer_dev *dev, uint8 interrupt);
 #define NR_ADV_HANDLERS                 14
 #define NR_GEN_HANDLERS                 5
+#define NR_BAS_HANDLERS                 4
 /*
  * Devices
  *
@@ -95,7 +96,7 @@ static timer_dev timer4 = {
     .nvic_irqs.irq_count = 2,
     .nvic_irqs.irq_array = timer4_irqs,
     .chnl_regs = 0,
-    .handlers = { [0] = 0 }
+    .handlers = { [NR_BAS_HANDLERS - 1] = 0 }
 };
 timer_dev *TIMER4 = &timer4;
 
@@ -107,7 +108,7 @@ static timer_dev timer5 = {
     .nvic_irqs.irq_count = 2,
     .nvic_irqs.irq_array = timer5_irqs,
     .chnl_regs = 0,
-    .handlers = { [0] = 0 }
+    .handlers = { [NR_BAS_HANDLERS - 1] = 0 }
 };
 timer_dev *TIMER5 = &timer5;
 
@@ -224,10 +225,16 @@ void timer_set_mode(timer_dev *dev, uint8 channel, timer_mode mode) {
  * @return Nonzero if dev has channel, zero otherwise.
  */
 int timer_has_cc_channel(timer_dev *dev, uint8 channel) {
+    if (channel == 0) {
+        return 0;
+    }
     if (dev == TIMER1 && channel <= 6) {
         return 1;
     }
-    else if (channel <= 2) {
+    else if (dev == TIMER2 || dev == TIMER3) {
+        return channel <= 2 ? 1 : 0;
+    }
+    else if (channel <= 1) {
         return 1;
     }
     return 0;
@@ -313,21 +320,16 @@ static void input_capture_mode(timer_dev *dev, uint8 channel) {
     timer_cc_enable(dev, channel);
 }
 
-static void enable_adv_irq(timer_dev *dev, timer_interrupt_id id);
-static void enable_bas_gen_irq(timer_dev *dev);
+static void enable_adv_irq(timer_dev *dev);
+static void enable_bas_irq(timer_dev *dev, timer_interrupt_id iid);
 
 static inline void enable_irq(timer_dev *dev, timer_interrupt_id iid) {
     switch (dev->type) {
     case TIMER_BASIC:
-        if (dev == TIMER4) {
-            nvic_irq_enable(iid == 0 ? NVIC_TIMER0L : NVIC_TIMER0H);
-        }
-        else {
-            nvic_irq_enable(iid == 0 ? NVIC_TIMER1L : NVIC_TIMER1H);
-        }
+        enable_bas_irq(dev, iid);
         break;
     default:
-        enable_adv_irq(dev, iid);
+        enable_adv_irq(dev);
         break;
     }
 }
@@ -338,7 +340,7 @@ static inline void enable_irq(timer_dev *dev, timer_interrupt_id iid) {
  * Note: This function assumes that the only advanced timers are TIM1
  * and TIM8, and needs the obvious changes if that assumption is
  * violated by a later STM32 series. */
-static void enable_adv_irq(timer_dev *dev, timer_interrupt_id id) {
+static void enable_adv_irq(timer_dev *dev) {
     if (dev->type == TIMER_ADVANCED) {
         nvic_irq_enable(NVIC_EPCA1);
     }
@@ -354,11 +356,23 @@ static void enable_adv_irq(timer_dev *dev, timer_interrupt_id id) {
 
 /* Basic and general purpose timers have a single IRQ line, which is
  * shared by all interrupts supported by a particular timer. */
-static void enable_bas_gen_irq(timer_dev *dev) {
+static void enable_bas_irq(timer_dev *dev, timer_interrupt_id iid) {
     if (dev == TIMER4) {
-
+        if (TIMER_BASIC_LOW_OVFI_IRQ > iid) {
+            nvic_irq_enable(NVIC_TIMER0L);
+        }
+        else {
+            nvic_irq_enable(NVIC_TIMER0H);
+        }
     }
-
+    else {
+        if (TIMER_BASIC_LOW_OVFI_IRQ > iid) {
+            nvic_irq_enable(NVIC_TIMER1L);
+        }
+        else {
+            nvic_irq_enable(NVIC_TIMER1H);
+        }
+    }
 }
 
 //uint16 g_timer_last_mode[10];
