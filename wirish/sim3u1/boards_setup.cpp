@@ -79,11 +79,6 @@ namespace wirish {
 
         }
 
-        __weak void board_setup_xbar(void) {
-            gpio_init_xbar();
-
-        }
-
         __weak void board_setup_usb(void) {
 
         }
@@ -94,6 +89,9 @@ namespace wirish {
             clk_enable_dev(CLK_MISC1);
             *((volatile uint32*)0x40030030) = 0xA5;
             *((volatile uint32*)0x40030030) = 0xDD;
+
+            // Setup crossbar
+            gpio_init_xbar();
         }
         __weak void board_setup_rtc(void) {
             __io uint32 *rtc_base = (__io uint32 *)0x40029000;

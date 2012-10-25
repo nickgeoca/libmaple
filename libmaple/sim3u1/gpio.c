@@ -76,6 +76,7 @@ gpio_dev* const GPIOE = &gpioe;
  * GPIO routines
  */
 
+
 void gpio_init_xbar(void) {
     // Enable clock on port banks. All GPIO clk id's reference PBCFG
     clk_enable_dev(CLK_PB);
@@ -85,6 +86,53 @@ void gpio_init_xbar(void) {
 
     // Skip list
     GPIOA->regs->std.PBSKIPEN = 0x0000FFFF;
+}
+
+
+void xbar_dis_device(gpio_dev *dev, uint8 bit) {
+    gpio_dev *dev2 = 0;
+    __io uint32 *xbar = PBCFG_BASE->XBAR1;
+    __io uint32 *xbar2 = 0;
+    uint32 xbar_clr_bits[2];
+    //uint32 num_skip_chngs;
+    uint32 skip_clr_bits[2];
+    //uint32 unskip_start_bit;
+    if (dev == GPIOE) {
+        return;
+    }
+    if (dev == GPIOA) {
+        dev2 = GPOIB;
+    }
+    else if (dev == GPIOC) {
+        dev2 = GPIOD;
+    }
+    if (dev == GPIOA || dev == GPIOB) {
+        xbar2 = PBCFG_BASE->XBAR0H;
+        xbar = PBCFG_BASE->XBAR0L;
+    }
+
+//// TODO [silabs]: hack. fix xbar disable device. NOTE: Not every xbar mask bit effects one pin.
+    xbar_clr_bits[0] = PBCFG_XBAR0L_SPI0EN_MASK | PBCFG_XBAR0L_SPI0NSSEN_MASK;
+    skip_clr_bits[0] = 0xF;
+////
+
+    // Set PINLPEN bit. This holds the pin states
+    REG_SET_CLR(*(__io uint32*)0x40048000, 1, 2);
+
+    // Skip pins
+    REG_SET_CLR(dev->regs->std.PBSKIPEN, 0, skip_clr_bits[0]);
+    if (dev2) {
+        REG_SET_CLR(dev2->regs->std.PBSKIPEN, 0, skip_clr_bits[1]);
+    }
+
+    // Set xbar settings
+    REG_SET_CLR(*xbar, 0, xbar_clr_bits[0]);
+    if (xbar2) {
+        REG_SET_CLR(*xbar2, 0, xbar_clr_bits[1]);
+    }
+
+    // Clear PINLPEN bit. This holds the pin states
+    REG_SET_CLR(*(__io uint32*)0x40048000, 0, 2);
 }
 
 /**
@@ -157,6 +205,7 @@ void gpio_set_modef(gpio_dev *dev,
     unsigned shift = bit;
     unsigned mask = 1 << bit;
 
+
     /* Mode */
     REG_SET_CLR(regs->PBMDSEL, mode & (1 << GPIO_PBMDSEL_BIT), mask);
 
@@ -215,6 +264,18 @@ void gpio_set_af(gpio_dev *dev, uint8 bit, gpio_af af) {
     uint32 tmp;
     uint32 mask = (bit == 5) ? 7 : 3;
     uint32 shift = bit * 2;
+
+    tmp = ~(mask << shift);
+    tmp &= dev->regs->hd.PBFSEL;
+    tmp |= (mask & af) << shift;
+    dev->regs->hd.PBFSEL = tmp;
+}
+
+gpio_af gpio_get_af(gpio_dev *dev, uint8 bit) {
+    uint32 tmp;
+    uint32 mask = (bit == 5) ? 7 : 3;
+    uint32 shift = bit * 2;
+
     tmp = ~(mask << shift);
     tmp &= dev->regs->hd.PBFSEL;
     tmp |= (mask & af) << shift;

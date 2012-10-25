@@ -65,13 +65,8 @@ void gpio_init_all(void);
 /* TODO flags argument version? */
 void gpio_set_mode(gpio_dev *dev, uint8 pin, gpio_pin_mode mode);
 
-/**
- * @brief Get a GPIO port's corresponding EXTI port configuration.
- * @param dev GPIO port whose exti_cfg to return.
- */
-static inline exti_cfg gpio_exti_port(gpio_dev *dev) {
-    return (exti_cfg)0;
-}
+void xbar_dis_device(gpio_dev *dev, uint8 bit);
+
 
 static inline gpio_type gpio_get_type(gpio_dev *dev) {
     if (dev == GPIOE) {
@@ -90,6 +85,9 @@ static inline gpio_type gpio_get_type(gpio_dev *dev) {
  * @param val If true, set the pin.  If false, reset the pin.
  */
 static inline void gpio_write_bit(gpio_dev *dev, uint8 pin, uint8 val) {
+    if (!board_can_chng_gpio(dev, pin)) {
+        return;
+    }
     REG_SET_CLR(dev->regs->PB, val, 1 << pin);
 }
 
@@ -110,6 +108,9 @@ static inline uint32 gpio_read_bit(gpio_dev *dev, uint8 pin) {
  * @param pin Pin on dev to toggle.
  */
 static inline void gpio_toggle_bit(gpio_dev *dev, uint8 pin) {
+    if (!board_can_chng_gpio(dev, pin)) {
+        return;
+    }
     dev->regs->PB_MSK =  ((1 << pin) << 16) | (~dev->regs->PB & 0xFFFF);
 }
 

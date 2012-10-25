@@ -60,7 +60,6 @@ namespace wirish {
 
         void board_reset_pll(void);
         void board_setup_clock_prescalers(uint32 sys_freq);
-        void board_setup_xbar(void);
         void board_setup_gpio(void);
         void board_setup_usb(void);
         void series_init(void);

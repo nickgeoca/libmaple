@@ -64,7 +64,6 @@ static void setup_timers(void);
 
 void init(void) {
     wirish::priv::series_init();
-    wirish::priv::board_setup_xbar();
     setup_clocks();
     setup_flash();
     setup_nvic();

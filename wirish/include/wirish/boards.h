@@ -45,7 +45,7 @@
  * @see stm32_pin_info
  */
 extern const stm32_pin_info PIN_MAP[];
-
+extern const stm32_pin_info PIN_MAP_SHORTS[];
 /**
  * @brief Pins capable of PWM output.
  *

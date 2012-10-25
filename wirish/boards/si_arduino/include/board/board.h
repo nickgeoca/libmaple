@@ -33,6 +33,20 @@
 #ifndef _BOARD_MAPLE_H_
 #define _BOARD_MAPLE_H_
 
+/* Changing a shorted pin to unshorted
+ *   1) Comment out "#define PIN_Dx_SHORTED and change the sequence order
+ *   2) Change BOARD_NR_SHORTED_PINS
+ *   3) Add pin to both enums
+ */
+#define PIN_D30_SHORTED 0
+#define PIN_D31_SHORTED 1
+#define PIN_D32_SHORTED 2
+#define PIN_D33_SHORTED 3
+#define PIN_D34_SHORTED 4
+#define PIN_D35_SHORTED 5
+#define BOARD_NR_SHORTED_PINS  6
+uint8 board_get_short_num(gpio_dev *dev, uint8 pin);
+uint8 board_can_chng_gpio(gpio_dev *dev, uint8 pin);
 /* Pin aliases: these give the GPIO port/bit for each pin as an
  * enum. These are optional, but recommended. They make it easier to
  * write code using low-level GPIO functionality. */
@@ -40,21 +54,22 @@ enum {
     PD5, PD4, PD7, PD6, PC9, PD8, PD9, PC10, PD10,
     PD11,PD3, PD2, PD1, PD0, PA0, PA1, PA2, PA3,
     PA4, PA5, PA6, PA7, PA13, PA14, PA15, PB0, PB2,
-    PE5, PE4, PE3, PE2, PE1, PE0, PC0, PC1, PC2,
-    PC3, PC4, PC5, PC6, PC7, PC8, PC11, PC12, PC13,
-    PC14,PA8, PA11, PB1, PB3, PB4, PB5, PB6, PB7,
-    PB8, PB9, PB10, PB11, PB12, PB13, PB14, PB15, PA12
+    /* Shorted Pins */ //PE5, PE4, PE3, PE2, PE1, PE0,
+    PC0, PC1, PC2, PC3, PC4, PC5, PC6, PC7, PC8,
+    PC11, PC12, PC13, PC14,PA8, PA11, PB1, PB3,
+    PB4, PB5, PB6, PB7, PB8, PB9, PB10, PB11, PB12,
+    PB13, PB14, PB15, PA12
 };
 
 /* Board pins */
 enum {
     D0, D1, D2, D3, D4, D5, D6, D7, D8, D9, D10,
     D11, D12, D13, D14, D15, D16, D17, D18, D19,
-    D20, D21, D22, D23, D24, D25, D26, D30, D31,
-    D32, D33, D34, D35, D36, D37, D38, D39, D40,
-    D41, D42, D45, D46, D49, D50, D51, D52, A0,
-    A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11,
-    A12, A13, A14, A15, AREF
+    D20, D21, D22, D23, D24, D25, D26,
+    /* Shorted pins */ //D30, D31, D32, D33, D34, D35,
+    D36, D37, D38, D39, D40, D41, D42, D45, D46,
+    D49, D50, D51, D52, A0, A1, A2, A3, A4, A5,
+    A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, AREF
 };
 
 /* System clock options:
@@ -91,22 +106,27 @@ enum {
 #define BOARD_USART4_RX_PIN     PA7
 
 /* Number of SPI ports broken out to headers. */
-#define BOARD_NR_SPI            2
+#define BOARD_NR_SPI            3
 
 /* SPI pin numbers. */
-#define BOARD_SPI1_NSS_PIN      PA5
-#define BOARD_SPI1_MOSI_PIN     PA4
-#define BOARD_SPI1_MISO_PIN     PA3
-#define BOARD_SPI1_SCK_PIN      PA2
-#define BOARD_SPI2_NSS_PIN      PC9
-#define BOARD_SPI2_MOSI_PIN     PC8
-#define BOARD_SPI2_MISO_PIN     PC7
-#define BOARD_SPI2_SCK_PIN      PC6
+#define BOARD_SPI1_NSS_PIN      D19
+#define BOARD_SPI1_MOSI_PIN     D18
+#define BOARD_SPI1_MISO_PIN     D17
+#define BOARD_SPI1_SCK_PIN      D16
+#define BOARD_SPI2_NSS_PIN      D4
+#define BOARD_SPI2_MOSI_PIN     D46
+#define BOARD_SPI2_MISO_PIN     D45
+#define BOARD_SPI2_SCK_PIN      D42
+#define BOARD_SPI3_NSS_PIN      D10
+#define BOARD_SPI3_MOSI_PIN     D11
+#define BOARD_SPI3_MISO_PIN     D12
+#define BOARD_SPI3_SCK_PIN      D13
+
 
 /* Total number of GPIO pins that are broken out to headers and
  * intended for use. This includes pins like the LED, button, and
  * debug port (JTAG/SWD) pins. */
-#define BOARD_NR_GPIO_PINS      63
+#define BOARD_NR_GPIO_PINS      (63 - BOARD_NR_SHORTED_PINS)
 
 /* Number of pins capable of PWM output. */
 #define BOARD_NR_PWM_PINS       12
@@ -118,5 +138,6 @@ enum {
  * these are just BOARD_LED_PIN, BOARD_BUTTON_PIN, and the debug port
  * pins (see below). */
 #define BOARD_NR_USED_PINS       0
+
 
 #endif

@@ -36,11 +36,14 @@
 
 #include <wirish/boards.h>
 
-void pinMode(uint8 pin, WiringPinMode mode) {
+void pinMode(uint8 pin_num, WiringPinMode mode) {
     gpio_pin_mode outputMode;
     bool pwm = false;
+    stm32_pin_info *gpio_pin = &PIN_MAP[pin_num];
+    stm32_pin_info *shorted_pin = board_get_short_num(gpio_pin->gpio_device, gpio_bit) ?
+            &PIN_MAP_SHORTS[board_get_short_num(gpio_pin->gpio_device, gpio_bit) - 1] : 0;
 
-    if (pin >= BOARD_NR_GPIO_PINS) {
+    if (pin_num >= BOARD_NR_GPIO_PINS) {
         return;
     }
 
@@ -73,18 +76,35 @@ void pinMode(uint8 pin, WiringPinMode mode) {
             return;
     }
 
-    gpio_set_mode(PIN_MAP[pin].gpio_device, PIN_MAP[pin].gpio_bit, outputMode);
+    // Shorted pin case
+    if (shorted_pin) {
+        if (pwm == false) {
+            // turn off secondary shorted pin
+            gpio_set_af(shorted_pin->gpio_device, shorted_pin->gpio_bit, GPIOHD_FNCT_GPIO);
+            gpio_set_mode(shorted_pin->gpio_device, shorted_pin->gpio_bit, GPIO_DIGITAL_INPUT_PULLUP);
+        }
+        else {
+            // turn off primary shorted pin
+            xbar_dis_device(gpio_pin->gpio_device, gpio_pin->gpio_bit);
+            gpio_set_mode(gpio_pin->gpio_device, gpio_pin->gpio_bit, GPIO_DIGITAL_INPUT_PULLUP);
+            gpio_pin = shorted_pin;
+        }
+    }
 
-    if (PIN_MAP[pin].timer_device != NULL) {
+    // Set pin mode
+    gpio_set_mode(gpio_pin->gpio_device, gpio_pin->gpio_bit, outputMode);
+
+    //
+    if (gpio_pin->timer_device != NULL) {
         /* Enable/disable timer channels if we're switching into or
          * out of PWM. */
-        timer_set_mode(PIN_MAP[pin].timer_device,
-                       PIN_MAP[pin].timer_channel,
+        timer_set_mode(gpio_pin->timer_device,
+                       gpio_pin->timer_channel,
                        pwm ? TIMER_PWM : TIMER_DISABLED);
     }
 
     // This only applies to PB4 pins
-    if (gpio_get_type(PIN_MAP[pin].gpio_device) == GPIO_HIGHDRIVE) {
-        gpio_set_af(PIN_MAP[pin].gpio_device, PIN_MAP[pin].gpio_bit, pwm ? GPIOHD_FNCT_EPCA0 : GPIOHD_FNCT_GPIO);
+    if (gpio_get_type(gpio_pin->gpio_device) == GPIO_HIGHDRIVE) {
+        gpio_set_af(gpio_pin->gpio_device, gpio_pin->gpio_bit, pwm ? GPIOHD_FNCT_EPCA0 : GPIOHD_FNCT_GPIO);
     }
 }

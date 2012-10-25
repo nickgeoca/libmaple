@@ -41,21 +41,6 @@
 #ifndef _WIRISH_HARDWARESPI_H_
 #define _WIRISH_HARDWARESPI_H_
 
-/**
- * @brief Defines the possible SPI communication speeds.
- */
-typedef enum SPIFrequency {
-    SPI_18MHZ       = 0, /**< 18 MHz */
-    SPI_9MHZ        = 1, /**< 9 MHz */
-    SPI_4_5MHZ      = 2, /**< 4.5 MHz */
-    SPI_2_25MHZ     = 3, /**< 2.25 MHz */
-    SPI_1_125MHZ    = 4, /**< 1.125 MHz */
-    SPI_562_500KHZ  = 5, /**< 562.500 KHz */
-    SPI_281_250KHZ  = 6, /**< 281.250 KHz */
-    SPI_140_625KHZ  = 7, /**< 140.625 KHz */
-} SPIFrequency;
-
-#define MAX_SPI_FREQS 8
 
 /**
  * @brief Wirish SPI interface.
@@ -84,7 +69,7 @@ public:
      * @param mode SPI mode to use, one of SPI_MODE_0, SPI_MODE_1,
      *             SPI_MODE_2, and SPI_MODE_3.
      */
-    void begin(SPIFrequency frequency, uint32 bitOrder, uint32 mode);
+    void begin(uint32 frequency, uint32 bitOrder, uint32 mode);
 
     /**
      * @brief Equivalent to begin(SPI_1_125MHZ, MSBFIRST, 0).

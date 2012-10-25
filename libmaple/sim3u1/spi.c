@@ -57,7 +57,17 @@ void spi_config_gpios(spi_dev *dev,
                       uint8 sck_bit,
                       uint8 miso_bit,
                       uint8 mosi_bit) {
-
+    if (as_master) {
+        gpio_set_mode(nss_dev, nss_bit, GPIO_DIGITAL_PP);
+        gpio_set_mode(comm_dev, sck_bit, GPIO_DIGITAL_PP);
+        gpio_set_mode(comm_dev, miso_bit, GPIO_DIGITAL_INPUT_PULLUP);
+        gpio_set_mode(comm_dev, mosi_bit, GPIO_DIGITAL_PP);
+    } else {
+        gpio_set_mode(nss_dev, nss_bit, GPIO_DIGITAL_INPUT_PULLUP);
+        gpio_set_mode(comm_dev, sck_bit, GPIO_DIGITAL_INPUT_PULLUP);
+        gpio_set_mode(comm_dev, miso_bit, GPIO_DIGITAL_PP);
+        gpio_set_mode(comm_dev, mosi_bit, GPIO_DIGITAL_INPUT_PULLUP);
+    }
 }
 
 void spi_foreach(void (*fn)(spi_dev*)) {
