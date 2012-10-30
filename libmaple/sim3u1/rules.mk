@@ -21,6 +21,7 @@ cSRCS_$(d) += spi.c
 cSRCS_$(d) += syscfg.c
 cSRCS_$(d) += timer.c
 cSRCS_$(d) += usart.c
+cSRCS_$(d) += xbar.c
 
 sFILES_$(d) := $(sSRCS_$(d):%=$(d)/%)
 cFILES_$(d) := $(cSRCS_$(d):%=$(d)/%)

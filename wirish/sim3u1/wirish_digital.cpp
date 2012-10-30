@@ -36,11 +36,33 @@
 
 #include <wirish/boards.h>
 
-void pinMode(uint8 pin, WiringPinMode mode) {
+
+void board_xchng_pin_row(stm32_pin_info *main_pin_row, stm32_pin_info *short_pin_row, uint8 chng_to_primary_pin) {
+    stm32_pin_info tmp;
+    if (chng_to_primary_pin && main_pin_row->gpio_device != GPIOD) {
+        // turn off secondary pin
+        gpio_set_af(main_pin_row->gpio_device, main_pin_row->gpio_bit, GPIOHD_FNCT_GPIO);
+        gpio_set_mode(main_pin_row->gpio_device, main_pin_row->gpio_bit, GPIO_DIGITAL_INPUT_PULLUP);
+    }
+    else if (!chng_to_primary_pin && main_pin_row->gpio_device != GPIOE) {
+        // turn off primary pin
+        //xbar_dis_device(main_pin_row->gpio_device, main_pin_row->gpio_bit);
+        gpio_set_mode(main_pin_row->gpio_device, main_pin_row->gpio_bit, GPIO_DIGITAL_INPUT_PULLUP);
+    }
+    else {
+        return;
+    }
+    tmp = *main_pin_row;
+    *main_pin_row = *short_pin_row;
+    *short_pin_row = tmp;
+}
+
+void pinMode(uint8 pin_num, WiringPinMode mode) {
     gpio_pin_mode outputMode;
     bool pwm = false;
+    const stm32_pin_info *gpio_pin = &PIN_MAP[pin_num];
 
-    if (pin >= BOARD_NR_GPIO_PINS) {
+    if (pin_num >= BOARD_NR_GPIO_PINS) {
         return;
     }
 
@@ -73,18 +95,30 @@ void pinMode(uint8 pin, WiringPinMode mode) {
             return;
     }
 
-    gpio_set_mode(PIN_MAP[pin].gpio_device, PIN_MAP[pin].gpio_bit, outputMode);
+#if 0
+    // Shorted pin. Exchange pin row if necessary.
+    if (uint32 short_pin = board_get_short_num(gpio_pin->gpio_device, gpio_pin->gpio_bit)) {
+        uint8 chng_to_primary_pin = !pwm;
+        //board_xchng_pin_row(gpio_pin, &PIN_MAP_SHORTS[short_pin - 1], chng_to_primary_pin);
+    }
+#endif
 
-    if (PIN_MAP[pin].timer_device != NULL) {
+    // Set pin mode
+    gpio_set_mode(gpio_pin->gpio_device, gpio_pin->gpio_bit, outputMode);
+
+    //
+    if (gpio_pin->timer_device != NULL) {
         /* Enable/disable timer channels if we're switching into or
          * out of PWM. */
-        timer_set_mode(PIN_MAP[pin].timer_device,
-                       PIN_MAP[pin].timer_channel,
+        timer_set_mode(gpio_pin->timer_device,
+                       gpio_pin->timer_channel,
                        pwm ? TIMER_PWM : TIMER_DISABLED);
     }
 
     // This only applies to PB4 pins
-    if (gpio_get_type(PIN_MAP[pin].gpio_device) == GPIO_HIGHDRIVE) {
-        gpio_set_af(PIN_MAP[pin].gpio_device, PIN_MAP[pin].gpio_bit, pwm ? GPIOHD_FNCT_EPCA0 : GPIOHD_FNCT_GPIO);
+    if (gpio_get_type(gpio_pin->gpio_device) == GPIO_HIGHDRIVE) {
+        gpio_set_af(gpio_pin->gpio_device, gpio_pin->gpio_bit, pwm ? GPIOHD_FNCT_EPCA0 : GPIOHD_FNCT_GPIO);
     }
 }
+
+

@@ -44,6 +44,7 @@ static usart_dev usart1 = {
     .rb       = &usart1_rb,
     .max_baud = 4500000UL,
     .clk_id   = CLK_UART1,
+    .xbar_id = XBAR_USART1,
     .irq_num  = NVIC_UART1,
 };
 /** USART1 device */
@@ -55,6 +56,7 @@ static usart_dev usart2 = {
     .rb       = &usart2_rb,
     .max_baud = 4500000UL,
     .clk_id   = CLK_UART2,
+    .xbar_id = XBAR_USART2,
     .irq_num  = NVIC_UART2,
 };
 /** USART2 device */
@@ -66,6 +68,7 @@ static usart_dev usart3 = {
     .rb       = &usart3_rb,
     .max_baud = 4500000UL,
     .clk_id   = CLK_USART1,
+    .xbar_id = XBAR_USART3,
     .irq_num  = NVIC_USART1,
 };
 /** USART3 device */
@@ -77,6 +80,7 @@ static usart_dev usart4 = {
     .rb       = &usart4_rb,
     .max_baud = 4500000UL,
     .clk_id   = CLK_USART2,
+    .xbar_id = XBAR_USART4,
     .irq_num  = NVIC_USART2,
 };
 /** USART4 device */
@@ -90,6 +94,7 @@ void usart_config_gpios_async(usart_dev *udev,
                               gpio_dev *rx_dev, uint8 rx,
                               gpio_dev *tx_dev, uint8 tx,
                               unsigned flags) {
+    xbar_set_dev(udev->xbar_id, 1);
     gpio_set_mode(rx_dev, rx, GPIO_DIGITAL_INPUT_PULLUP);
     gpio_set_mode(tx_dev, tx, GPIO_DIGITAL_PP);
 }

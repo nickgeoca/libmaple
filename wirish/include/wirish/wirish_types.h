@@ -44,6 +44,9 @@
  */
 #define ADCx 0xFF
 
+
+
+
 /**
  * @brief Stores STM32-specific information related to a given Maple pin.
  * @see PIN_MAP

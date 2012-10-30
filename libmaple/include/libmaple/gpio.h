@@ -59,19 +59,15 @@ typedef struct gpio_dev {
 /*
  * Portable routines
  */
-void gpio_init_xbar(void);
+
 void gpio_init(gpio_dev *dev);
 void gpio_init_all(void);
 /* TODO flags argument version? */
 void gpio_set_mode(gpio_dev *dev, uint8 pin, gpio_pin_mode mode);
 
-/**
- * @brief Get a GPIO port's corresponding EXTI port configuration.
- * @param dev GPIO port whose exti_cfg to return.
- */
-static inline exti_cfg gpio_exti_port(gpio_dev *dev) {
-    return (exti_cfg)0;
-}
+
+uint8 board_get_short_num(gpio_dev *dev, uint8 pin);
+uint8 board_can_chng_gpio(gpio_dev *dev, uint8 pin);
 
 static inline gpio_type gpio_get_type(gpio_dev *dev) {
     if (dev == GPIOE) {
@@ -112,6 +108,8 @@ static inline uint32 gpio_read_bit(gpio_dev *dev, uint8 pin) {
 static inline void gpio_toggle_bit(gpio_dev *dev, uint8 pin) {
     dev->regs->PB_MSK =  ((1 << pin) << 16) | (~dev->regs->PB & 0xFFFF);
 }
+
+#include <series/xbar.h>
 
 #ifdef __cplusplus
 }

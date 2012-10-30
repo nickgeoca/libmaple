@@ -76,16 +76,6 @@ gpio_dev* const GPIOE = &gpioe;
  * GPIO routines
  */
 
-void gpio_init_xbar(void) {
-    // Enable clock on port banks. All GPIO clk id's reference PBCFG
-    clk_enable_dev(CLK_PB);
-
-    // Enable Crossbar 0 signals & set properties
-    REG_SET_CLR(PBCFG_BASE->XBAR0H, 1, PBCFG_XBAR0H_XBAR0EN_MASK);
-
-    // Skip list
-    GPIOA->regs->std.PBSKIPEN = 0x0000FFFF;
-}
 
 /**
  * Initialize and reset all available GPIO devices.
@@ -97,7 +87,11 @@ void gpio_init_all(void) {
 
     // Enable Crossbar 1 signals & set properties
     REG_SET_CLR(PBCFG_BASE->XBAR1, 1, PBCFG_XBAR1_XBAR1EN_MASK);
-
+    GPIOA->regs->std.PBSKIPEN = 0x0000FFFF;
+    GPIOB->regs->std.PBSKIPEN = 0x0000FFFF; // 0xf00-timers
+    GPIOC->regs->std.PBSKIPEN = 0x0000FFFF;
+    GPIOD->regs->std.PBSKIPEN = 0x00007FFF;
+#if 0
     // Skip list
     GPIOA->regs->std.PBSKIPEN = 0x0000FFFF ^ 0xe8c3;
     GPIOB->regs->std.PBSKIPEN = 0x0000FFFF ^ 0x0f00; // 0xf00-timers
@@ -116,7 +110,7 @@ void gpio_init_all(void) {
     // Enable UART0 on Crossbar 1
     REG_SET_CLR(PBCFG_BASE->XBAR1, 1,
             PBCFG_XBAR1_UART1EN_MASK);
-
+#endif
     // Setup Port Bank 4
     if (PBCFG_BASE->PBKEY == PBCFG_PBKEY_KEY_INTERMEDIATE) {
         PBCFG_BASE->PBKEY = 0xF1;
@@ -156,6 +150,7 @@ void gpio_set_modef(gpio_dev *dev,
     gpio_reg_map *regs = dev->regs;
     unsigned shift = bit;
     unsigned mask = 1 << bit;
+
 
     /* Mode */
     REG_SET_CLR(regs->PBMDSEL, mode & (1 << GPIO_PBMDSEL_BIT), mask);
@@ -215,8 +210,10 @@ void gpio_set_af(gpio_dev *dev, uint8 bit, gpio_af af) {
     uint32 tmp;
     uint32 mask = (bit == 5) ? 7 : 3;
     uint32 shift = bit * 2;
+
     tmp = ~(mask << shift);
     tmp &= dev->regs->hd.PBFSEL;
     tmp |= (mask & af) << shift;
     dev->regs->hd.PBFSEL = tmp;
 }
+

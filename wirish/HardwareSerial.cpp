@@ -43,7 +43,7 @@
                         BOARD_USART##n##_RX_PIN)
 
 
-DEFINE_HWSERIAL(Serial1, 1);
+//DEFINE_HWSERIAL(Serial1, 1);
 DEFINE_HWSERIAL(Serial2, 2);
 DEFINE_HWSERIAL(Serial3, 3);
 DEFINE_HWSERIAL(Serial4, 4);

@@ -69,8 +69,6 @@ struct spi_reg_map;
  * Device pointers
  */
 
-struct spi_dev;
-
 extern struct spi_dev *SPI1;
 extern struct spi_dev *SPI2;
 extern struct spi_dev *SPI3;

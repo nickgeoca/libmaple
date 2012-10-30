@@ -161,6 +161,7 @@ typedef struct timer_dev {
     clk_dev_id clk_id;          /**< RCC clock information */
     timer_type type;            /**< Timer's type */
     nvic_irqs_t nvic_irqs;            /**<  */
+    xbar_dev_id xbar_id;
     timer_chnl_reg_map **chnl_regs;
     voidFuncPtr handlers[];
 } timer_dev;

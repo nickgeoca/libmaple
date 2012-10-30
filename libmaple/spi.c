@@ -46,7 +46,8 @@ static void spi_reconfigure(spi_dev *dev, uint32 cr1_config);
  * @param dev Device to initialize and reset.
  */
 void spi_init(spi_dev *dev) {
-
+    // Clocking must be enabled to modify registers
+    clk_enable_dev(dev->clk_id);
 }
 
 /**
@@ -55,16 +56,18 @@ void spi_init(spi_dev *dev) {
  * The device's peripheral will be disabled before being reconfigured.
  *
  * @param dev Device to configure as bus master
- * @param baud Bus baud rate
+ * @param baud Bus baud rate (spi_sck frequency)
  * @param mode SPI mode
  * @param flags Logical OR of spi_cfg_flag values.
  * @see spi_cfg_flag
  */
 void spi_master_enable(spi_dev *dev,
-                       spi_baud_rate baud,
+                       uint32 baud,
                        spi_mode mode,
                        uint32 flags) {
-
+    // Set baud: clkdiv = bus / (2*baud) - 1
+    dev->regs->CLKRATE = clk_get_bus_freq(dev->clk_id) / (2 * baud) - 1;
+    spi_reconfigure(dev, flags | mode);
 }
 
 /**
@@ -78,7 +81,7 @@ void spi_master_enable(spi_dev *dev,
  * @see spi_cfg_flag
  */
 void spi_slave_enable(spi_dev *dev, spi_mode mode, uint32 flags) {
-
+    spi_reconfigure(dev, flags | mode);
 }
 
 /**
@@ -99,7 +102,7 @@ uint32 spi_tx(spi_dev *dev, const void *buf, uint32 len) {
  * @param dev Device to enable
  */
 void spi_peripheral_enable(spi_dev *dev) {
-    return;
+    REG_SET_CLR(dev->regs->CONFIG, 1, SPI_CFGR_SPIEN_EN);
 }
 
 /**
@@ -107,7 +110,7 @@ void spi_peripheral_enable(spi_dev *dev) {
  * @param dev Device to disable
  */
 void spi_peripheral_disable(spi_dev *dev) {
-
+    REG_SET_CLR(dev->regs->CONFIG, 0, SPI_CFGR_SPIEN_EN);
 }
 
 /**
@@ -145,7 +148,15 @@ void spi_rx_dma_disable(spi_dev *dev) {
 /*
  * SPI auxiliary routines
  */
+static void spi_reconfigure(spi_dev *dev, uint32 config) {
+    spi_irq_disable(dev, SPI_INTERRUPTS_ALL);
+    spi_peripheral_disable(dev);
+    // Flush FIFOs
+    REG_SET_CLR(dev->regs->CONFIG, 1, SPI_CFGR_RFIFOFL_MASK | SPI_CFGR_TFIFOFL_MASK);
 
-static void spi_reconfigure(spi_dev *dev, uint32 cr1_config) {
+    // Set configuration
+    dev->regs->CONFIG = 0;
+    REG_SET_CLR(dev->regs->CONFIG, 1, config);
 
+    spi_peripheral_enable(dev);
 }

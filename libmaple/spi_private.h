@@ -32,6 +32,7 @@
         .regs    = SPI##num##_BASE,               \
         .clk_id  = CLK_SPI##num,                  \
         .irq_num = NVIC_SPI##num,                 \
+        .xbar_id = XBAR_SPI##num,               \
     }
 
 #endif

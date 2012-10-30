@@ -143,6 +143,7 @@ typedef struct usart_dev {
                                       * This field will be removed in
                                       * a future release. */ // todo silabs: rx_buf size
     clk_dev_id clk_id;               /**< RCC clock information */
+    xbar_dev_id xbar_id;
     nvic_irq_num irq_num;            /**< USART NVIC interrupt */
 } usart_dev;
 

@@ -57,6 +57,7 @@ static timer_dev timer1 = {
     .type = TIMER_ADVANCED,
     .nvic_irqs.irq_count = 1,
     .nvic_irqs.irq_array = timer1_irqs,
+    .xbar_id = XBAR_TIMER1,
     .chnl_regs = t1_chnl_regs,
     .handlers = { [NR_ADV_HANDLERS - 1] = 0 }
 };
@@ -70,6 +71,7 @@ static timer_dev timer2 = {
     .type = TIMER_GENERAL,
     .nvic_irqs.irq_count = 1,
     .nvic_irqs.irq_array = timer2_irqs,
+    .xbar_id = XBAR_TIMER2,
     .chnl_regs = t2_chnl_regs,
     .handlers = { [NR_GEN_HANDLERS - 1] = 0 }
 };
@@ -83,6 +85,7 @@ static timer_dev timer3 = {
     .type = TIMER_GENERAL,
     .nvic_irqs.irq_count = 1,
     .nvic_irqs.irq_array = timer3_irqs,
+    .xbar_id = XBAR_TIMER3,
     .chnl_regs = t3_chnl_regs,
     .handlers = { [NR_GEN_HANDLERS - 1] = 0 }
 };
@@ -95,6 +98,7 @@ static timer_dev timer4 = {
     .type = TIMER_BASIC,
     .nvic_irqs.irq_count = 2,
     .nvic_irqs.irq_array = timer4_irqs,
+    .xbar_id = XBAR_TIMER4,
     .chnl_regs = 0,
     .handlers = { [NR_BAS_HANDLERS - 1] = 0 }
 };
@@ -107,6 +111,7 @@ static timer_dev timer5 = {
     .type = TIMER_BASIC,
     .nvic_irqs.irq_count = 2,
     .nvic_irqs.irq_array = timer5_irqs,
+    .xbar_id = XBAR_TIMER5,
     .chnl_regs = 0,
     .handlers = { [NR_BAS_HANDLERS - 1] = 0 }
 };
@@ -203,12 +208,15 @@ void timer_set_mode(timer_dev *dev, uint8 channel, timer_mode mode) {
     switch (mode) {
     case TIMER_DISABLED:
         disable_channel(dev, channel);
+        xbar_set_dev(dev->xbar_id, 0);
         break;
     case TIMER_PWM:
         pwm_mode(dev, channel);
+        xbar_set_dev(dev->xbar_id, 1);
         break;
     case TIMER_OUTPUT_COMPARE:
         output_compare_mode(dev, channel);
+        xbar_set_dev(dev->xbar_id, 1);
         break;
     }
 }

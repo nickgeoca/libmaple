@@ -29,8 +29,8 @@
  * @brief STM32F2 GPIO support.
  */
 
-#ifndef _LIBMAPLE_STM32F2_GPIO_H_
-#define _LIBMAPLE_STM32F2_GPIO_H_
+#ifndef _LIBMAPLE_SIM3U1_GPIO_H_
+#define _LIBMAPLE_SIM3U1_GPIO_H_
 
 #ifdef __cplusplus
 extern "C"{
@@ -327,62 +327,6 @@ extern struct gpio_dev gpioe;
 #define PBHD_PBDEN_PBNDEN_BIT        0  /* PBNDEN<5:0>: Port Bank N-Channel Driver Enable (low side). */
 #define PBHD_PBDEN_PBPDEN_BIT        16 /* PBPDEN<21:16>: Port Bank P-Channel Driver Enable (high side). */
 
-#define PBCFG_XBAR0L_USART0EN_MASK           0x00000001
-#define PBCFG_XBAR0L_USART0FCEN_MASK         0x00000002
-#define PBCFG_XBAR0L_USART0CEN_MASK          0x00000004
-#define PBCFG_XBAR0L_SPI0EN_MASK             0x00000008
-#define PBCFG_XBAR0L_SPI0NSSEN_MASK          0x00000010
-#define PBCFG_XBAR0L_USART1EN_MASK           0x00000020
-#define PBCFG_XBAR0L_USART1FCEN_MASK         0x00000040
-#define PBCFG_XBAR0L_USART1CEN_MASK          0x00000080
-#define PBCFG_XBAR0L_EPCA0EN_MASK            0x00000700
-#define PBCFG_XBAR0L_PCA0_CEX0EN_MASK        0x00004000
-#define PBCFG_XBAR0L_PCA0EN_MASK             0x0000C000
-#define PBCFG_XBAR0L_PCA1_CEX0EN_MASK        0x00010000
-#define PBCFG_XBAR0L_PCA1EN_MASK             0x00030000
-#define PBCFG_XBAR0L_EECI0EN_MASK            0x00040000
-#define PBCFG_XBAR0L_ECI0EN_MASK             0x00080000
-#define PBCFG_XBAR0L_ECI1EN_MASK             0x00100000
-#define PBCFG_XBAR0L_I2S0TXEN_MASK           0x00200000
-#define PBCFG_XBAR0L_I2C0EN_MASK             0x00400000
-#define PBCFG_XBAR0L_CMP0SEN_MASK            0x00800000
-#define PBCFG_XBAR0L_CMP0AEN_MASK            0x01000000
-#define PBCFG_XBAR0L_CMP1SEN_MASK            0x02000000
-#define PBCFG_XBAR0L_CMP1AEN_MASK            0x04000000
-#define PBCFG_XBAR0L_TMR0CTEN_MASK           0x08000000
-#define PBCFG_XBAR0L_TMR0EXEN_MASK           0x10000000
-#define PBCFG_XBAR0L_TMR1CTEN_MASK           0x20000000
-#define PBCFG_XBAR0L_TMR1EXEN_MASK           0x40000000
-#define PBCFG_XBAR0H_UART0EN_MASK            0x00000001
-#define PBCFG_XBAR0H_UART0FCEN_MASK          0x00000002
-#define PBCFG_XBAR0H_UART1EN_MASK            0x00000004
-#define PBCFG_XBAR0H_SPI1EN_MASK             0x00000008
-#define PBCFG_XBAR0H_SPI1NSSEN_MASK          0x00000010
-#define PBCFG_XBAR0H_SPI2EN_MASK             0x00000020
-#define PBCFG_XBAR0H_SPI2NSSEN_MASK          0x00000040
-#define PBCFG_XBAR0H_AHBEN_MASK              0x00000080
-#define PBCFG_XBAR0H_XBAR0EN_MASK            0x80000000
-#define PBCFG_XBAR1_SSG0EN_MASK              0x00000003
-#define PBCFG_XBAR1_CMP0SEN_MASK             0x00000004
-#define PBCFG_XBAR1_CMP1SEN_MASK             0x00000008
-#define PBCFG_XBAR1_SPI1EN_MASK              0x00000010
-#define PBCFG_XBAR1_SPI1NSSEN_MASK           0x00000020
-#define PBCFG_XBAR1_RTC0EN_MASK              0x00000040
-#define PBCFG_XBAR1_SPI2EN_MASK              0x00000080
-#define PBCFG_XBAR1_SPI2NSSEN_MASK           0x00000100
-#define PBCFG_XBAR1_USART1EN_MASK            0x00000200
-#define PBCFG_XBAR1_USART1FCEN_MASK          0x00000400
-#define PBCFG_XBAR1_USART1CEN_MASK           0x00000800
-#define PBCFG_XBAR1_UART0EN_MASK             0x00001000
-#define PBCFG_XBAR1_UART0FCEN_MASK           0x00002000
-#define PBCFG_XBAR1_I2S0TXEN_MASK            0x00004000
-#define PBCFG_XBAR1_I2C0EN_MASK              0x00008000
-#define PBCFG_XBAR1_UART1EN_MASK             0x00010000
-#define PBCFG_XBAR1_I2S0RXEN_MASK            0x00020000
-#define PBCFG_XBAR1_LPT0OEN_MASK             0x00080000
-#define PBCFG_XBAR1_I2C1EN_MASK              0x00100000
-#define PBCFG_XBAR1_KILLHDEN_MASK            0x00200000
-#define PBCFG_XBAR1_XBAR1EN_MASK             0x80000000
 
 #define PBCFG_PBKEY_KEY_BIT                  0  /* KEY<7:0>: Port Bank 2, 3, and 4 Key.           */
 #define PBCFG_PBKEY_KEY_LOCKED               (0 << PBCFG_PBKEY_KEY_BIT)
@@ -477,6 +421,7 @@ typedef enum gpio_type {
 } gpio_type;
 
 void gpio_set_af(struct gpio_dev *dev, uint8 bit, gpio_af af);
+
 
 #ifdef __cplusplus
 }
