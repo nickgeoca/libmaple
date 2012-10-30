@@ -277,13 +277,13 @@ void setup() {
 
 
     // Setup analog pins
-    for (int i = 0; i < BOARD_NR_ADC_PINS; i++)
-        pinMode(boardADCPins[i], INPUT_ANALOG);
+    //for (int i = 0; i < BOARD_NR_ADC_PINS; i++)
+        //pinMode(boardADCPins[i], INPUT_ANALOG);
 
     // Exti pin
-    pinMode(D39, OUTPUT);
-    pinMode(D38, INPUT);
-    attachInterrupt(D38, extiCallback1, exti_varD38, RISING);
+    //pinMode(D39, OUTPUT);
+    //pinMode(D38, INPUT);
+    //attachInterrupt(D38, extiCallback1, exti_varD38, RISING);
 
     // Uart
     initUARTs();
@@ -319,11 +319,13 @@ void setup() {
     timerArray[3]->setPrescaleFactor(1024);
     timerArray[3]->setMode(1, TIMER_OUTPUT_COMPARE);
     timerArray[3]->attachInterrupt(1, timerOutputCmpCallback);
+#endif
+
     pinMode(A1, PWM);
     pinMode(D22, PWM);
     pwmWrite(A1, 65535 / 4);
     pwmWrite(D22, 65535 / 4);
-#endif
+
     timerArray[1]->setOverflow(10000);
     timerArray[1]->setCompare(1, 4000);
     timerArray[1]->setCompare(2, 4000);
@@ -335,11 +337,8 @@ void loop () {
     //togglePin(D39);
 
     delay(750);
-<<<<<<< HEAD
+
     //serialDisplay();
-=======
-    serialDisplay();
->>>>>>> remotes/NG_Repo/silabs
 
     //cmdProc();
 }

@@ -65,14 +65,9 @@ void gpio_init_all(void);
 /* TODO flags argument version? */
 void gpio_set_mode(gpio_dev *dev, uint8 pin, gpio_pin_mode mode);
 
-<<<<<<< HEAD
 
 uint8 board_get_short_num(gpio_dev *dev, uint8 pin);
-uint8 board_can_chng_gpio(gpio_dev *dev, uint8 pin);
-=======
-void xbar_dis_device(gpio_dev *dev, uint8 bit);
 
->>>>>>> remotes/NG_Repo/silabs
 
 static inline gpio_type gpio_get_type(gpio_dev *dev) {
     if (dev == GPIOE) {
@@ -91,9 +86,6 @@ static inline gpio_type gpio_get_type(gpio_dev *dev) {
  * @param val If true, set the pin.  If false, reset the pin.
  */
 static inline void gpio_write_bit(gpio_dev *dev, uint8 pin, uint8 val) {
-    if (!board_can_chng_gpio(dev, pin)) {
-        return;
-    }
     REG_SET_CLR(dev->regs->PB, val, 1 << pin);
 }
 
@@ -114,9 +106,6 @@ static inline uint32 gpio_read_bit(gpio_dev *dev, uint8 pin) {
  * @param pin Pin on dev to toggle.
  */
 static inline void gpio_toggle_bit(gpio_dev *dev, uint8 pin) {
-    if (!board_can_chng_gpio(dev, pin)) {
-        return;
-    }
     dev->regs->PB_MSK =  ((1 << pin) << 16) | (~dev->regs->PB & 0xFFFF);
 }
 

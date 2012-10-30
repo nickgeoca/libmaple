@@ -91,7 +91,7 @@ namespace wirish {
             *((volatile uint32*)0x40030030) = 0xDD;
 
             // Setup crossbar
-<<<<<<< HEAD
+
             // Enable clock on port banks. All GPIO clk id's reference PBCFG
             clk_enable_dev(CLK_PB);
 
@@ -100,9 +100,7 @@ namespace wirish {
 
             // Skip list
             GPIOA->regs->std.PBSKIPEN = 0x0000FFFF;
-=======
-            gpio_init_xbar();
->>>>>>> remotes/NG_Repo/silabs
+
         }
         __weak void board_setup_rtc(void) {
             __io uint32 *rtc_base = (__io uint32 *)0x40029000;

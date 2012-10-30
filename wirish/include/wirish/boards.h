@@ -44,10 +44,7 @@
  * @brief Maps each Maple pin to a corresponding stm32_pin_info.
  * @see stm32_pin_info
  */
-<<<<<<< HEAD
 
-=======
->>>>>>> remotes/NG_Repo/silabs
 extern const stm32_pin_info PIN_MAP[];
 extern const stm32_pin_info PIN_MAP_SHORTS[];
 /**

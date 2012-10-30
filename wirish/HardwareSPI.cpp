@@ -97,11 +97,9 @@ HardwareSPI::HardwareSPI(uint32 spi_num) {
  */
 
 void HardwareSPI::begin(uint32 frequency, uint32 bitOrder, uint32 mode) {
-<<<<<<< HEAD
+
     if (mode >= 4 || frequency > 10000000) {
-=======
-    if (mode >= 4 || freqency > 10000000) {
->>>>>>> remotes/NG_Repo/silabs
+
         ASSERT(0);
         return;
     }
@@ -111,11 +109,9 @@ void HardwareSPI::begin(uint32 frequency, uint32 bitOrder, uint32 mode) {
 }
 
 void HardwareSPI::begin(void) {
-<<<<<<< HEAD
+
     this->begin(5000000, MSBFIRST, 0);
-=======
-    this->begin(SPI_1_125MHZ, MSBFIRST, 0);
->>>>>>> remotes/NG_Repo/silabs
+
 }
 
 void HardwareSPI::beginSlave(uint32 bitOrder, uint32 mode) {
@@ -125,11 +121,9 @@ void HardwareSPI::beginSlave(uint32 bitOrder, uint32 mode) {
     }
     spi_cfg_flag end = bitOrder == MSBFIRST ? SPI_FRAME_MSB : SPI_FRAME_LSB;
     spi_mode m = (spi_mode)mode;
-<<<<<<< HEAD
+
     enable_device(this->spi_d, false, 0, end, m);
-=======
-    enable_device(this->spi_d, false, (SPIFrequency)0, end, m);
->>>>>>> remotes/NG_Repo/silabs
+
 }
 
 void HardwareSPI::beginSlave(void) {
@@ -219,10 +213,6 @@ uint8 HardwareSPI::recv(void) {
  */
 
 static void configure_gpios(spi_dev *dev, bool as_master);
-<<<<<<< HEAD
-=======
-static spi_baud_rate determine_baud_rate(spi_dev *dev, uint32 freq);
->>>>>>> remotes/NG_Repo/silabs
 
 static const spi_pins* dev_to_spi_pins(spi_dev *dev) {
     return NULL;
@@ -256,33 +246,17 @@ static void enable_device(spi_dev *dev,
     SPI_MODE_MST_4WIRE_NSS_HIGH;
 }
 
-<<<<<<< HEAD
-
 
 static void disable_pwm(const stm32_pin_info *i) {
-=======
->>>>>>> remotes/NG_Repo/silabs
 
+}
 
-<<<<<<< HEAD
 static void configure_gpios(spi_dev *dev, bool as_master) {
     const spi_pins *pins = dev_to_spi_pins(dev);
-=======
-static void disable_pwm(const stm32_pin_info *i) {
->>>>>>> remotes/NG_Repo/silabs
-
     if (!pins) {
         return;
     }
 
-<<<<<<< HEAD
-=======
-static void configure_gpios(spi_dev *dev, bool as_master) {
-    if (!pins) {
-        return;
-    }
-
->>>>>>> remotes/NG_Repo/silabs
     const stm32_pin_info *nssi = &PIN_MAP[pins->nss];
     const stm32_pin_info *scki = &PIN_MAP[pins->sck];
     const stm32_pin_info *misoi = &PIN_MAP[pins->miso];

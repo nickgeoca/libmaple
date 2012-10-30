@@ -45,12 +45,7 @@
 #define PIN_D34_SHORTED 4
 #define PIN_D35_SHORTED 5
 #define BOARD_NR_SHORTED_PINS  6
-<<<<<<< HEAD
 
-=======
-uint8 board_get_short_num(gpio_dev *dev, uint8 pin);
-uint8 board_can_chng_gpio(gpio_dev *dev, uint8 pin);
->>>>>>> remotes/NG_Repo/silabs
 /* Pin aliases: these give the GPIO port/bit for each pin as an
  * enum. These are optional, but recommended. They make it easier to
  * write code using low-level GPIO functionality. */
@@ -126,7 +121,7 @@ enum {
 #define BOARD_SPI3_MISO_PIN     D12
 #define BOARD_SPI3_SCK_PIN      D13
 
-<<<<<<< HEAD
+
 
 /* Timer pin numbers. */
 #define BOARD_TIMER1C1_PIN      0xFF
@@ -160,8 +155,7 @@ enum {
 
 /* AHB (divided by 16) out pin number */
 #define BOARD_AHB_OUT_PIN      0xFF
-=======
->>>>>>> remotes/NG_Repo/silabs
+
 
 /* Total number of GPIO pins that are broken out to headers and
  * intended for use. This includes pins like the LED, button, and

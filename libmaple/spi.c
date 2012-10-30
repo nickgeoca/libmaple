@@ -67,11 +67,8 @@ void spi_master_enable(spi_dev *dev,
                        uint32 flags) {
     // Set baud: clkdiv = bus / (2*baud) - 1
     dev->regs->CLKRATE = clk_get_bus_freq(dev->clk_id) / (2 * baud) - 1;
-<<<<<<< HEAD
     spi_reconfigure(dev, flags | mode);
-=======
-    spi_reconfigure(dev, flags | SPI_CR1_MSTR | mode);
->>>>>>> remotes/NG_Repo/silabs
+
 }
 
 /**

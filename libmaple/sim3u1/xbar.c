@@ -54,9 +54,7 @@ void xbar_set_dev(xbar_dev_id xbar_id, uint8 enable) {
     if (xbar_num == XBAR_NUM_NULL || xbar_num == XBAR_NUM_GPIOE) {
         return;
     }
-    XBAR_NUM_0L;
-    XBAR_NUM_0H;
-    XBAR_NUM_1;
+
     if (xbar_num == XBAR_NUM_1) {
         gpio1_regs = GPIOC->regs;
         gpio2_regs = GPIOD->regs;

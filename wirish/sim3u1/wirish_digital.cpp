@@ -36,8 +36,7 @@
 
 #include <wirish/boards.h>
 
-<<<<<<< HEAD
-
+#if 0
 void board_xchng_pin_row(stm32_pin_info *main_pin_row, stm32_pin_info *short_pin_row, uint8 chng_to_primary_pin) {
     stm32_pin_info tmp;
     if (chng_to_primary_pin && main_pin_row->gpio_device != GPIOD) {
@@ -58,18 +57,13 @@ void board_xchng_pin_row(stm32_pin_info *main_pin_row, stm32_pin_info *short_pin
     *short_pin_row = tmp;
 }
 
+#endif
+
 void pinMode(uint8 pin_num, WiringPinMode mode) {
     gpio_pin_mode outputMode;
     bool pwm = false;
     const stm32_pin_info *gpio_pin = &PIN_MAP[pin_num];
-=======
-void pinMode(uint8 pin_num, WiringPinMode mode) {
-    gpio_pin_mode outputMode;
-    bool pwm = false;
-    stm32_pin_info *gpio_pin = &PIN_MAP[pin_num];
-    stm32_pin_info *shorted_pin = board_get_short_num(gpio_pin->gpio_device, gpio_bit) ?
-            &PIN_MAP_SHORTS[board_get_short_num(gpio_pin->gpio_device, gpio_bit) - 1] : 0;
->>>>>>> remotes/NG_Repo/silabs
+
 
     if (pin_num >= BOARD_NR_GPIO_PINS) {
         return;
@@ -104,7 +98,7 @@ void pinMode(uint8 pin_num, WiringPinMode mode) {
             return;
     }
 
-<<<<<<< HEAD
+
 #if 0
     // Shorted pin. Exchange pin row if necessary.
     if (uint32 short_pin = board_get_short_num(gpio_pin->gpio_device, gpio_pin->gpio_bit)) {
@@ -112,22 +106,7 @@ void pinMode(uint8 pin_num, WiringPinMode mode) {
         //board_xchng_pin_row(gpio_pin, &PIN_MAP_SHORTS[short_pin - 1], chng_to_primary_pin);
     }
 #endif
-=======
-    // Shorted pin case
-    if (shorted_pin) {
-        if (pwm == false) {
-            // turn off secondary shorted pin
-            gpio_set_af(shorted_pin->gpio_device, shorted_pin->gpio_bit, GPIOHD_FNCT_GPIO);
-            gpio_set_mode(shorted_pin->gpio_device, shorted_pin->gpio_bit, GPIO_DIGITAL_INPUT_PULLUP);
-        }
-        else {
-            // turn off primary shorted pin
-            xbar_dis_device(gpio_pin->gpio_device, gpio_pin->gpio_bit);
-            gpio_set_mode(gpio_pin->gpio_device, gpio_pin->gpio_bit, GPIO_DIGITAL_INPUT_PULLUP);
-            gpio_pin = shorted_pin;
-        }
-    }
->>>>>>> remotes/NG_Repo/silabs
+
 
     // Set pin mode
     gpio_set_mode(gpio_pin->gpio_device, gpio_pin->gpio_bit, outputMode);

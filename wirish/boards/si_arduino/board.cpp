@@ -51,12 +51,7 @@ void boardInit(void) {
 
 }
 
-<<<<<<< HEAD
 
-
-
-=======
->>>>>>> remotes/NG_Repo/silabs
 #define PIN_ROW_D30_NOT_SHORTED PMAP_ROW(GPIOE,   5, TIMER1,  6,  NULL,  ADCx,   0),
 #define PIN_ROW_D30_SHORTED
 #if defined(PIN_D30_SHORTED)
@@ -105,13 +100,6 @@ void boardInit(void) {
 #define D35 D11
 #endif
 
-
-
-<<<<<<< HEAD
-=======
-
-
->>>>>>> remotes/NG_Repo/silabs
 // Pin map: this lets the basic I/O functions (digitalWrite(),
 // analogRead(), pwmWrite()) translate from pin numbers to STM32
 // peripherals.
@@ -219,7 +207,7 @@ extern const uint8 boardUsedPins[] __FLASH__ = {
 
 };
 
-<<<<<<< HEAD
+
 #define PIN_TO_PB_MASK(pin)                                 (pin == 0xff ? 0 : PIN_MAP[pin].gpio_device == GPIOA || PIN_MAP[pin].gpio_device == GPIOC ? \
                                                                 (uint32)1 << PIN_MAP[pin].gpio_bit : (uint32)1 << (PIN_MAP[pin].gpio_bit + 16))
 #define PIN_TO_PB_MASK2(pin1, pin2)                         (PIN_TO_PB_MASK(pin1) | PIN_TO_PB_MASK(pin2))
@@ -299,69 +287,7 @@ uint8 board_get_short_num(gpio_dev *dev, uint8 pin)
 #if BOARD_NR_SHORTED_PINS == 0
     return 0;
 #endif // BOARD_NR_SHORTED_PINS == 0
-=======
-extern const stm32_pin_info PIN_MAP_SHORTS[BOARD_NR_SHORTED_PINS] = {
-        PIN_ROW_D30_SHORTED
-        PIN_ROW_D31_SHORTED
-        PIN_ROW_D32_SHORTED
-        PIN_ROW_D33_SHORTED
-        PIN_ROW_D34_SHORTED
-        PIN_ROW_D35_SHORTED
-};
 
-/* Return 0 if not shorted */
-uint8 board_get_short_num(gpio_dev *dev, uint8 pin)
-{
-#if BOARD_NR_SHORTED_PINS == 0
-    return 0;
-#endif // BOARD_NR_SHORTED_PINS == 0
-
-    if (dev != GPIOD) {
-        return 0;
-    }
-    switch (pin) {
-#if defined(PIN_D30_SHORTED)
-    case PIN_MAP[D30].gpio_bit:
-        return PIN_D30_SHORTED + 1;
-#endif // defined(PIN_D30_SHORTED)
-#if defined(PIN_D31_SHORTED)
-    case PIN_MAP[D31].gpio_bit:
-        return PIN_D31_SHORTED + 1;
-#endif // defined(PIN_D31_SHORTED)
-#if defined(PIN_D32_SHORTED)
-    case PIN_MAP[D32].gpio_bit:
-        return PIN_D32_SHORTED + 1;
-#endif // defined(PIN_D32_SHORTED)
-#if defined(PIN_D33_SHORTED)
-    case PIN_MAP[D33].gpio_bit:
-        return PIN_D33_SHORTED + 1;
-#endif // defined(PIN_D33_SHORTED)
-#if defined(PIN_D34_SHORTED)
-    case PIN_MAP[D34].gpio_bit:
-        return PIN_D34_SHORTED + 1;
-#endif // defined(PIN_D34_SHORTED)
-#if defined(PIN_D35_SHORTED)
-    case PIN_MAP[D35].gpio_bit:
-        return PIN_D35_SHORTED + 1;
-#endif // defined(PIN_D35_SHORTED)
-    default:
-        return 0;
-    }
-}
-
-uint8 board_can_chng_gpio(gpio_dev *dev, uint8 pin)
-{
-    if (uint8 short_num = board_get_short_num(dev, pin)) {
-        short_num -= 1;
-        // GPIOE is used if the alt function is not GPIO. GPIOE/bit5 should have a mask of 7, but this is fine for now.
-        if ((0x3 & (GPIOE->regs->hd.PBFSEL) >> (PIN_MAP_SHORTS[short_num].gpio_bit * 2)) !=
-                0) {
-            return 0;
-        }
-    }
-    return 1;
-}
->>>>>>> remotes/NG_Repo/silabs
 
     // Primary pin
     if (dev == GPIOD) {
