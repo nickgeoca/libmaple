@@ -304,9 +304,12 @@ typedef enum spi_cfg_flag {
     SPI_FRAME_MSB = 0,
 } spi_cfg_flag;
 
+<<<<<<< HEAD
 typedef enum spi_mode {
     SPI_MODE_ENUM_
 }spi_mode;
+=======
+>>>>>>> remotes/NG_Repo/silabs
 
 void spi_master_enable(spi_dev *dev,
                        uint32 baud,
@@ -402,7 +405,11 @@ static inline void spi_irq_disable(spi_dev *dev, uint32 interrupt_flags) {
  *         Otherwise, SPI_DFF_16_BIT.
  */
 static inline spi_cfg_flag spi_dff(spi_dev *dev) {
+<<<<<<< HEAD
     return (spi_cfg_flag)(dev->regs->CONFIG & SPI_CFGR_DSIZE_MASK);
+=======
+    return dev->regs->CONFIG & SPI_CFGR_DSIZE_MASK;
+>>>>>>> remotes/NG_Repo/silabs
 }
 
 /**

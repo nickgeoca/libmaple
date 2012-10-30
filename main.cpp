@@ -335,7 +335,11 @@ void loop () {
     //togglePin(D39);
 
     delay(750);
+<<<<<<< HEAD
     //serialDisplay();
+=======
+    serialDisplay();
+>>>>>>> remotes/NG_Repo/silabs
 
     //cmdProc();
 }
