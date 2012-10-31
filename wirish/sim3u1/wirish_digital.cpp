@@ -36,29 +36,6 @@
 
 #include <wirish/boards.h>
 
-#if 0
-void board_xchng_pin_row(stm32_pin_info *main_pin_row, stm32_pin_info *short_pin_row, uint8 chng_to_primary_pin) {
-    stm32_pin_info tmp;
-    if (chng_to_primary_pin && main_pin_row->gpio_device != GPIOD) {
-        // turn off secondary pin
-        gpio_set_af(main_pin_row->gpio_device, main_pin_row->gpio_bit, GPIOHD_FNCT_GPIO);
-        gpio_set_mode(main_pin_row->gpio_device, main_pin_row->gpio_bit, GPIO_DIGITAL_INPUT_PULLUP);
-    }
-    else if (!chng_to_primary_pin && main_pin_row->gpio_device != GPIOE) {
-        // turn off primary pin
-        //xbar_dis_device(main_pin_row->gpio_device, main_pin_row->gpio_bit);
-        gpio_set_mode(main_pin_row->gpio_device, main_pin_row->gpio_bit, GPIO_DIGITAL_INPUT_PULLUP);
-    }
-    else {
-        return;
-    }
-    tmp = *main_pin_row;
-    *main_pin_row = *short_pin_row;
-    *short_pin_row = tmp;
-}
-
-#endif
-
 void pinMode(uint8 pin_num, WiringPinMode mode) {
     gpio_pin_mode outputMode;
     bool pwm = false;
@@ -98,20 +75,30 @@ void pinMode(uint8 pin_num, WiringPinMode mode) {
             return;
     }
 
-
-#if 0
-    // Shorted pin. Exchange pin row if necessary.
-    if (uint32 short_pin = board_get_short_num(gpio_pin->gpio_device, gpio_pin->gpio_bit)) {
-        uint8 chng_to_primary_pin = !pwm;
-        //board_xchng_pin_row(gpio_pin, &PIN_MAP_SHORTS[short_pin - 1], chng_to_primary_pin);
+    // Shorted pin?
+    uint32 short_num = board_get_short_num(gpio_pin->gpio_device, gpio_pin->gpio_bit);
+    if (short_num) {
+        short_num -= 1;
+        if (pwm == true) {
+            // High impedance main pin. Set PWM on secondary
+            gpio_set_mode(gpio_pin->gpio_device, gpio_pin->gpio_bit, GPIO_DIGITAL_INPUT_PULLUP);
+            gpio_pin = &PIN_MAP_SHORTS[short_num];
+            gpio_set_mode(gpio_pin->gpio_device, gpio_pin->gpio_bit, outputMode);
+        }
+        else {
+            // Disable PWM on secondary. Set primary pin function and return.
+            gpio_set_af(PIN_MAP_SHORTS[short_num].gpio_device, PIN_MAP_SHORTS[short_num].gpio_bit, GPIOHD_FNCT_GPIO);
+            timer_set_mode(PIN_MAP_SHORTS[short_num].timer_device,
+                    PIN_MAP_SHORTS[short_num].timer_channel, TIMER_DISABLED);
+            gpio_set_mode(gpio_pin->gpio_device, gpio_pin->gpio_bit, outputMode);
+            return;
+        }
     }
-#endif
+    else {
+        gpio_set_mode(gpio_pin->gpio_device, gpio_pin->gpio_bit, outputMode);
+    }
 
 
-    // Set pin mode
-    gpio_set_mode(gpio_pin->gpio_device, gpio_pin->gpio_bit, outputMode);
-
-    //
     if (gpio_pin->timer_device != NULL) {
         /* Enable/disable timer channels if we're switching into or
          * out of PWM. */

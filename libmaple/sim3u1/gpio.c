@@ -92,26 +92,7 @@ void gpio_init_all(void) {
     GPIOB->regs->std.PBSKIPEN = 0x0000FFFF; // 0xf00-timers
     GPIOC->regs->std.PBSKIPEN = 0x0000FFFF;
     GPIOD->regs->std.PBSKIPEN = 0x00007FFF;
-#if 0
-    // Skip list
-    GPIOA->regs->std.PBSKIPEN = 0x0000FFFF ^ 0xe8c3;
-    GPIOB->regs->std.PBSKIPEN = 0x0000FFFF ^ 0x0f00; // 0xf00-timers
-    GPIOC->regs->std.PBSKIPEN = 0x0000FFFF ^ 0;
-    GPIOD->regs->std.PBSKIPEN = 0x00007FFF ^ 0x0030;
 
-    // Enable devices on Crossbar 0
-    REG_SET_CLR(PBCFG_BASE->XBAR0L, 1,
-            PBCFG_XBAR0L_USART0EN_MASK | PBCFG_XBAR0L_USART1EN_MASK |
-            PBCFG_XBAR0L_PCA0EN_MASK | PBCFG_XBAR0L_PCA1EN_MASK |
-            PBCFG_XBAR0L_TMR0EXEN_MASK | PBCFG_XBAR0L_TMR0CTEN_MASK |
-            PBCFG_XBAR0L_TMR1EXEN_MASK | PBCFG_XBAR0L_TMR1CTEN_MASK);
-    //REG_SET_CLR(PBCFG_BASE->XBAR0H, 1,
-    //        PBCFG_XBAR0H_UART0EN_MASK);
-
-    // Enable UART0 on Crossbar 1
-    REG_SET_CLR(PBCFG_BASE->XBAR1, 1,
-            PBCFG_XBAR1_UART1EN_MASK);
-#endif
     // Setup Port Bank 4
     if (PBCFG_BASE->PBKEY == PBCFG_PBKEY_KEY_INTERMEDIATE) {
         PBCFG_BASE->PBKEY = 0xF1;

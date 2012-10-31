@@ -55,7 +55,7 @@ void boardInit(void) {
 #define PIN_ROW_D30_NOT_SHORTED PMAP_ROW(GPIOE,   5, TIMER1,  6,  NULL,  ADCx,   0),
 #define PIN_ROW_D30_SHORTED
 #if defined(PIN_D30_SHORTED)
-#define PIN_ROW_D30_SHORTED PIN_ROW_D30_NOT_SHORTED
+#define PIN_ROW_D30_SHORTED PMAP_ROW(GPIOE,   5, TIMER1,  6,  NULL,  ADCx,   0),
 #define PIN_ROW_D30_NOT_SHORTED
 #define D30 D3
 #endif
@@ -63,7 +63,7 @@ void boardInit(void) {
 #define PIN_ROW_D31_NOT_SHORTED PMAP_ROW(GPIOE,   4, TIMER1,  5,  NULL,  ADCx,   0),
 #define PIN_ROW_D31_SHORTED
 #if defined(PIN_D31_SHORTED)
-#define PIN_ROW_D31_SHORTED PIN_ROW_D30_NOT_SHORTED
+#define PIN_ROW_D31_SHORTED PMAP_ROW(GPIOE,   4, TIMER1,  5,  NULL,  ADCx,   0),
 #define PIN_ROW_D31_NOT_SHORTED
 #define D31 D5
 #endif
@@ -71,7 +71,7 @@ void boardInit(void) {
 #define PIN_ROW_D32_NOT_SHORTED PMAP_ROW(GPIOE,   3, TIMER1,  4,  NULL,  ADCx,   0),
 #define PIN_ROW_D32_SHORTED
 #if defined(PIN_D32_SHORTED)
-#define PIN_ROW_D32_SHORTED PIN_ROW_D30_NOT_SHORTED
+#define PIN_ROW_D32_SHORTED PMAP_ROW(GPIOE,   3, TIMER1,  4,  NULL,  ADCx,   0),
 #define PIN_ROW_D32_NOT_SHORTED
 #define D32 D6
 #endif
@@ -79,7 +79,7 @@ void boardInit(void) {
 #define PIN_ROW_D33_NOT_SHORTED PMAP_ROW(GPIOE,   2, TIMER1,  3,  NULL,  ADCx,   0),
 #define PIN_ROW_D33_SHORTED
 #if defined(PIN_D33_SHORTED)
-#define PIN_ROW_D33_SHORTED PIN_ROW_D30_NOT_SHORTED
+#define PIN_ROW_D33_SHORTED PMAP_ROW(GPIOE,   2, TIMER1,  3,  NULL,  ADCx,   0),
 #define PIN_ROW_D33_NOT_SHORTED
 #define D33 D9
 #endif
@@ -87,7 +87,7 @@ void boardInit(void) {
 #define PIN_ROW_D34_NOT_SHORTED PMAP_ROW(GPIOE,   1, TIMER1,  2,  NULL,  ADCx,   0),
 #define PIN_ROW_D34_SHORTED
 #if defined(PIN_D34_SHORTED)
-#define PIN_ROW_D34_SHORTED PIN_ROW_D30_NOT_SHORTED
+#define PIN_ROW_D34_SHORTED PMAP_ROW(GPIOE,   1, TIMER1,  2,  NULL,  ADCx,   0),
 #define PIN_ROW_D34_NOT_SHORTED
 #define D34 D10
 #endif
@@ -95,7 +95,7 @@ void boardInit(void) {
 #define PIN_ROW_D35_NOT_SHORTED PMAP_ROW(GPIOE,   0, TIMER1,  1,  NULL,  ADCx,   0),
 #define PIN_ROW_D35_SHORTED
 #if defined(PIN_D35_SHORTED)
-#define PIN_ROW_D35_SHORTED PIN_ROW_D30_NOT_SHORTED
+#define PIN_ROW_D35_SHORTED PMAP_ROW(GPIOE,   0, TIMER1,  1,  NULL,  ADCx,   0),
 #define PIN_ROW_D35_NOT_SHORTED
 #define D35 D11
 #endif
@@ -208,7 +208,7 @@ extern const uint8 boardUsedPins[] __FLASH__ = {
 };
 
 
-#define PIN_TO_PB_MASK(pin)                                 (pin == 0xff ? 0 : PIN_MAP[pin].gpio_device == GPIOA || PIN_MAP[pin].gpio_device == GPIOC ? \
+#define PIN_TO_PB_MASK(pin)                                 (pin == 0xff || pin == 0xfe ? 0 : PIN_MAP[pin].gpio_device == GPIOA || PIN_MAP[pin].gpio_device == GPIOC ? \
                                                                 (uint32)1 << PIN_MAP[pin].gpio_bit : (uint32)1 << (PIN_MAP[pin].gpio_bit + 16))
 #define PIN_TO_PB_MASK2(pin1, pin2)                         (PIN_TO_PB_MASK(pin1) | PIN_TO_PB_MASK(pin2))
 #define PIN_TO_PB_MASK3(pin1, pin2, pin3)                   (PIN_TO_PB_MASK(pin1) | PIN_TO_PB_MASK2(pin2, pin3))
@@ -320,38 +320,5 @@ uint8 board_get_short_num(gpio_dev *dev, uint8 pin)
             return 0;
         }
     }
-
-    // Secondary pin
-    else if (dev == GPIOE) {
-        switch (pin) {
-#if defined(PIN_D30_SHORTED)
-        case 0:
-            return PIN_D30_SHORTED + 1;
-#endif // defined(PIN_D30_SHORTED)
-#if defined(PIN_D31_SHORTED)
-        case 1:
-            return PIN_D31_SHORTED + 1;
-#endif // defined(PIN_D31_SHORTED)
-#if defined(PIN_D32_SHORTED)
-        case 2:
-            return PIN_D32_SHORTED + 1;
-#endif // defined(PIN_D32_SHORTED)
-#if defined(PIN_D33_SHORTED)
-        case 3:
-            return PIN_D33_SHORTED + 1;
-#endif // defined(PIN_D33_SHORTED)
-#if defined(PIN_D34_SHORTED)
-        case 4:
-            return PIN_D34_SHORTED + 1;
-#endif // defined(PIN_D34_SHORTED)
-#if defined(PIN_D35_SHORTED)
-        case 5:
-            return PIN_D35_SHORTED + 1;
-#endif // defined(PIN_D35_SHORTED)
-        default:
-            return 0;
-        }
-    }
-
     return 0;
 }

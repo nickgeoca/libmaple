@@ -268,68 +268,67 @@ void cmdProc(void)
     return;
 }
 
+void initTimer(void)
+{
+    HardwareTimer *timerArray[] = {&Timer1, &Timer2, &Timer3, &Timer4, &Timer5};
+
+    // Set prescalers and overflows
+    for (int i = 0; i < 5; i++) {
+        timerArray[i]->pause();
+        timerArray[i]->setPrescaleFactor(1);
+        timerArray[i]->setOverflow(10000);
+        timerArray[i]->resume();
+    }
+
+    // Set compares and channel modes
+    for (int i = 1; i <= 6; i++) {
+        timerArray[0]->setCompare(i, 4000);
+        timerArray[0]->setMode(i, TIMER_PWM);
+    }
+    for (int i = 1; i <= 2; i++) {
+        timerArray[1]->setCompare(i, 4000);
+        timerArray[2]->setCompare(i, 4000);
+        timerArray[1]->setMode(i, TIMER_PWM);
+        timerArray[2]->setMode(i, TIMER_PWM);
+    }
+    timerArray[3]->setCompare(1, 30000);
+    timerArray[3]->setMode(1, TIMER_PWM);
+    timerArray[4]->setCompare(1, 30000);
+    timerArray[4]->setMode(1, TIMER_PWM);
+
+    // Demonstrate different features
+    timerArray[0]->setPeriod(300);
+    timerArray[3]->setPrescaleFactor(1024);
+    timerArray[3]->setMode(1, TIMER_OUTPUT_COMPARE);
+    timerArray[3]->attachInterrupt(1, timerOutputCmpCallback);
+
+    // Set pin modes
+    for (int i = 0; i < BOARD_NR_PWM_PINS; i++) {
+        pinMode(boardPWMPins[i], PWM);
+    }
+}
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Wiring setup/loop
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 void setup() {
     // Setup LED
-    pinMode(BOARD_LED_PIN, OUTPUT);
-
+    //pinMode(BOARD_LED_PIN, OUTPUT);
 
     // Setup analog pins
-    //for (int i = 0; i < BOARD_NR_ADC_PINS; i++)
-        //pinMode(boardADCPins[i], INPUT_ANALOG);
+    for (int i = 0; i < BOARD_NR_ADC_PINS; i++)
+        pinMode(boardADCPins[i], INPUT_ANALOG);
 
     // Exti pin
-    //pinMode(D39, OUTPUT);
-    //pinMode(D38, INPUT);
-    //attachInterrupt(D38, extiCallback1, exti_varD38, RISING);
+    pinMode(D39, OUTPUT);
+    pinMode(D38, INPUT);
+    attachInterrupt(D38, extiCallback1, exti_varD38, RISING);
 
     // Uart
     initUARTs();
     serialStart();
 
-#if 0
     // Timer init
-    for (int i = 0; i < BOARD_NR_PWM_PINS; i++) {
-        pwmWrite(boardPWMPins[i], 65535 * (i + 1) / (BOARD_NR_PWM_PINS + 5));
-    }
-#endif
-    HardwareTimer *timerArray[] = {&Timer1, &Timer2, &Timer3, &Timer4, &Timer5};
-#if 0
-    for (int i = 0; i < 5; i++) {
-        timerArray[i]->setPrescaleFactor(1);
-        timerArray[i]->setOverflow(10000);
-    }
-    for (int i = 1; i <= 6; i++) {
-        timerArray[0]->setMode(i, TIMER_PWM);
-        timerArray[0]->setCompare(i, 4000);
-    }
-    for (int i = 1; i <= 2; i++) {
-        timerArray[1]->setMode(i, TIMER_PWM);
-        timerArray[2]->setMode(i, TIMER_PWM);
-        timerArray[1]->setCompare(i, 4000);
-        timerArray[2]->setCompare(i, 4000);
-    }
-    timerArray[3]->setMode(1, TIMER_PWM);
-    timerArray[3]->setCompare(1, 30000);
-    timerArray[4]->setMode(1, TIMER_PWM);
-    timerArray[4]->setCompare(1, 30000);
-    timerArray[0]->setPeriod(300);
-    timerArray[3]->setPrescaleFactor(1024);
-    timerArray[3]->setMode(1, TIMER_OUTPUT_COMPARE);
-    timerArray[3]->attachInterrupt(1, timerOutputCmpCallback);
-#endif
-
-    pinMode(A1, PWM);
-    pinMode(D22, PWM);
-    pwmWrite(A1, 65535 / 4);
-    pwmWrite(D22, 65535 / 4);
-
-    timerArray[1]->setOverflow(10000);
-    timerArray[1]->setCompare(1, 4000);
-    timerArray[1]->setCompare(2, 4000);
-    timerArray[1]->setPrescaleFactor(1);
+    initTimer();
 }
 
 void loop () {
@@ -338,9 +337,9 @@ void loop () {
 
     delay(750);
 
-    //serialDisplay();
+    serialDisplay();
 
-    //cmdProc();
+    cmdProc();
 }
 
 

@@ -71,14 +71,13 @@ void xbar_set_dev(xbar_dev_id xbar_id, uint8 enable) {
         }
     }
 
-
     while((--xbar_cnt) >= 0) {
         gpio_skip_mask |= XBAR_MAP[xbar_id].xbar_info[xbar_cnt].pb_mask;
         xbar_mask |= XBAR_MAP[xbar_id].xbar_info[xbar_cnt].xbar_mask;
     }
 
     // Set PINLPEN bit. This holds the pin states
-    //REG_SET_CLR(*(__io uint32*)0x40048000, 1, 2);
+    REG_SET_CLR(*(__io uint32*)0x40048000, 1, 2);
 
     // Skip pins
     REG_SET_CLR(gpio1_regs->std.PBSKIPEN, !enable, gpio_skip_mask & 0xffff);
@@ -88,5 +87,5 @@ void xbar_set_dev(xbar_dev_id xbar_id, uint8 enable) {
     REG_SET_CLR(*xbar_mask_reg, enable, xbar_mask);
 
     // Clear PINLPEN bit. This holds the pin states
-    //REG_SET_CLR(*(__io uint32*)0x40048000, 0, 2);
+    REG_SET_CLR(*(__io uint32*)0x40048000, 0, 2);
 }

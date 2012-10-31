@@ -124,12 +124,12 @@ enum {
 
 
 /* Timer pin numbers. */
-#define BOARD_TIMER1C1_PIN      0xFF
-#define BOARD_TIMER1C2_PIN      0xFF
-#define BOARD_TIMER1C3_PIN      0xFF
-#define BOARD_TIMER1C4_PIN      0xFF
-#define BOARD_TIMER1C5_PIN      0xFF
-#define BOARD_TIMER1C6_PIN      0xFF
+#define BOARD_TIMER1C1_PIN      0xFE
+#define BOARD_TIMER1C2_PIN      0xFE
+#define BOARD_TIMER1C3_PIN      0xFE
+#define BOARD_TIMER1C4_PIN      0xFE
+#define BOARD_TIMER1C5_PIN      0xFE
+#define BOARD_TIMER1C6_PIN      0xFE
 #define BOARD_TIMER2C1_PIN      A1
 #define BOARD_TIMER2C2_PIN      D22
 #define BOARD_TIMER3C1_PIN      D23

@@ -38,11 +38,18 @@
 #include <wirish/boards.h>
 
 void pwmWrite(uint8 pin, uint16 duty_cycle) {
+    const stm32_pin_info *gpio_pin = &PIN_MAP[pin];
     if (pin >= BOARD_NR_GPIO_PINS) {
         return;
     }
-    timer_dev *dev = PIN_MAP[pin].timer_device;
-    uint8 cc_channel = PIN_MAP[pin].timer_channel;
+    uint32 short_num = board_get_short_num(gpio_pin->gpio_device, gpio_pin->gpio_bit);
+    if (short_num) {
+        short_num -= 1;
+        gpio_pin = &PIN_MAP_SHORTS[short_num];
+    }
+
+    timer_dev *dev = gpio_pin->timer_device;
+    uint8 cc_channel = gpio_pin->timer_channel;
     ASSERT(dev && cc_channel);
-    timer_set_compare(dev, cc_channel, duty_cycle);
+    timer_set_compare(dev, cc_channel, ((uint32)duty_cycle * (uint32)timer_get_reload(dev)) / ((1<<16)-1));
 }
