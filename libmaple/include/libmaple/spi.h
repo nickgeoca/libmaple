@@ -285,13 +285,16 @@ extern void spi_config_gpios(spi_dev *dev,
  */
 typedef enum spi_cfg_flag {
     SPI_MASTER = SPI_CFGR_MSTEN_EN,
+    SPI_SLAVE = 0,
     SPI_CLKPOLAR_HIGH = SPI_CFGR_CLKPOL_HIGH,                   /**< High/low clock polarity */
     SPI_CLKPHASE_EDGE = SPI_CFGR_CLKPHA_EDGE,                   /**< Edge/Center clock phase */
-    SPI_SLVPOLAR_HIGH = SPI_CFGR_NSSPOL_HIGH,                   /**< High/low active NSS    */
-    SPI_FRAME_LSB = SPI_CFGR_DDIRSEL_LSB_FIRST,                 /**< MSB/LSB First. (big/little-endiann) */
+    SPI_SLVNSS_HIGH = SPI_CFGR_NSSPOL_HIGH,                   /**< High/low active NSS.    */
+    SPI_SLVNSS_LOW  = 0,
+    SPI_FRAME_LSB = SPI_CFGR_DDIRSEL_LSB_FIRST,                 /**< MSB/LSB First.          */
+    SPI_FRAME_MSB = 0,
 
     // Choose one of these
-    SPI_MODE_SLV_3WIRE = SPI_CFGR_NSSMD_3_WIRE_MASTER_SLAVE,
+    SPI_MODE_MST_SLV_3WIRE = SPI_CFGR_NSSMD_3_WIRE_MASTER_SLAVE,
     SPI_MODE_SLV_4WIRE = SPI_CFGR_NSSMD_4_WIRE_SLAVE,
     SPI_MODE_MST_4WIRE_NSS_LOW = SPI_CFGR_NSSMD_4_WIRE_MASTER_NSS_LOW,
     SPI_MODE_MST_4WIRE_NSS_HIGH = SPI_CFGR_NSSMD_4_WIRE_MASTER_NSS_HIGH,
@@ -300,14 +303,16 @@ typedef enum spi_cfg_flag {
     SPI_DFF_8_BIT = (7 << SPI_CFGR_DSIZE_BIT),       /**< 8 bit frame buffer */
     SPI_DFF_16_BIT = (15 << SPI_CFGR_DSIZE_BIT),     /**< 16 bit frame buffer */
 
-    // Not needed, just here for compatibility.
-    SPI_FRAME_MSB = 0,
 } spi_cfg_flag;
 
 
 typedef enum spi_mode {
-    SPI_MODE_ENUM_
+    SPI_MODE_0 = 0 | 0,                                 /**< Clock polarity low. Rising edge capture.   */
+    SPI_MODE_1 = 0 | SPI_CLKPHASE_EDGE,                 /**< Clock polarity low. Falling edge capture.  */
+    SPI_MODE_2 = SPI_CLKPOLAR_HIGH | 0,                 /**< Clock polarity high. Falling edge capture. */
+    SPI_MODE_3 = SPI_CLKPOLAR_HIGH | SPI_CLKPHASE_EDGE, /**< Clock polarity high. Rising edge capture.  */
 }spi_mode;
+
 
 
 void spi_master_enable(spi_dev *dev,
@@ -411,13 +416,10 @@ static inline spi_cfg_flag spi_dff(spi_dev *dev) {
  * @brief Determine whether the device's peripheral receive (RX)
  *        register is empty.
  * @param dev SPI device
- * @return true, iff dev's RX register is empty.
+ * @return true, iff dev's RX register is NOT empty.
  */
 static inline uint8 spi_is_rx_nonempty(spi_dev *dev) {
-    if (dev->regs->CONTROL & SPI_CR_RFCNT_MASK) {
-        return 0;
-    }
-    return 1;
+    return (dev->regs->CONTROL & SPI_CR_RFCNT_MASK) >> SPI_CR_RFCNT_BIT;
 }
 
 /**
@@ -432,7 +434,7 @@ static inline uint8 spi_is_rx_nonempty(spi_dev *dev) {
  * @see spi_is_rx_reg_nonempty()
  */
 static inline uint16 spi_rx_reg(spi_dev *dev) {
-    return dev->regs->DATA;
+    return *(__io uint8*)&dev->regs->DATA;
 }
 
 /**
@@ -466,7 +468,7 @@ static inline uint8 spi_is_tx_empty(spi_dev *dev) {
  * @see spi_slave_enable()
  */
 static inline void spi_tx_reg(spi_dev *dev, uint16 val) {
-    dev->regs->DATA = (uint32)val;
+    (*(__io uint16 *)&dev->regs->DATA) = (uint16)val;
 }
 
 /**
@@ -476,7 +478,11 @@ static inline void spi_tx_reg(spi_dev *dev, uint16 val) {
  * @return true, iff dev's BSY flag is set.
  */
 static inline uint8 spi_is_busy(spi_dev *dev) {
-    return dev->regs->CONTROL & SPI_CR_BUSYF_MASK;
+    return (dev->regs->CONTROL & SPI_CR_BUSYF_MASK) != 0;
+}
+
+static inline void spi_blk_nss_inactv(spi_dev *dev) {
+    while (!(dev->regs->CONTROL & SPI_CR_SLVSELI_MASK));
 }
 
 /*

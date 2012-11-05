@@ -218,5 +218,11 @@ public:
 /** @brief Deprecated; use TIMER_OUTPUT_COMPARE instead. */
 #define TIMER_OUTPUTCOMPARE TIMER_OUTPUT_COMPARE
 
+extern HardwareTimer Timer1;
+extern HardwareTimer Timer2;
+extern HardwareTimer Timer3;
+extern HardwareTimer Timer4;
+extern HardwareTimer Timer5;
+
 
 #endif

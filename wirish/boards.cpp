@@ -64,11 +64,12 @@ static void setup_timers(void);
 
 void init(void) {
     wirish::priv::series_init();
+    wirish::priv::board_setup_gpio();
+    // Using RTC, so GPIOs are best setup beforehand.
     setup_clocks();
     setup_flash();
     setup_nvic();
     systick_init(clk_get_sys_freq() / 1000 - 1);
-    wirish::priv::board_setup_gpio();
     setup_adcs();
     setup_timers();
     //wirish::priv::board_setup_usb();

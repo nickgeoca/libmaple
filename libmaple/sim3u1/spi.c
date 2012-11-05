@@ -62,7 +62,8 @@ void spi_config_gpios(spi_dev *dev,
         gpio_set_mode(comm_dev, sck_bit, GPIO_DIGITAL_PP);
         gpio_set_mode(comm_dev, miso_bit, GPIO_DIGITAL_INPUT_PULLUP);
         gpio_set_mode(comm_dev, mosi_bit, GPIO_DIGITAL_PP);
-    } else {
+    }
+    else {
         gpio_set_mode(nss_dev, nss_bit, GPIO_DIGITAL_INPUT_PULLUP);
         gpio_set_mode(comm_dev, sck_bit, GPIO_DIGITAL_INPUT_PULLUP);
         gpio_set_mode(comm_dev, miso_bit, GPIO_DIGITAL_PP);
@@ -71,7 +72,9 @@ void spi_config_gpios(spi_dev *dev,
 }
 
 void spi_foreach(void (*fn)(spi_dev*)) {
-
+    fn(SPI1);
+    fn(SPI2);
+    fn(SPI3);
 }
 
 gpio_af spi_get_af(spi_dev *dev) {

@@ -144,3 +144,8 @@ void HardwareTimer::refresh(void) {
     timer_generate_update(this->dev);
 }
 
+HardwareTimer Timer1(1);
+HardwareTimer Timer2(2);
+HardwareTimer Timer3(3);
+HardwareTimer Timer4(4);
+HardwareTimer Timer5(5);

@@ -82,9 +82,12 @@ gpio_dev* const GPIOE = &gpioe;
  * Initialize and reset all available GPIO devices.
  */
 void gpio_init_all(void) {
+    // Enable clock on port banks. All GPIO clk id's reference PBCFG
+    clk_enable_dev(CLK_PB);
 
-    // Enable Crossbar 0 signals & set properties
+    // Enable Crossbars
     REG_SET_CLR(PBCFG_BASE->XBAR0H, 1, PBCFG_XBAR0H_XBAR0EN_MASK);
+    REG_SET_CLR(PBCFG_BASE->XBAR1, 1, PBCFG_XBAR0H_XBAR0EN_MASK);
 
     // Enable Crossbar 1 signals & set properties
     REG_SET_CLR(PBCFG_BASE->XBAR1, 1, PBCFG_XBAR1_XBAR1EN_MASK);

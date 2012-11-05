@@ -129,7 +129,7 @@ public:
      * @param length Number of bytes in buffer to transmit.
      */
     void write(const uint8 *buffer, uint32 length);
-
+    void write(const uint8 *data, uint32 length, uint8 slaveNum);
     /**
      * @brief Transmit a byte, then return the next unread byte.
      *
@@ -139,6 +139,7 @@ public:
      * @return Next unread byte.
      */
     uint8 transfer(uint8 data);
+    uint8 transfer(uint8 byte, uint8 slaveNum);
 
     /*
      * Pin accessors
@@ -206,5 +207,10 @@ public:
 private:
     spi_dev *spi_d;
 };
+
+extern HardwareSPI Spi1;
+extern HardwareSPI Spi2;
+extern HardwareSPI Spi3;
+
 
 #endif

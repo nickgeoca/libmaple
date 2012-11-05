@@ -37,6 +37,7 @@
 
 static void spi_reconfigure(spi_dev *dev, uint32 cr1_config);
 
+
 /*
  * SPI convenience routines
  */
@@ -68,7 +69,6 @@ void spi_master_enable(spi_dev *dev,
     // Set baud: clkdiv = bus / (2*baud) - 1
     dev->regs->CLKRATE = clk_get_bus_freq(dev->clk_id) / (2 * baud) - 1;
     spi_reconfigure(dev, flags | mode);
-
 }
 
 /**
@@ -95,7 +95,16 @@ void spi_slave_enable(spi_dev *dev, spi_mode mode, uint32 flags) {
  * @return Number of elements transmitted.
  */
 uint32 spi_tx(spi_dev *dev, const void *buf, uint32 len) {
-    return 0;
+    uint32 txed = 0;
+    uint8 byte_frame = spi_dff(dev) == SPI_DFF_8_BIT;
+    while (spi_is_tx_empty(dev) && (txed < len)) {
+        if (byte_frame) {
+            (*(__io uint8 *)&dev->regs->DATA) = ((const uint8*)buf)[txed++];
+        } else {
+            (*(__io uint16 *)&dev->regs->DATA) = ((const uint16*)buf)[txed++];
+        }
+    }
+    return txed;
 }
 
 /**
@@ -104,6 +113,14 @@ uint32 spi_tx(spi_dev *dev, const void *buf, uint32 len) {
  */
 void spi_peripheral_enable(spi_dev *dev) {
     REG_SET_CLR(dev->regs->CONFIG, 1, SPI_CFGR_SPIEN_EN);
+    if ((SPI_CFGR_NSSMD_MASK & dev->regs->CONFIG) == SPI_MODE_MST_SLV_3WIRE) {
+        // Don't enable NSS on xbar
+        xbar_set_dev(dev->xbar_id, 1, 0, 1);
+    }
+    else {
+        // Enable NSS on xbar
+        xbar_set_dev(dev->xbar_id, 1, 0, 0);
+    }
 }
 
 /**
@@ -112,6 +129,14 @@ void spi_peripheral_enable(spi_dev *dev) {
  */
 void spi_peripheral_disable(spi_dev *dev) {
     REG_SET_CLR(dev->regs->CONFIG, 0, SPI_CFGR_SPIEN_EN);
+    if ((SPI_CFGR_NSSMD_MASK & dev->regs->CONFIG) == SPI_MODE_MST_SLV_3WIRE) {
+        // Don't disable NSS on xbar
+        xbar_set_dev(dev->xbar_id, 0, 0, 1);
+    }
+    else {
+        // Disable NSS on xbar
+        xbar_set_dev(dev->xbar_id, 0, 0, 0);
+    }
 }
 
 /**
@@ -152,11 +177,14 @@ void spi_rx_dma_disable(spi_dev *dev) {
 static void spi_reconfigure(spi_dev *dev, uint32 config) {
     spi_irq_disable(dev, SPI_INTERRUPTS_ALL);
     spi_peripheral_disable(dev);
-    // Flush FIFOs
-    REG_SET_CLR(dev->regs->CONFIG, 1, SPI_CFGR_RFIFOFL_MASK | SPI_CFGR_TFIFOFL_MASK);
-
     // Set configuration
     dev->regs->CONFIG = 0;
+
+    // Flush FIFOs
+    REG_SET_CLR(dev->regs->CONFIG, 1, SPI_CFGR_RFIFOFL_MASK | SPI_CFGR_TFIFOFL_MASK);
+    while(dev->regs->CONFIG & (SPI_CFGR_RFIFOFL_MASK | SPI_CFGR_TFIFOFL_MASK));
+
+    // Configure SPI
     REG_SET_CLR(dev->regs->CONFIG, 1, config);
 
     spi_peripheral_enable(dev);

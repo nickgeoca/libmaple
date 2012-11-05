@@ -42,12 +42,9 @@ extern "C" {
 /*
  * Register map base pointers
  */
-
-struct spi_reg_map;
-
-#define SPI1_BASE                       ((struct spi_reg_map*)0x40013000)
-#define SPI2_BASE                       ((struct spi_reg_map*)0x40003800)
-#define SPI3_BASE                       ((struct spi_reg_map*)0x40003C00)
+#define SPI1_BASE                       ((spi_reg_map*)0x40004000)
+#define SPI2_BASE                       ((spi_reg_map*)0x40005000)
+#define SPI3_BASE                       ((spi_reg_map*)0x40006000)
 
 /*
  * Register bit definitions

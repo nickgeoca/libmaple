@@ -90,17 +90,6 @@ namespace wirish {
             *((volatile uint32*)0x40030030) = 0xA5;
             *((volatile uint32*)0x40030030) = 0xDD;
 
-            // Setup crossbar
-
-            // Enable clock on port banks. All GPIO clk id's reference PBCFG
-            clk_enable_dev(CLK_PB);
-
-            // Enable Crossbar 0 signals & set properties
-            REG_SET_CLR(PBCFG_BASE->XBAR0H, 1, PBCFG_XBAR0H_XBAR0EN_MASK);
-
-            // Skip list
-            GPIOA->regs->std.PBSKIPEN = 0x0000FFFF;
-
         }
         __weak void board_setup_rtc(void) {
             __io uint32 *rtc_base = (__io uint32 *)0x40029000;

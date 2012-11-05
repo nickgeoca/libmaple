@@ -208,15 +208,15 @@ void timer_set_mode(timer_dev *dev, uint8 channel, timer_mode mode) {
     switch (mode) {
     case TIMER_DISABLED:
         disable_channel(dev, channel);
-        xbar_set_dev(dev->xbar_id, 0);
+        xbar_set_dev(dev->xbar_id, 0, 0, 0);
         break;
     case TIMER_PWM:
         pwm_mode(dev, channel);
-        xbar_set_dev(dev->xbar_id, 1);
+        xbar_set_dev(dev->xbar_id, 1, 0, 0);
         break;
     case TIMER_OUTPUT_COMPARE:
         output_compare_mode(dev, channel);
-        xbar_set_dev(dev->xbar_id, 1);
+        xbar_set_dev(dev->xbar_id, 1, 0, 0);
         break;
     }
 }

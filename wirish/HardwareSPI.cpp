@@ -38,6 +38,11 @@
 #include <wirish/wirish.h>
 #include <wirish/boards.h>
 
+HardwareSPI Spi1(1);
+HardwareSPI Spi2(2);
+HardwareSPI Spi3(3);
+
+
 struct spi_pins {
     uint8 nss;
     uint8 sck;
@@ -134,15 +139,6 @@ void HardwareSPI::end(void) {
     if (!spi_is_enabled(this->spi_d)) {
         return;
     }
-
-    // Follows RM0008's sequence for disabling a SPI in master/slave
-    // full duplex mode.
-    while (spi_is_rx_nonempty(this->spi_d)) {
-        // FIXME [0.1.0] remove this once you have an interrupt based driver
-        volatile uint16 rx __attribute__((unused)) = spi_rx_reg(this->spi_d);
-    }
-    while (!spi_is_tx_empty(this->spi_d))
-        ;
     while (spi_is_busy(this->spi_d))
         ;
     spi_peripheral_disable(this->spi_d);
@@ -153,43 +149,72 @@ void HardwareSPI::end(void) {
  */
 
 uint8 HardwareSPI::read(void) {
-    return 0;
+    uint8 buf[1];
+    this->read(buf, 1);
+    return buf[0];
 }
 
 void HardwareSPI::read(uint8 *buf, uint32 len) {
-
+    uint32 rxed = 0;
+    while (rxed < len) {
+        while (!spi_is_rx_nonempty(this->spi_d))
+            ;
+        buf[rxed++] = (uint8)spi_rx_reg(this->spi_d);
+    }
 }
 
 void HardwareSPI::write(uint8 byte) {
-
+    this->write(&byte, 1);
 }
 
 void HardwareSPI::write(const uint8 *data, uint32 length) {
+    uint32 txed = 0;
+    while (txed < length) {
+        txed += spi_tx(this->spi_d, data + txed, length - txed);
+    }
+}
 
+void HardwareSPI::write(const uint8 *data, uint32 length, uint8 slaveNum) {
+    uint32 txed = 0;
+
+    digitalWrite(this->nssPin(), LOW);
+    while (txed < length) {
+        txed += spi_tx(this->spi_d, data + txed, length - txed);
+    }
+    while (spi_is_busy(this->spi_d));
+    digitalWrite(this->nssPin(), HIGH);
 }
 
 uint8 HardwareSPI::transfer(uint8 byte) {
-    return 0;
+    this->write(byte);
+    return this->read();
 }
+
+uint8 HardwareSPI::transfer(uint8 byte, uint8 slaveNum) {
+    this->write(&byte, 1, slaveNum);
+    return this->read();
+}
+
+
 
 /*
  * Pin accessors
  */
 
 uint8 HardwareSPI::misoPin(void) {
-    return 0;
+    return dev_to_spi_pins(this->spi_d)->miso;
 }
 
 uint8 HardwareSPI::mosiPin(void) {
-    return 0;
+    return dev_to_spi_pins(this->spi_d)->mosi;
 }
 
 uint8 HardwareSPI::sckPin(void) {
-    return 0;
+    return dev_to_spi_pins(this->spi_d)->sck;
 }
 
 uint8 HardwareSPI::nssPin(void) {
-    return 0;
+    return dev_to_spi_pins(this->spi_d)->nss;
 }
 
 /*
@@ -197,15 +222,22 @@ uint8 HardwareSPI::nssPin(void) {
  */
 
 uint8 HardwareSPI::send(uint8 data) {
-    return 0;
+    uint8 buf[] = {data};
+    return this->send(buf, 1);
 }
 
 uint8 HardwareSPI::send(uint8 *buf, uint32 len) {
-    return 0;
+    uint32 txed = 0;
+    uint8 ret = 0;
+    while (txed < len) {
+        this->write(buf[txed++]);
+        ret = this->read();
+    }
+    return ret;
 }
 
 uint8 HardwareSPI::recv(void) {
-    return 0;
+    return this->read();
 }
 
 /*
@@ -215,7 +247,12 @@ uint8 HardwareSPI::recv(void) {
 static void configure_gpios(spi_dev *dev, bool as_master);
 
 static const spi_pins* dev_to_spi_pins(spi_dev *dev) {
-    return NULL;
+    switch (dev->clk_id) {
+    case CLK_SPI1: return board_spi_pins;
+    case CLK_SPI2: return board_spi_pins + 1;
+    case CLK_SPI3: return board_spi_pins + 2;
+    default:       return NULL;
+    }
 }
 
 /* Enables the device in master or slave full duplex mode.  If you
@@ -227,7 +264,9 @@ static void enable_device(spi_dev *dev,
                           spi_cfg_flag endianness,
                           spi_mode mode) {
     uint32 cfg_flags = (endianness | SPI_DFF_8_BIT |
-                        (as_master ? SPI_MASTER : 0));
+                        (as_master ?
+                                SPI_MASTER | SPI_MODE_MST_SLV_3WIRE:  // Master flags
+                                SPI_MODE_SLV_4WIRE | SPI_SLVNSS_LOW)); // Slave flags
 
     spi_init(dev);
     configure_gpios(dev, as_master);
@@ -236,19 +275,13 @@ static void enable_device(spi_dev *dev,
     } else {
         spi_slave_enable(dev, mode, cfg_flags);
     }
-    SPI_CLKPOLAR_HIGH;
-    SPI_CLKPHASE_EDGE;
-    SPI_SLVPOLAR_HIGH;
-    SPI_FRAME_LSB;
-    SPI_MODE_SLV_3WIRE;
-    SPI_MODE_SLV_4WIRE;
-    SPI_MODE_MST_4WIRE_NSS_LOW;
-    SPI_MODE_MST_4WIRE_NSS_HIGH;
 }
 
 
 static void disable_pwm(const stm32_pin_info *i) {
-
+    if (i->timer_device) {
+        timer_set_mode(i->timer_device, i->timer_channel, TIMER_DISABLED);
+    }
 }
 
 static void configure_gpios(spi_dev *dev, bool as_master) {

@@ -211,7 +211,7 @@ typedef enum xbar_dev_id {
 
 extern const xbar_dev_info XBAR_MAP[];
 
-void xbar_set_dev(xbar_dev_id xbar_id, uint8 enable);
+void xbar_set_dev(xbar_dev_id xbar_id, uint8 enable, int8 start, int8 count);
 
 #if defined(__cplusplus)
 }

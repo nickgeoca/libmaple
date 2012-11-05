@@ -94,7 +94,6 @@ void usart_config_gpios_async(usart_dev *udev,
                               gpio_dev *rx_dev, uint8 rx,
                               gpio_dev *tx_dev, uint8 tx,
                               unsigned flags) {
-    xbar_set_dev(udev->xbar_id, 1);
     gpio_set_mode(rx_dev, rx, GPIO_DIGITAL_INPUT_PULLUP);
     gpio_set_mode(tx_dev, tx, GPIO_DIGITAL_PP);
 }
@@ -209,6 +208,8 @@ void usart_enable(usart_dev *dev) {;
     // Enable Interupts
     REG_SET_CLR(regs->CONTROL, 1, UART_CR_RDREQIEN_EN);
 
+    // Enable usart GPIO pins
+    xbar_set_dev(dev->xbar_id, 1, 0, 0);
 }
 
 /**
@@ -227,6 +228,9 @@ void usart_disable(usart_dev *dev) {
 
     /* Clean up buffer */
     usart_reset_rx(dev);
+
+    // Disable usart GPIO pins
+    xbar_set_dev(dev->xbar_id, 0, 0, 0);
 }
 
 /**

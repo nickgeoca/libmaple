@@ -38,7 +38,7 @@ void xbar_init(void) {
 }
 
 
-void xbar_set_dev(xbar_dev_id xbar_id, uint8 enable) {
+void xbar_set_dev(xbar_dev_id xbar_id, uint8 enable, int8 start, int8 count) {
     uint32 xbar_mask_bit;
     uint32 xbar_mask = 0;
     __io uint32 *xbar_mask_reg;
@@ -71,9 +71,11 @@ void xbar_set_dev(xbar_dev_id xbar_id, uint8 enable) {
         }
     }
 
-    while((--xbar_cnt) >= 0) {
-        gpio_skip_mask |= XBAR_MAP[xbar_id].xbar_info[xbar_cnt].pb_mask;
-        xbar_mask |= XBAR_MAP[xbar_id].xbar_info[xbar_cnt].xbar_mask;
+    count += count ? 1: 0;
+    while (--count && start < xbar_cnt) {
+        gpio_skip_mask |= XBAR_MAP[xbar_id].xbar_info[start].pb_mask;
+        xbar_mask |= XBAR_MAP[xbar_id].xbar_info[start].xbar_mask;
+        start += 1;
     }
 
     // Set PINLPEN bit. This holds the pin states
@@ -89,3 +91,4 @@ void xbar_set_dev(xbar_dev_id xbar_id, uint8 enable) {
     // Clear PINLPEN bit. This holds the pin states
     REG_SET_CLR(*(__io uint32*)0x40048000, 0, 2);
 }
+
