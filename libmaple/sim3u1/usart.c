@@ -99,7 +99,7 @@ void usart_config_gpios_async(usart_dev *udev,
 }
 
 void usart_set_baud_rate(usart_dev *dev, uint32 clock_speed, uint32 baud) {
-    uint32 tmp;
+    uint32 b_div;
 
     /* Figure out the clock speed, if the user doesn't give one. */
     if (clock_speed == 0) {
@@ -109,8 +109,8 @@ void usart_set_baud_rate(usart_dev *dev, uint32 clock_speed, uint32 baud) {
     // Full duplex mode
     REG_SET_CLR(dev->regs->MODE, 0, 0x08000000);
     /* Convert desired baud rate to baud rate register setting. */
-    tmp = clock_speed / (2 * baud) - 1;
-    dev->regs->BAUDRATE = tmp | (tmp << 16);
+    b_div = clock_speed / (2 * baud) - 1;
+    dev->regs->BAUDRATE = (b_div & 0xffff) | (b_div << 16);
 }
 
 /**

@@ -217,6 +217,12 @@ static inline void flash_set_latency(uint32 ahb_freq) {
     REG_SET_CLR(FLASH_BASE->CFGR, 1, spd_md << FLASH_CFGR_SPMD_BIT);
 }
 
+// Erase a page at address
+void flash_erase_page(uint32 address);
+
+// Writes 16 bits to flash
+void flash_write_data(uint32 address, uint16 data[], int32 count);
+
 #ifdef __cplusplus
 }
 #endif

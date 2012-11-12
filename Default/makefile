@@ -29,6 +29,7 @@ RM := del
 -include libmaple/subdir.mk
 -include libmaple/usb/usb_lib/subdir.mk
 -include libmaple/usb/stm32f1/subdir.mk
+-include libmaple/usb/sim3u1/subdir.mk
 -include libmaple/stm32f2/subdir.mk
 -include libmaple/stm32f1/value/subdir.mk
 -include libmaple/stm32f1/subdir.mk
@@ -41,6 +42,8 @@ RM := del
 -include build/subdir.mk
 -include build/libraries/Wire/subdir.mk
 -include build/libmaple/subdir.mk
+-include build/libmaple/usb/usb_lib/subdir.mk
+-include build/libmaple/usb/sim3u1/subdir.mk
 -include build/libmaple/sim3u1/subdir.mk
 -include arm/lib/gcc/arm-none-eabi/4.6.2/thumb/subdir.mk
 -include arm/lib/gcc/arm-none-eabi/4.6.2/fpu/subdir.mk

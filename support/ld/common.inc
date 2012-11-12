@@ -56,6 +56,7 @@ SECTIONS
     .text :
       {
         __text_start__ = .;
+
         /*
          * STM32 vector table.  Leave this here.  Yes, really.
          */

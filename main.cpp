@@ -7,7 +7,28 @@ void init(void);
 HardwareSerial &Serial = Serial2;
 HardwareSPI &Spi = Spi3;
 
+//**************************************************************************************************
+//                                      Miscellaneous
+//**************************************************************************************************
+void mem_read(uint32 count, uint32 address, Print *p_out)
+{
+    for (int i = 0; i < (count / 16); i++) {
+        p_out->println("");
+        p_out->print((uint16)(address + i * 16), HEX);
+        p_out->print(":");
+        for (int i2 = 0; i2 < 16; i2++) {
+            uint8 data = *(__io uint8 *)(address + i * 16 + i2);
+            if ((i2 % 4) == 0) p_out->print(" ");
+            if (data < 16) p_out->print("0");
+            p_out->print(data, HEX);
+        }
+    }
+    p_out->println("");
+}
 
+//**************************************************************************************************
+//                                      Hardware Initialization
+//**************************************************************************************************
 void initUARTs(void) {
     //Serial1.begin(115200);
     Serial2.begin(115200);
@@ -49,64 +70,37 @@ void initTimer(void)
     // Set GPIO pins to PWM
     // for (int i = 0; i < BOARD_NR_PWM_PINS; i++) pinMode(boardPWMPins[i], PWM);
 }
-void spiTestMaster(void)
-{
-    uint32 cntr = 256;
-    uint8 curr = 0;
-    uint8 last = 0;
-    uint8 tmp;
-    while (cntr--) {
-        curr += 1;
-        tmp = Spi.transfer(curr, 0);
-        if (tmp != last) {
-            Serial.println("Fail ");
-            Serial.print("\tExpected: ");
-            Serial.println(last);
-            Serial.print("\tReceived: ");
-            Serial.println(tmp);
-        }
-        last = curr;
-        delay(20);
-    }
-    Serial.println("Spi test complete.");
-}
-void spiTestSlave(void)
-{
-    uint8 curr = 0;
-    uint8 last = 0;
-    while (1) {
-        last = curr;
-        Serial.print("tx ");
-        Serial.print(last);
-        curr = Spi.transfer(curr);
-        Serial.print("; rx ");
-        Serial.println(curr);
 
-        curr = Spi.transfer(curr);
-    }
+void initSPI(void)
+{
+    //Spi1.begin(2500000, LSBFIRST, 0);
+    //Spi2.begin(2500000, LSBFIRST, 0);
+    //Spi3.begin(2500000, LSBFIRST, 0);
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// Wiring setup/loop
-///////////////////////////////////////////////////////////////////////////////////////////////////
+
+//**************************************************************************************************
+//                                      Wiring setup/loop
+//**************************************************************************************************
 void setup() {
-//// Init peripherals
-    // Uart
+    // Init peripherals
     initUARTs();
-
-    // Timers
     initTimer();
+    initSPI();
 
-    // SPI
-    Spi.begin(2500000, LSBFIRST, 0);
-    //Spi.beginSlave(LSBFIRST, 0);
+    // Setup terminal
+    //char formFeed[] = {0x1B, 0x5B, 0x32, 0x4A, 0x00};
+    //Serial.print(formFeed);
+    //Serial.println("\fProgram Start");
 
-////
-    char formFeed[] = {0x1B, 0x5B, 0x32, 0x4A, 0x00};
-    Serial.print(formFeed);
-    Serial.println("\f\tExample Program");
+    pinMode(D13, OUTPUT);
 }
 
 void loop () {
+    static uint32 delay_time = 50;
+    delay_time += 13;
+    delay_time = delay_time % 200;
+    delay(delay_time);
+    togglePin(D13);
 }
 
 

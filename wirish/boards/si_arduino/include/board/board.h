@@ -95,8 +95,8 @@ enum {
 #define BOARD_NR_USARTS         4
 
 /* USART pin numbers. */
-#define BOARD_USART1_TX_PIN     0xFF
-#define BOARD_USART1_RX_PIN     0xFF
+#define BOARD_USART1_TX_PIN     A12
+#define BOARD_USART1_RX_PIN     A13
 #define BOARD_USART2_TX_PIN     D0
 #define BOARD_USART2_RX_PIN     D1
 #define BOARD_USART3_TX_PIN     D14

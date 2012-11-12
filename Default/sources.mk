@@ -45,6 +45,7 @@ libraries/FreeRTOS \
 libmaple \
 libmaple/usb/usb_lib \
 libmaple/usb/stm32f1 \
+libmaple/usb/sim3u1 \
 libmaple/stm32f2 \
 libmaple/stm32f1/value \
 libmaple/stm32f1 \
@@ -57,6 +58,8 @@ build/wirish/boards/si_arduino \
 build \
 build/libraries/Wire \
 build/libmaple \
+build/libmaple/usb/usb_lib \
+build/libmaple/usb/sim3u1 \
 build/libmaple/sim3u1 \
 arm/lib/gcc/arm-none-eabi/4.6.2/thumb \
 arm/lib/gcc/arm-none-eabi/4.6.2/fpu \

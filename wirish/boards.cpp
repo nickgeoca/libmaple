@@ -66,8 +66,8 @@ void init(void) {
     wirish::priv::series_init();
     wirish::priv::board_setup_gpio();
     // Using RTC, so GPIOs are best setup beforehand.
-    setup_clocks();
     setup_flash();
+    setup_clocks();
     setup_nvic();
     systick_init(clk_get_sys_freq() / 1000 - 1);
     setup_adcs();
@@ -93,10 +93,19 @@ bool boardUsesPin(uint8 pin) {
  */
 
 static void setup_flash(void) {
+    // Enable flash controller clock
+    clk_enable_dev(CLK_FLCTRL);
+
     // Turn on as many Flash "go faster" features as
     // possible. flash_enable_features() just ignores any flags it
     // can't support.
     flash_enable_features(FLASH_PREFETCH | FLASH_ICACHE | FLASH_DCACHE);
+
+    // Erase a page at address
+    //void flash_erase_page(uint32 address);
+
+    // Writes 16 bits to flash
+    //void flash_write_data(uint32 address, uint16 data[], int32 count);
 }
 
 
@@ -121,8 +130,6 @@ static void setup_clocks(void) {
         src = CLK_SRC_LP;
     }
 
-    // Enable flash controller clock so we can modify registers to change speed mode
-    clk_enable_dev(CLK_FLCTRL);
 
     // Init pll and rtc
     wirish::priv::board_setup_rtc();
@@ -151,14 +158,10 @@ static void setup_clocks(void) {
 
 /*
  * These addresses are where usercode starts when a bootloader is
- * present. If no bootloader is present, the user NVIC usually starts
- * at the Flash base address, 0x08000000.
- *
- * FIXME Let the build specify the vector table address numerically to
- * avoid having these magic values -- some people have been fixing up
- * the bootloader so it uses less space.
+ * present.
  */
-#define USER_ADDR_ROM 0x1400
+extern uint32 __text_start__;
+#define USER_ADDR_ROM ((uint32)&__text_start__)
 #define USER_ADDR_RAM 0x20000000
 
 static void setup_nvic(void) {

@@ -13,7 +13,8 @@ C_SRCS += \
 ../libmaple/sim3u1/spi.c \
 ../libmaple/sim3u1/syscfg.c \
 ../libmaple/sim3u1/timer.c \
-../libmaple/sim3u1/usart.c 
+../libmaple/sim3u1/usart.c \
+../libmaple/sim3u1/xbar.c 
 
 S_UPPER_SRCS += \
 ../libmaple/sim3u1/isrs.S \
@@ -31,7 +32,8 @@ OBJS += \
 ./libmaple/sim3u1/syscfg.o \
 ./libmaple/sim3u1/timer.o \
 ./libmaple/sim3u1/usart.o \
-./libmaple/sim3u1/vector_table.o 
+./libmaple/sim3u1/vector_table.o \
+./libmaple/sim3u1/xbar.o 
 
 C_DEPS += \
 ./libmaple/sim3u1/adc.d \
@@ -43,7 +45,8 @@ C_DEPS += \
 ./libmaple/sim3u1/spi.d \
 ./libmaple/sim3u1/syscfg.d \
 ./libmaple/sim3u1/timer.d \
-./libmaple/sim3u1/usart.d 
+./libmaple/sim3u1/usart.d \
+./libmaple/sim3u1/xbar.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
