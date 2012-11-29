@@ -25,22 +25,20 @@
  *****************************************************************************/
 
 /**
- * @file libmaple/stm32f2/include/series/adc.h
+ * @file libmaple/sim3u1/include/series/adc.h
  * @author Marti Bolivar <mbolivar@leaflabs.com>,
  * @brief STM32F2 ADC support.
  */
 
-#ifndef _LIBMAPLE_STM32F2_ADC_H_
-#define _LIBMAPLE_STM32F2_ADC_H_
+#ifndef _LIBMAPLE_SIM3U1_ADC_H_
+#define _LIBMAPLE_SIM3U1_ADC_H_
 
-#include <libmaple/libmaple_types.h>
+#include <stdint.h>
 
-/*
- * Devices
- */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-extern const struct adc_dev *ADC1;
-extern const struct adc_dev *ADC2;
 
 /*
  * Common register map
@@ -48,68 +46,65 @@ extern const struct adc_dev *ADC2;
 /** ADC register map type. */
 typedef struct adc_reg_map
 {
-   __io uint32 CONFIG; // Base Address + 0x0
-   __io uint32 CONFIG_SET;
-   __io uint32 CONFIG_CLR;
-   uint32      reserved0;
-   __io uint32 CONTROL; // Base Address + 0x10
-   __io uint32 CONTROL_SET;
-   __io uint32 CONTROL_CLR;
-   uint32      reserved1;
-   __io uint32 SQ7654; // Base Address + 0x20
-   uint32      reserved2;
-   uint32      reserved3;
-   uint32      reserved4;
-   __io uint32 SQ3210; // Base Address + 0x30
-   uint32      reserved5;
-   uint32      reserved6;
-   uint32      reserved7;
-   __io uint32 CHAR32; // Base Address + 0x40
-   __io uint32 CHAR32_SET;
-   __io uint32 CHAR32_CLR;
-   uint32      reserved8;
-   __io uint32 CHAR10; // Base Address + 0x50
-   __io uint32 CHAR10_SET;
-   __io uint32 CHAR10_CLR;
-   uint32      reserved9;
-   __io uint32 DATA; // Base Address + 0x60
-   uint32      reserved10;
-   uint32      reserved11;
-   uint32      reserved12;
-   __io uint32 WCLIMITS; // Base Address + 0x70
-   uint32      reserved13;
-   uint32      reserved14;
-   uint32      reserved15;
-   __io uint32 ACC; // Base Address + 0x80
-   uint32      reserved16;
-   uint32      reserved17;
-   uint32      reserved18;
-   __io uint32 STATUS; // Base Address + 0x90
-   __io uint32 STATUS_SET;
-   __io uint32 STATUS_CLR;
-   uint32      reserved19;
-   __io uint32 FIFOSTATUS; // Base Address + 0xa0
-   uint32      reserved20;
-   uint32      reserved21;
-   uint32      reserved22;
-   uint32      reserved23[4];
+   volatile uint32_t CONFIG;    // Base Address + 0x0
+   volatile uint32_t CONFIG_SET;
+   volatile uint32_t CONFIG_CLR;
+   uint32_t          reserved0;
+   volatile uint32_t CONTROL;   // Base Address + 0x10
+   volatile uint32_t CONTROL_SET;
+   volatile uint32_t CONTROL_CLR;
+   uint32_t          reserved1;
+   volatile uint32_t SQ7654;    // Base Address + 0x20
+   uint32_t          reserved2;
+   uint32_t          reserved3;
+   uint32_t          reserved4;
+   volatile uint32_t SQ3210;    // Base Address + 0x30
+   uint32_t          reserved5;
+   uint32_t          reserved6;
+   uint32_t          reserved7;
+   volatile uint32_t CHAR32;    // Base Address + 0x40
+   volatile uint32_t CHAR32_SET;
+   volatile uint32_t CHAR32_CLR;
+   uint32_t          reserved8;
+   volatile uint32_t CHAR10;    // Base Address + 0x50
+   volatile uint32_t CHAR10_SET;
+   volatile uint32_t CHAR10_CLR;
+   uint32_t          reserved9;
+   volatile uint32_t DATA;      // Base Address + 0x60
+   uint32_t          reserved10;
+   uint32_t          reserved11;
+   uint32_t          reserved12;
+   volatile uint32_t WCLIMITS;  // Base Address + 0x70
+   uint32_t          reserved13;
+   uint32_t          reserved14;
+   uint32_t          reserved15;
+   volatile uint32_t ACC;       // Base Address + 0x80
+   uint32_t          reserved16;
+   uint32_t          reserved17;
+   uint32_t          reserved18;
+   volatile uint32_t STATUS;    // Base Address + 0x90
+   volatile uint32_t STATUS_SET;
+   volatile uint32_t STATUS_CLR;
+   uint32_t          reserved19;
+   volatile uint32_t FIFOSTATUS;// Base Address + 0xa0
+   uint32_t          reserved20;
+   uint32_t          reserved21;
+   uint32_t          reserved22;
+   uint32_t          reserved23[4];
 } adc_reg_map;
 
-/** ADC device type. */
-typedef struct adc_dev {
-    adc_reg_map *regs;      /**< Register map */
-    clk_dev_id clk_id;      /**< Clock information */
-    nvic_irq_num irq_num;   /**< IRQ number */
-} adc_dev;
+
 /*
  * Register map base pointers
  */
 
-/** ADC1 register map base pointer. */
 #define ADC1_BASE       ((struct adc_reg_map*)0x4001A000)
 #define ADC2_BASE       ((struct adc_reg_map*)0x4001B000)
 
-
+/*
+ * Registers
+ */
+/** SARADC configuration register */
 #define SARADC_CFGR_SPSEL_MASK          0x0000000F
 #define SARADC_CFGR_SPEN_MASK           0x00000010
 #define SARADC_CFGR_SSGEN_MASK          0x00000020
@@ -185,6 +180,7 @@ typedef struct adc_dev {
 #define SARADC_CFGR_FURIEN_DS           (0 << SARADC_CFGR_FURIEN_BIT)
 #define SARADC_CFGR_FURIEN_EN           (1 << SARADC_CFGR_FURIEN_BIT)
 
+/** SARADC control register */
 #define SARADC_CR_REFGNDSEL_MASK        0x00000001
 #define SARADC_CR_CLKESEL_MASK          0x00000002
 #define SARADC_CR_BMTK_MASK             0x000000FC
@@ -262,6 +258,7 @@ typedef struct adc_dev {
 #define SARADC_CR_VREFSEL_LDO_OUT       (2U << SARADC_CR_VREFSEL_BIT)
 #define SARADC_CR_VREFSEL_EXTERNAL_VREF (3U << SARADC_CR_VREFSEL_BIT)
 
+/** SARADC sequencer timer slots 4-7 register */
 #define SARADC_SQ7654_TS4CHR_MASK       0x00000003
 #define SARADC_SQ7654_TS4MUX_MASK       0x0000007C
 #define SARADC_SQ7654_TS5CHR_MASK       0x00000300
@@ -270,14 +267,6 @@ typedef struct adc_dev {
 #define SARADC_SQ7654_TS6MUX_MASK       0x007C0000
 #define SARADC_SQ7654_TS7CHR_MASK       0x03000000
 #define SARADC_SQ7654_TS7MUX_MASK       0x7C000000
-#define SARADC_SQ3210_TS0CHR_MASK       0x00000003
-#define SARADC_SQ3210_TS0MUX_MASK       0x0000007C
-#define SARADC_SQ3210_TS1CHR_MASK       0x00000300
-#define SARADC_SQ3210_TS1MUX_MASK       0x00007C00
-#define SARADC_SQ3210_TS2CHR_MASK       0x00030000
-#define SARADC_SQ3210_TS2MUX_MASK       0x007C0000
-#define SARADC_SQ3210_TS3CHR_MASK       0x03000000
-#define SARADC_SQ3210_TS3MUX_MASK       0x7C000000
 #define SARADC_SQ7654_TS4CHR_BIT        0  /* TS4CHR<1:0>: Time Slot 4 Conversion Characteristic. */
 #define SARADC_SQ7654_TS4MUX_BIT        2  /* TS4MUX<6:2>: Time Slot 4 Input Channel.        */
 #define SARADC_SQ7654_TS5CHR_BIT        8  /* TS5CHR<9:8>: Time Slot 5 Conversion Characteristic. */
@@ -286,6 +275,16 @@ typedef struct adc_dev {
 #define SARADC_SQ7654_TS6MUX_BIT        18 /* TS6MUX<22:18>: Time Slot 6 Input Channel.      */
 #define SARADC_SQ7654_TS7CHR_BIT        24 /* TS7CHR<25:24>: Time Slot 7 Conversion Characteristic. */
 #define SARADC_SQ7654_TS7MUX_BIT        26 /* TS7MUX<30:26>: Time Slot 7 Input Channel.      */
+
+/** SARADC sequencer timer slots 0-3 register */
+#define SARADC_SQ3210_TS0CHR_MASK       0x00000003
+#define SARADC_SQ3210_TS0MUX_MASK       0x0000007C
+#define SARADC_SQ3210_TS1CHR_MASK       0x00000300
+#define SARADC_SQ3210_TS1MUX_MASK       0x00007C00
+#define SARADC_SQ3210_TS2CHR_MASK       0x00030000
+#define SARADC_SQ3210_TS2MUX_MASK       0x007C0000
+#define SARADC_SQ3210_TS3CHR_MASK       0x03000000
+#define SARADC_SQ3210_TS3MUX_MASK       0x7C000000
 #define SARADC_SQ3210_TS0CHR_BIT        0  /* TS0CHR<1:0>: Time Slot 0 Conversion Characteristic. */
 #define SARADC_SQ3210_TS0MUX_BIT        2  /* TS0MUX<6:2>: Time Slot 0 Input Channel.        */
 #define SARADC_SQ3210_TS1CHR_BIT        8  /* TS1CHR<9:8>: Time Slot 1 Conversion Characteristic. */
@@ -295,56 +294,7 @@ typedef struct adc_dev {
 #define SARADC_SQ3210_TS3CHR_BIT        24 /* TS3CHR<25:24>: Time Slot 3 Conversion Characteristic. */
 #define SARADC_SQ3210_TS3MUX_BIT        26 /* TS3MUX<30:26>: Time Slot 3 Input Channel.      */
 
-
-
-#define SARADC_SQ_REG(regs, tslot)      ((tslot) < 4 ? &((regs)->SQ3210) : &((regs)->SQ7654))
-
-typedef enum adc_tslot_chnl {
-    ADC_CHN_0,
-    ADC_CHN_1,
-    ADC_CHN_2,
-    ADC_CHN_3,
-    ADC_CHN_4,
-    ADC_CHN_5,
-    ADC_CHN_6,
-    ADC_CHN_7,
-    ADC_CHN_8,
-    ADC_CHN_9,
-    ADC_CHN_10,
-    ADC_CHN_11,
-    ADC_CHN_12,
-    ADC_CHN_13,
-    ADC_CHN_14,
-    ADC_CHN_15,
-    ADC_CHN_16,
-    ADC_CHN_17,
-    ADC_CHN_18,
-    ADC_CHN_19,
-    ADC_CHN_20,
-    ADC_CHN_21,
-    ADC_CHN_22,
-    ADC_CHN_23,
-    ADC_CHN_24,
-    ADC_CHN_25,
-    ADC_CHN_26,
-    ADC_CHN_27,
-    ADC_CHN_28,
-    ADC_CHN_29,
-    ADC_CHN_30,
-    ADC_CHN_END
-}adc_tslot_chnl;
-#define SARADC_SQ_TSMUX_BIT(tslot)       (SARADC_SQ3210_TS0MUX_BIT + 8 * ((tslot) % 4))
-#define SARADC_SQ_TSMUX_MASK(tslot)      ((SARADC_SQ3210_TS0MUX_MASK >> SARADC_SQ3210_TS0MUX_BIT) << SARADC_SQ_TSMUX_BIT(tslot))
-
-typedef enum adc_grp_num {
-    ADC_GRP_0,
-    ADC_GRP_1,
-    ADC_GRP_2,
-    ADC_GRP_3,
-}adc_grp_num;
-#define SARADC_SQ_TSCHR_BIT(tslot)       (SARADC_SQ3210_TS0CHR_BIT + 8 * ((tslot) % 4))
-#define SARADC_SQ_TSCHR_MASK(tslot)      ((SARADC_SQ3210_TS0CHR_MASK >> SARADC_SQ3210_TS0CHR_BIT) << SARADC_SQ_TSCHR_BIT(tslot))
-
+/** SARADC conversion characteristic 2 & 3 register */
 #define SARADC_CHAR32_CHR2GN_MASK       0x00000001
 #define SARADC_CHAR32_CHR2RPT_MASK      0x0000000E
 #define SARADC_CHAR32_CHR2LS_MASK       0x00000070
@@ -355,16 +305,6 @@ typedef enum adc_grp_num {
 #define SARADC_CHAR32_CHR3LS_MASK       0x00700000
 #define SARADC_CHAR32_CHR3RSEL_MASK     0x00800000
 #define SARADC_CHAR32_CHR3WCIEN_MASK    0x01000000
-#define SARADC_CHAR10_CHR0GN_MASK       0x00000001
-#define SARADC_CHAR10_CHR0RPT_MASK      0x0000000E
-#define SARADC_CHAR10_CHR0LS_MASK       0x00000070
-#define SARADC_CHAR10_CHR0RSEL_MASK     0x00000080
-#define SARADC_CHAR10_CHR0WCIEN_MASK    0x00000100
-#define SARADC_CHAR10_CHR1GN_MASK       0x00010000
-#define SARADC_CHAR10_CHR1RPT_MASK      0x000E0000
-#define SARADC_CHAR10_CHR1LS_MASK       0x00700000
-#define SARADC_CHAR10_CHR1RSEL_MASK     0x00800000
-#define SARADC_CHAR10_CHR1WCIEN_MASK    0x01000000
 #define SARADC_CHAR32_CHR2GN_BIT        0  /* CHR2GN<0>: Conversion Characteristic 2 Gain.   */
 #define SARADC_CHAR32_CHR2RPT_BIT       1  /* CHR2RPT<3:1>: Conversion Characteristic 2 Repeat Counter. */
 #define SARADC_CHAR32_CHR2LS_BIT        4  /* CHR2LS<6:4>: Conversion Characteristic 2 Left-Shift Bits. */
@@ -375,16 +315,6 @@ typedef enum adc_grp_num {
 #define SARADC_CHAR32_CHR3LS_BIT        20 /* CHR3LS<22:20>: Conversion Characteristic 3 Left-Shift Bits. */
 #define SARADC_CHAR32_CHR3RSEL_BIT      23 /* CHR3RSEL<23>: Conversion Characteristic 3 Resolution Selection. */
 #define SARADC_CHAR32_CHR3WCIEN_BIT     24 /* CHR3WCIEN<24>: Conversion Characteristic 3 Window Comparator Interrupt Enable. */
-#define SARADC_CHAR10_CHR0GN_BIT        0  /* CHR0GN<0>: Conversion Characteristic 0 Gain.   */
-#define SARADC_CHAR10_CHR0RPT_BIT       1  /* CHR0RPT<3:1>: Conversion Characteristic 0 Repeat Counter. */
-#define SARADC_CHAR10_CHR0LS_BIT        4  /* CHR0LS<6:4>: Conversion Characteristic 0 Left-Shift Bits. */
-#define SARADC_CHAR10_CHR0RSEL_BIT      7  /* CHR0RSEL<7>: Conversion Characteristic 0 Resolution Selection. */
-#define SARADC_CHAR10_CHR0WCIEN_BIT     8  /* CHR0WCIEN<8>: Conversion Characteristic 0 Window Comparator Interrupt Enable. */
-#define SARADC_CHAR10_CHR1GN_BIT        16 /* CHR1GN<16>: Conversion Characteristic 1 Gain.  */
-#define SARADC_CHAR10_CHR1RPT_BIT       17 /* CHR1RPT<19:17>: Conversion Characteristic 1 Repeat Counter. */
-#define SARADC_CHAR10_CHR1LS_BIT        20 /* CHR1LS<22:20>: Conversion Characteristic 1 Left-Shift Bits. */
-#define SARADC_CHAR10_CHR1RSEL_BIT      23 /* CHR1RSEL<23>: Conversion Characteristic 1 Resolution Selection. */
-#define SARADC_CHAR10_CHR1WCIEN_BIT     24 /* CHR1WCIEN<24>: Conversion Characteristic 1 Window Comparator Interrupt Enable. */
 #define SARADC_CHAR32_CHR2GN_UNITY      (0 << SARADC_CHAR32_CHR2GN_BIT)
 #define SARADC_CHAR32_CHR2GN_HALF       (1 << SARADC_CHAR32_CHR2GN_BIT)
 #define SARADC_CHAR32_CHR2RPT_ACC1      (0 << SARADC_CHAR32_CHR2RPT_BIT)
@@ -409,6 +339,28 @@ typedef enum adc_grp_num {
 #define SARADC_CHAR32_CHR3RSEL_B12      (1 << SARADC_CHAR32_CHR3RSEL_BIT)
 #define SARADC_CHAR32_CHR3WCIEN_DS      (0 << SARADC_CHAR32_CHR3WCIEN_BIT)
 #define SARADC_CHAR32_CHR3WCIEN_EN      (1 << SARADC_CHAR32_CHR3WCIEN_BIT)
+
+/** SARADC conversion characteristic 1 & 0 register */
+#define SARADC_CHAR10_CHR0GN_MASK       0x00000001
+#define SARADC_CHAR10_CHR0RPT_MASK      0x0000000E
+#define SARADC_CHAR10_CHR0LS_MASK       0x00000070
+#define SARADC_CHAR10_CHR0RSEL_MASK     0x00000080
+#define SARADC_CHAR10_CHR0WCIEN_MASK    0x00000100
+#define SARADC_CHAR10_CHR1GN_MASK       0x00010000
+#define SARADC_CHAR10_CHR1RPT_MASK      0x000E0000
+#define SARADC_CHAR10_CHR1LS_MASK       0x00700000
+#define SARADC_CHAR10_CHR1RSEL_MASK     0x00800000
+#define SARADC_CHAR10_CHR1WCIEN_MASK    0x01000000
+#define SARADC_CHAR10_CHR0GN_BIT        0  /* CHR0GN<0>: Conversion Characteristic 0 Gain.   */
+#define SARADC_CHAR10_CHR0RPT_BIT       1  /* CHR0RPT<3:1>: Conversion Characteristic 0 Repeat Counter. */
+#define SARADC_CHAR10_CHR0LS_BIT        4  /* CHR0LS<6:4>: Conversion Characteristic 0 Left-Shift Bits. */
+#define SARADC_CHAR10_CHR0RSEL_BIT      7  /* CHR0RSEL<7>: Conversion Characteristic 0 Resolution Selection. */
+#define SARADC_CHAR10_CHR0WCIEN_BIT     8  /* CHR0WCIEN<8>: Conversion Characteristic 0 Window Comparator Interrupt Enable. */
+#define SARADC_CHAR10_CHR1GN_BIT        16 /* CHR1GN<16>: Conversion Characteristic 1 Gain.  */
+#define SARADC_CHAR10_CHR1RPT_BIT       17 /* CHR1RPT<19:17>: Conversion Characteristic 1 Repeat Counter. */
+#define SARADC_CHAR10_CHR1LS_BIT        20 /* CHR1LS<22:20>: Conversion Characteristic 1 Left-Shift Bits. */
+#define SARADC_CHAR10_CHR1RSEL_BIT      23 /* CHR1RSEL<23>: Conversion Characteristic 1 Resolution Selection. */
+#define SARADC_CHAR10_CHR1WCIEN_BIT     24 /* CHR1WCIEN<24>: Conversion Characteristic 1 Window Comparator Interrupt Enable. */
 #define SARADC_CHAR10_CHR0GN_UNITY      (0 << SARADC_CHAR10_CHR0GN_BIT)
 #define SARADC_CHAR10_CHR0GN_HALF       (1 << SARADC_CHAR10_CHR0GN_BIT)
 #define SARADC_CHAR10_CHR0RPT_ACC1      (0 << SARADC_CHAR10_CHR0RPT_BIT)
@@ -434,50 +386,21 @@ typedef enum adc_grp_num {
 #define SARADC_CHAR10_CHR1WCIEN_DS      (0 << SARADC_CHAR10_CHR1WCIEN_BIT)
 #define SARADC_CHAR10_CHR1WCIEN_EN      (1 << SARADC_CHAR10_CHR1WCIEN_BIT)
 
-
-#define SARADC_CHAR_REG(regs, grp)      ((grp) < 2 ? &((regs)->CHAR10) : &((regs)->CHAR32))
-
-
-typedef enum adc_bit_res {
-    ADC_10_bit,
-    ADC_12_bit
-}adc_bit_res;
-#define SARADC_CHAR_RSEL_BIT(grp)       (SARADC_CHAR10_CHR0RSEL_BIT + ((grp) & 1) * 16)
-#define SARADC_CHAR_RSEL_MASK(grp)      ((SARADC_CHAR10_CHR0RSEL_MASK >> SARADC_CHAR10_CHR0RSEL_BIT) << SARADC_CHAR_RSEL_BIT(grp))
-
-typedef enum adc_smp_cnt {
-    ADC_SMPCNT_1,
-    ADC_SMPCNT_4,
-    ADC_SMPCNT_8,
-    ADC_SMPCNT_16,
-    ADC_SMPCNT_32,
-    ADC_SMPCNT_64,
-} adc_smp_cnt;
-#define SARADC_CHAR_RPT_BIT(grp)       (SARADC_CHAR10_CHR0RPT_BIT + ((grp) & 1) * 16)
-#define SARADC_CHAR_RPT_MASK(grp)      ((SARADC_CHAR10_CHR0RPT_MASK >> SARADC_CHAR10_CHR0RPT_BIT) << SARADC_CHAR_RPT_BIT(grp))
-
-typedef enum adc_grp_gain {
-    ADC_GN_UNITY,
-    ADC_GN_HALF,
-} adc_grp_gain;
-#define SARADC_CHAR_GN_BIT(grp)       (SARADC_CHAR10_CHR0GN_BIT + ((grp) & 1) * 16)
-#define SARADC_CHAR_GN_MASK(grp)      ((SARADC_CHAR10_CHR0GN_MASK >> SARADC_CHAR10_CHR0GN_BIT) << SARADC_CHAR_GN_BIT(grp))
-
-
-
-
-
+/** SARADC data register */
 #define SARADC_DATA_MASK                0xFFFFFFFF
 #define SARADC_DATA_BIT                 0  /* DATA<31:0>: Output Data Word.                  */
 
+/** SARADC window comparator limits register */
 #define SARADC_WCLIMITS_WCLT_MASK       0x0000FFFF
 #define SARADC_WCLIMITS_WCGT_MASK       0xFFFF0000
 #define SARADC_WCLIMITS_WCLT_BIT        0  /* WCLT<15:0>: Less-Than Window Comparator Limit. */
 #define SARADC_WCLIMITS_WCGT_BIT        16 /* WCGT<31:16>: Greater-Than Window Comparator Limit. */
 
+/** SARADC accumulator initial value register */
 #define SARADC_ACC_MASK                 0x0000FFFF
 #define SARADC_ACC_BIT                  0  /* ACC<15:0>: Accumulator Initial Value.          */
 
+/** SARADC status register */
 #define SARADC_STATUS_WCI_MASK          0x00000001
 #define SARADC_STATUS_SCCI_MASK         0x00000002
 #define SARADC_STATUS_SDI_MASK          0x00000004
@@ -499,6 +422,7 @@ typedef enum adc_grp_gain {
 #define SARADC_STATUS_FURI_NOT_SET      (0 << SARADC_STATUS_FURI_BIT)
 #define SARADC_STATUS_FURI_SET          (1 << SARADC_STATUS_FURI_BIT)
 
+/** SARADC FIFO status register */
 #define SARADC_FIFOSTATUS_FIFOLVL_MASK  0x0000000F
 #define SARADC_FIFOSTATUS_DPSTS_MASK    0x00000010
 #define SARADC_FIFOSTATUS_DRDYF_MASK    0x00000020
@@ -511,16 +435,43 @@ typedef enum adc_grp_gain {
 #define SARADC_FIFOSTATUS_DRDYF_SET     (1 << SARADC_FIFOSTATUS_DRDYF_BIT)
 
 
-/*
- * Register bit definitions
- */
+typedef enum adc_tslot_chnl {
+    ADC_CHN_0, ADC_CHN_1, ADC_CHN_2, ADC_CHN_3,
+    ADC_CHN_4, ADC_CHN_5, ADC_CHN_6, ADC_CHN_7,
+    ADC_CHN_8, ADC_CHN_9, ADC_CHN_10, ADC_CHN_11,
+    ADC_CHN_12, ADC_CHN_13, ADC_CHN_14, ADC_CHN_15,
+    ADC_CHN_16, ADC_CHN_17, ADC_CHN_18, ADC_CHN_19,
+    ADC_CHN_20, ADC_CHN_21, ADC_CHN_22, ADC_CHN_23,
+    ADC_CHN_24, ADC_CHN_25, ADC_CHN_26, ADC_CHN_27,
+    ADC_CHN_28, ADC_CHN_29, ADC_CHN_30, ADC_CHN_END
+}adc_tslot_chnl;
 
-/* Status register */
+typedef enum adc_grp_num {
+    ADC_GRP_0,
+    ADC_GRP_1,
+    ADC_GRP_2,
+    ADC_GRP_3,
+}adc_grp_num;
 
+typedef enum adc_bit_res {
+    ADC_10_bit,
+    ADC_12_bit
+}adc_bit_res;
 
-/*
- * Other types
- */
+typedef enum adc_smp_cnt {
+    ADC_SMPCNT_1,
+    ADC_SMPCNT_4,
+    ADC_SMPCNT_8,
+    ADC_SMPCNT_16,
+    ADC_SMPCNT_32,
+    ADC_SMPCNT_64,
+} adc_smp_cnt;
+
+typedef enum adc_grp_gain {
+    ADC_GN_UNITY,
+    ADC_GN_HALF,
+} adc_grp_gain;
+
 
 /**
  * @brief STM32F2 external event selectors for regular group
@@ -574,5 +525,9 @@ typedef enum adc_prescaler {
     /** PCLK2 divided by 8 */
     ADC_PRE_PCLK2_DIV_8 = 3,
 } adc_prescaler;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

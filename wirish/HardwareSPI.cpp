@@ -34,6 +34,7 @@
 #include <libmaple/timer.h>
 #include <libmaple/util.h>
 #include <libmaple/rcc.h>
+#include <libmaple/spi.h>
 
 #include <wirish/wirish.h>
 #include <wirish/boards.h>
@@ -169,19 +170,27 @@ void HardwareSPI::write(uint8 byte) {
 
 void HardwareSPI::write(const uint8 *data, uint32 length) {
     uint32 txed = 0;
+
+    // Transfer data
     while (txed < length) {
         txed += spi_tx(this->spi_d, data + txed, length - txed);
     }
+    // Wait till transfer is complete
+    while (spi_is_busy(this->spi_d));
 }
 
 void HardwareSPI::write(const uint8 *data, uint32 length, uint8 slaveNum) {
     uint32 txed = 0;
 
+    // Select chip
     digitalWrite(this->nssPin(), LOW);
+    // Transfer data
     while (txed < length) {
         txed += spi_tx(this->spi_d, data + txed, length - txed);
     }
+    // Wait till transfer is complete
     while (spi_is_busy(this->spi_d));
+    // De-select chip
     digitalWrite(this->nssPin(), HIGH);
 }
 

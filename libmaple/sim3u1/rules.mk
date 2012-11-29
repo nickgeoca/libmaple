@@ -8,8 +8,7 @@ BUILDDIRS       += $(BUILD_PATH)/$(d)
 CFLAGS_$(d) = -I$(d) $(LIBMAPLE_INCLUDES) $(LIBMAPLE_PRIVATE_INCLUDES) -Wall
 
 # Local rules and targets
-sSRCS_$(d) := isrs.S
-sSRCS_$(d) += vector_table.S
+
 
 cSRCS_$(d) := adc.c
 cSRCS_$(d) += dma.c
@@ -18,10 +17,8 @@ cSRCS_$(d) += fsmc.c
 cSRCS_$(d) += gpio.c
 cSRCS_$(d) += rcc.c
 cSRCS_$(d) += spi.c
-cSRCS_$(d) += syscfg.c
 cSRCS_$(d) += timer.c
 cSRCS_$(d) += usart.c
-cSRCS_$(d) += xbar.c
 
 sFILES_$(d) := $(sSRCS_$(d):%=$(d)/%)
 cFILES_$(d) := $(cSRCS_$(d):%=$(d)/%)

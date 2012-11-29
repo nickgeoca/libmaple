@@ -28,6 +28,3 @@
 #include <libmaple/syscfg.h>
 #include "exti_private.h"
 
-void exti_select(exti_num num, exti_cfg cfg) {
-
-}

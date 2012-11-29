@@ -29,12 +29,37 @@
  * @brief STM32F2 nested vectored interrupt controller (NVIC) header.
  */
 
-#ifndef _LIBMAPLE_STM32F2_NVIC_H_
-#define _LIBMAPLE_STM32F2_NVIC_H_
+#ifndef _LIBMAPLE_SIM3U1_NVIC_H_
+#define _LIBMAPLE_SIM3U1_NVIC_H_
+
+#include <stdint.h>
 
 #ifdef __cplusplus
-extern "C"{
+extern "C" {
 #endif
+
+
+
+/** NVIC register map type. */
+typedef struct nvic_reg_map {
+    volatile uint32_t ISER[8];      /**< Interrupt Set Enable Registers */
+    uint32_t RESERVED0[24];
+    volatile uint32_t ICER[8];      /**< Interrupt Clear Enable Registers */
+    uint32_t RESERVED1[24];
+    volatile uint32_t ISPR[8];      /**< Interrupt Set Pending Registers */
+    uint32_t RESERVED2[24];
+    volatile uint32_t ICPR[8];      /**< Interrupt Clear Pending Registers */
+    uint32_t RESERVED3[24];
+    volatile uint32_t IABR[8];      /**< Interrupt Active bit Registers */
+    uint32_t RESERVED4[56];
+    volatile uint8_t  IP[240];      /**< Interrupt Priority Registers */
+    uint32_t RESERVED5[644];
+    volatile uint32_t STIR;         /**< Software Trigger Interrupt Registers */
+} nvic_reg_map;
+
+/** NVIC register map base pointer. */
+#define NVIC_BASE                       ((struct nvic_reg_map*)0xE000E100)
+
 
 /**
  * @brief STM32F2 interrupt vector table interrupt numbers.
@@ -110,47 +135,6 @@ typedef enum nvic_irq_num {
     NVIC_VREG0LOW         = 53,
     NVIC_NUM_OF_PERIPHERALS_
 } nvic_irq_num;
-
-static inline void nvic_irq_disable_all(void) {
-    NVIC_BASE->ICER[0] = 0xFFFFFFFF;
-    NVIC_BASE->ICER[1] = 0xFFFFFFFF;
-    NVIC_BASE->ICER[2] = 0xFFFFFFFF;
-}
-
-typedef struct nvic_irqs_t {
-    uint8 irq_count;
-    nvic_irq_num *irq_array;
-} nvic_irqs_t;
-
-static inline void nvic_irq_disable_dev(nvic_irqs_t *dev_irqs)
-{
-    int32 i = (int32)dev_irqs->irq_count;
-    nvic_irq_num irq_num;
-    while (i-- + 1) {
-        irq_num = dev_irqs->irq_array[i];
-        NVIC_BASE->ICPR[irq_num / 32] = BIT((uint32)irq_num & 0x1F);
-    }
-}
-
-static inline void nvic_irq_enable_dev(nvic_irqs_t *dev_irqs)
-{
-    int32 i = (int32)dev_irqs->irq_count;
-    nvic_irq_num irq_num;
-    while (i-- + 1) {
-        irq_num = dev_irqs->irq_array[i];
-        NVIC_BASE->ISER[irq_num / 32] = BIT(irq_num % 32);
-    }
-}
-
-static inline void nvic_clr_pending_dev(nvic_irqs_t *dev_irqs) {
-    int32 i = (int32)dev_irqs->irq_count;
-    nvic_irq_num irq_num;
-    while (i-- + 1) {
-        irq_num = dev_irqs->irq_array[i];
-        NVIC_BASE->ICPR[irq_num / 32] = BIT((uint32)irq_num & 0x1F);
-    }
-}
-
 
 #ifdef __cplusplus
 }

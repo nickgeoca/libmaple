@@ -36,7 +36,7 @@
 extern "C"{
 #endif
 
-#include <libmaple/libmaple_types.h>
+#include <stdint.h>
 
 /*
  * GPIO register maps and devices
@@ -46,80 +46,80 @@ extern "C"{
 
 typedef struct gpio_reg_map
 {
-    __io uint32 PB; // Base Address + 0x0
-    __io uint32 PB_SET;
-    __io uint32 PB_CLR;
-    __io uint32 PB_MSK;
-    __io uint32 PBPIN; // Base Address + 0x10
-    uint32      reserved0;
-    uint32      reserved1;
-    uint32      reserved2;
-    __io uint32 PBMDSEL; // Base Address + 0x20
-    __io uint32 PBMDSEL_SET;
-    __io uint32 PBMDSEL_CLR;
-    uint32      reserved3;
+    volatile uint32_t PB;       // Base Address + 0x0
+    volatile uint32_t PB_SET;
+    volatile uint32_t PB_CLR;
+    volatile uint32_t PB_MSK;
+    volatile uint32_t PBPIN;    // Base Address + 0x10
+    uint32_t          reserved0;
+    uint32_t          reserved1;
+    uint32_t          reserved2;
+    volatile uint32_t PBMDSEL;  // Base Address + 0x20
+    volatile uint32_t PBMDSEL_SET;
+    volatile uint32_t PBMDSEL_CLR;
+    uint32_t          reserved3;
     union {
         struct
         {
-            __io uint32 PBSKIPEN; // Base Address + 0x30
-            __io uint32 PBSKIPEN_SET;
-            __io uint32 PBSKIPEN_CLR;
-            uint32      reserved4;
-            __io uint32 PBOUTMD; // Base Address + 0x40
-            __io uint32 PBOUTMD_SET;
-            __io uint32 PBOUTMD_CLR;
-            uint32      reserved5;
-            __io uint32 PBDRV; // Base Address + 0x50
-            __io uint32 PBDRV_SET;
-            __io uint32 PBDRV_CLR;
-            uint32      reserved6;
-            __io uint32 PM; // Base Address + 0x60
-            __io uint32 PM_SET;
-            __io uint32 PM_CLR;
-            uint32      reserved7;
-            __io uint32 PMEN; // Base Address + 0x70
-            __io uint32 PMEN_SET;
-            __io uint32 PMEN_CLR;
-            uint32      reserved8;
-            __io uint32 PBLOCK; // Base Address + 0x80
-            uint32      reserved9;
-            uint32      reserved10;
-            uint32      reserved11;
-            __io uint32 PBPGEN; // Base Address + 0x90
-            uint32      reserved12;
-            uint32      reserved13;
-            uint32      reserved14;
-            __io uint32 PBPGPHASE; // Base Address + 0xa0
-            uint32      reserved15;
-            uint32      reserved16;
-            uint32      reserved17;
+            volatile uint32_t PBSKIPEN; // Base Address + 0x30
+            volatile uint32_t PBSKIPEN_SET;
+            volatile uint32_t PBSKIPEN_CLR;
+            uint32_t          reserved4;
+            volatile uint32_t PBOUTMD; // Base Address + 0x40
+            volatile uint32_t PBOUTMD_SET;
+            volatile uint32_t PBOUTMD_CLR;
+            uint32_t          reserved5;
+            volatile uint32_t PBDRV; // Base Address + 0x50
+            volatile uint32_t PBDRV_SET;
+            volatile uint32_t PBDRV_CLR;
+            uint32_t          reserved6;
+            volatile uint32_t PM; // Base Address + 0x60
+            volatile uint32_t PM_SET;
+            volatile uint32_t PM_CLR;
+            uint32_t          reserved7;
+            volatile uint32_t PMEN; // Base Address + 0x70
+            volatile uint32_t PMEN_SET;
+            volatile uint32_t PMEN_CLR;
+            uint32_t          reserved8;
+            volatile uint32_t PBLOCK; // Base Address + 0x80
+            uint32_t          reserved9;
+            uint32_t          reserved10;
+            uint32_t          reserved11;
+            volatile uint32_t PBPGEN; // Base Address + 0x90
+            uint32_t          reserved12;
+            uint32_t          reserved13;
+            uint32_t          reserved14;
+            volatile uint32_t PBPGPHASE; // Base Address + 0xa0
+            uint32_t          reserved15;
+            uint32_t          reserved16;
+            uint32_t          reserved17;
         }std;
         struct {
-            __io uint32 PBDEN; // Base Address + 0x30
-            __io uint32 PBDEN_SET;
-            __io uint32 PBDEN_CLR;
-            uint32      reserved4;
-            __io uint32 PBDRV; // Base Address + 0x40
-            __io uint32 PBDRV_SET;
-            __io uint32 PBDRV_CLR;
-            uint32      reserved5;
-            __io uint32 PBILIMIT; // Base Address + 0x50
-            __io uint32 PBILIMIT_SET;
-            __io uint32 PBILIMIT_CLR;
-            uint32      reserved6;
-            uint32      reserved7[4];
-            __io uint32 PBFSEL; // Base Address + 0x70
-            uint32      reserved8;
-            uint32      reserved9;
-            uint32      reserved10;
-            __io uint32 PBSS; // Base Address + 0x80
-            __io uint32 PBSS_SET;
-            __io uint32 PBSS_CLR;
-            uint32      reserved11;
-            __io uint32 PBLOCK; // Base Address + 0x90
-            uint32      reserved12;
-            uint32      reserved13;
-            uint32      reserved14;
+            volatile uint32_t PBDEN; // Base Address + 0x30
+            volatile uint32_t PBDEN_SET;
+            volatile uint32_t PBDEN_CLR;
+            uint32_t          reserved4;
+            volatile uint32_t PBDRV; // Base Address + 0x40
+            volatile uint32_t PBDRV_SET;
+            volatile uint32_t PBDRV_CLR;
+            uint32_t          reserved5;
+            volatile uint32_t PBILIMIT; // Base Address + 0x50
+            volatile uint32_t PBILIMIT_SET;
+            volatile uint32_t PBILIMIT_CLR;
+            uint32_t          reserved6;
+            uint32_t          reserved7[4];
+            volatile uint32_t PBFSEL; // Base Address + 0x70
+            uint32_t          reserved8;
+            uint32_t          reserved9;
+            uint32_t          reserved10;
+            volatile uint32_t PBSS; // Base Address + 0x80
+            volatile uint32_t PBSS_SET;
+            volatile uint32_t PBSS_CLR;
+            uint32_t          reserved11;
+            volatile uint32_t PBLOCK; // Base Address + 0x90
+            uint32_t          reserved12;
+            uint32_t          reserved13;
+            uint32_t          reserved14;
         }hd;
     };
 }gpio_reg_map;
@@ -133,46 +133,36 @@ typedef struct gpio_reg_map
 
 typedef struct pbcfg_reg_map
 {
-   __io uint32 CONTROL0; // Base Address + 0x0
-   __io uint32 CONTROL0_SET;
-   __io uint32 CONTROL0_CLR;
-   uint32      reserved0;
-   __io uint32 CONTROL1; // Base Address + 0x10
-   __io uint32 CONTROL1_SET;
-   __io uint32 CONTROL1_CLR;
-   uint32      reserved1;
-   __io uint32 XBAR0L; // Base Address + 0x20
-   __io uint32 XBAR0L_SET;
-   __io uint32 XBAR0L_CLR;
-   uint32      reserved2;
-   __io uint32 XBAR0H; // Base Address + 0x30
-   __io uint32 XBAR0H_SET;
-   __io uint32 XBAR0H_CLR;
-   uint32      reserved3;
-   __io uint32 XBAR1; // Base Address + 0x40
-   __io uint32 XBAR1_SET;
-   __io uint32 XBAR1_CLR;
-   uint32      reserved4;
-   __io uint32 PBKEY; // Base Address + 0x50
-   uint32      reserved5;
-   uint32      reserved6;
-   uint32      reserved7;
+   volatile uint32_t CONTROL0; // Base Address + 0x0
+   volatile uint32_t CONTROL0_SET;
+   volatile uint32_t CONTROL0_CLR;
+   uint32_t          reserved0;
+   volatile uint32_t CONTROL1; // Base Address + 0x10
+   volatile uint32_t CONTROL1_SET;
+   volatile uint32_t CONTROL1_CLR;
+   uint32_t          reserved1;
+   volatile uint32_t XBAR0L; // Base Address + 0x20
+   volatile uint32_t XBAR0L_SET;
+   volatile uint32_t XBAR0L_CLR;
+   uint32_t          reserved2;
+   volatile uint32_t XBAR0H; // Base Address + 0x30
+   volatile uint32_t XBAR0H_SET;
+   volatile uint32_t XBAR0H_CLR;
+   uint32_t          reserved3;
+   volatile uint32_t XBAR1; // Base Address + 0x40
+   volatile uint32_t XBAR1_SET;
+   volatile uint32_t XBAR1_CLR;
+   uint32_t          reserved4;
+   volatile uint32_t PBKEY; // Base Address + 0x50
+   uint32_t          reserved5;
+   uint32_t          reserved6;
+   uint32_t          reserved7;
 } pbcfg_reg_map;
 
 #define PBCFG_BASE    ((pbcfg_reg_map*)0x4002A000)
 
 
-struct gpio_dev;
-extern struct gpio_dev* const GPIOA;
-extern struct gpio_dev gpioa;
-extern struct gpio_dev* const GPIOB;
-extern struct gpio_dev gpiob;
-extern struct gpio_dev* const GPIOC;
-extern struct gpio_dev gpioc;
-extern struct gpio_dev* const GPIOD;
-extern struct gpio_dev gpiod;
-extern struct gpio_dev* const GPIOE;
-extern struct gpio_dev gpioe;
+
 
 /*
  * Register bit definitions
@@ -188,29 +178,23 @@ extern struct gpio_dev gpioe;
 
 /* Mode register */
 #define PBSTD_PBMDSEL_MASK           0x0000FFFF
-
 #define PBSTD_PBMDSEL_BIT            0  /* PBMDSEL<15:0>: Mode Select.                    */
-
 #define PBSTD_PBMDSEL_DIGITAL        1
 #define PBSTD_PBMDSEL_ANALOG         0
 
 /* Output mode register */
 #define PBSTD_PBOUTMD_MASK           0x0000FFFF
-
 #define PBSTD_PBOUTMD_BIT            0  /* PBOUTMD<15:0>: Output Mode.                    */
 
 /* Pulse generator register */
 #define PBSTD_PBPGEN_MASK            0x0000FFFF
-
 #define PBSTD_PBPGEN_BIT             0  /* PBPGEN<15:0>: Pulse Generator Pin Enable.      */
 
 /* Drive strength register */
 #define PBSTD_PBDRV_MASK             0x0000FFFF
 #define PBSTD_PBDRV_PBPUEN_MASK      0x00010000
-
 #define PBSTD_PBDRV_BIT              0  /* PBDRV<15:0>: Drive Strength.                   */
 #define PBSTD_PBDRV_PBPUEN_BIT       16 /* PBPUEN<16>: Port Bank Weak Pull-up Enable.     */
-
 #define PBSTD_PBDRV_PBPUEN_DS        (0 << PBSTD_PBDRV_PBPUEN_BIT)
 #define PBSTD_PBDRV_PBPUEN_EN        (1 << PBSTD_PBDRV_PBPUEN_BIT)
 
@@ -220,9 +204,7 @@ extern struct gpio_dev gpioe;
 
 /* Mode register */
 #define PBHD_PBMDSEL_MASK            0x0000003F
-
 #define PBHD_PBMDSEL_BIT             0  /* PBMDSEL<5:0>: Mode Select.                     */
-
 #define PBHD_PBMDSEL_DIGITAL         1
 #define PBHD_PBMDSEL_ANALOG          0
 
@@ -234,7 +216,6 @@ extern struct gpio_dev gpioe;
 #define PBHD_PBDRV_PBBIASEN_MASK     0x00200000
 #define PBHD_PBDRV_PBDRVEN_MASK      0x00400000
 #define PBHD_PBDRV_PBVTRKEN_MASK     0x00800000
-
 #define PBHD_PBDRV_BIT               0  /* PBDRV<5:0>: Drive Strength.                    */
 #define PBHD_PBDRV_PBPUEN_BIT        16 /* PBPUEN<16>: Port Bank Weak Pull-up Enable.     */
 #define PBHD_PBDRV_PBLVMD_BIT        17 /* PBLVMD<17>: Port Low Voltage Mode.             */
@@ -243,33 +224,29 @@ extern struct gpio_dev gpioe;
 #define PBHD_PBDRV_PBDRVEN_BIT       22 /* PBDRVEN<22>: Port Drive Enable.                */
 #define PBHD_PBDRV_PBVTRKEN_BIT      23 /* PBVTRKEN<23>: Port Voltage Supply Tracking Enable. */
 
-/* Current Limit register */
+/* Current limit register */
 #define PBHD_PBILIMIT_PBILEN_MASK    0x0000003F
 #define PBHD_PBILIMIT_NILIMIT_MASK   0x000F0000
 #define PBHD_PBILIMIT_PILIMIT_MASK   0x00F00000
-
 #define PBHD_PBILIMIT_PBILEN_BIT     0  /* PBILEN<5:0>: Current Limit Enable.             */
 #define PBHD_PBILIMIT_NILIMIT_BIT    16 /* NILIMIT<19:16>: N-Channel Current Limit.       */
 #define PBHD_PBILIMIT_PILIMIT_BIT    20 /* PILIMIT<23:20>: P-Channel Current Limit.       */
-
 #define PBHD_PBILIMIT_NILIMIT_MODE(n) (n << PBHD_PBILIMIT_NILIMIT_BIT)
 #define PBHD_PBILIMIT_PILIMIT_MODE(n) (n << PBHD_PBILIMIT_PILIMIT_BIT)
 
-/* Function Select register */
+/* Function select register */
 #define PBHD_PBFSEL_PB0SEL_MASK      0x00000003
 #define PBHD_PBFSEL_PB1SEL_MASK      0x0000000C
 #define PBHD_PBFSEL_PB2SEL_MASK      0x00000030
 #define PBHD_PBFSEL_PB3SEL_MASK      0x000000C0
 #define PBHD_PBFSEL_PB4SEL_MASK      0x00000300
 #define PBHD_PBFSEL_PB5SEL_MASK      0x00001C00
-
 #define PBHD_PBFSEL_PB0SEL_BIT       0  /* PB0SEL<1:0>: Port Bank n.0 Function Select.    */
 #define PBHD_PBFSEL_PB1SEL_BIT       2  /* PB1SEL<3:2>: Port Bank n.1 Function Select.    */
 #define PBHD_PBFSEL_PB2SEL_BIT       4  /* PB2SEL<5:4>: Port Bank n.2 Function Select.    */
 #define PBHD_PBFSEL_PB3SEL_BIT       6  /* PB3SEL<7:6>: Port Bank n.3 Function Select.    */
 #define PBHD_PBFSEL_PB4SEL_BIT       8  /* PB4SEL<9:8>: Port Bank n.4 Function Select.    */
 #define PBHD_PBFSEL_PB5SEL_BIT       10 /* PB5SEL<12:10>: Port Bank n.5 Function Select.  */
-
 #define PBHD_PBFSEL_PB0SEL_GPIO      (0 << PBHD_PBFSEL_PB0SEL_BIT)
 #define PBHD_PBFSEL_PB0SEL_PMLS      (1 << PBHD_PBFSEL_PB0SEL_BIT)
 #define PBHD_PBFSEL_PB0SEL_EPCA0     (2 << PBHD_PBFSEL_PB0SEL_BIT)
@@ -294,7 +271,7 @@ extern struct gpio_dev gpioe;
 #define PBHD_PBFSEL_PB5SEL_UART1     (3 << PBHD_PBFSEL_PB5SEL_BIT)
 #define PBHD_PBFSEL_PB5SEL_LPTIMER0  (4 << PBHD_PBFSEL_PB5SEL_BIT)
 
-/* Safe State Select register */
+/* Safe state select register */
 #define PBHD_PBSS_PB0SSSEL_MASK      0x00000003
 #define PBHD_PBSS_PB1SSSEL_MASK      0x0000000C
 #define PBHD_PBSS_PB2SSSEL_MASK      0x00000030
@@ -303,7 +280,6 @@ extern struct gpio_dev gpioe;
 #define PBHD_PBSS_PB5SSSEL_MASK      0x00000C00
 #define PBHD_PBSS_SSMDEN_MASK        0x00010000
 #define PBHD_PBSS_PBSSSMD_MASK       0x00020000
-
 #define PBHD_PBSS_PB0SSSEL_BIT       0  /* PB0SSSEL<1:0>: Port Bank n.0 Safe State Select. */
 #define PBHD_PBSS_PB1SSSEL_BIT       2  /* PB1SSSEL<3:2>: Port Bank n.1 Safe State Select. */
 #define PBHD_PBSS_PB2SSSEL_BIT       4  /* PB2SSSEL<5:4>: Port Bank n.2 Safe State Select. */
@@ -312,22 +288,19 @@ extern struct gpio_dev gpioe;
 #define PBHD_PBSS_PB5SSSEL_BIT       10 /* PB5SSSEL<11:10>: Port Bank n.5 Safe State Select. */
 #define PBHD_PBSS_SSMDEN_BIT         16 /* SSMDEN<16>: Enter Safe State Mode.             */
 #define PBHD_PBSS_PBSSSMD_BIT        17 /* PBSSSMD<17>: Safe State Signal Mode.           */
-
-
 #define PBHD_PBSS_PBSSSEL(val, pb_num) (val (1 << pb_num))
 #define PBHD_PBSS_SSMDEN_DS          (0 << PBHD_PBSS_SSMDEN_BIT)
 #define PBHD_PBSS_SSMDEN_EN          (1 << PBHD_PBSS_SSMDEN_BIT)
 #define PBHD_PBSS_PBSSSMD_DEGLITCH   (0 << PBHD_PBSS_PBSSSMD_BIT)
 #define PBHD_PBSS_PBSSSMD_IMMEDIATE  (1 << PBHD_PBSS_PBSSSMD_BIT)
 
-/* Driver enable */
+/* Driver enable register */
 #define PBHD_PBDEN_PBNDEN_MASK       0x0000003F
 #define PBHD_PBDEN_PBPDEN_MASK       0x003F0000
-
 #define PBHD_PBDEN_PBNDEN_BIT        0  /* PBNDEN<5:0>: Port Bank N-Channel Driver Enable (low side). */
 #define PBHD_PBDEN_PBPDEN_BIT        16 /* PBPDEN<21:16>: Port Bank P-Channel Driver Enable (high side). */
 
-
+/* PB configure key register */
 #define PBCFG_PBKEY_KEY_BIT                  0  /* KEY<7:0>: Port Bank 2, 3, and 4 Key.           */
 #define PBCFG_PBKEY_KEY_LOCKED               (0 << PBCFG_PBKEY_KEY_BIT)
 #define PBCFG_PBKEY_KEY_INTERMEDIATE         (1 << PBCFG_PBKEY_KEY_BIT)
@@ -380,27 +353,7 @@ typedef enum gpio_mode_flags {
 }gpio_mode_flags;
 
 
-void gpio_set_modef(struct gpio_dev *dev,
-                    uint8 bit,
-                    gpio_pin_mode mode,
-                    unsigned flags);
 
-/**
- * @brief Set the mode of a GPIO pin.
- *
- * Calling this function is equivalent to calling gpio_set_modef(dev,
- * pin, mode, GPIO_MODE_SPEED_HIGH). Note that this overrides the
- * default speed.
- *
- * @param dev GPIO device.
- * @param bit Bit on the device whose mode to set, 0--15.
- * @param mode Mode to set the pin to.
- */
-static inline void gpio_set_mode(struct gpio_dev *dev,
-                                 uint8 bit,
-                                 gpio_pin_mode mode) {
-    gpio_set_modef(dev, bit, mode, GPIO_DRIVE_WEAK);
-}
 
 /**
  * @brief GPIO alternate functions.
@@ -419,8 +372,6 @@ typedef enum gpio_type {
     GPIO_STANDARD,             /**< Advanced type */
     GPIO_HIGHDRIVE,              /**< General purpose type */
 } gpio_type;
-
-void gpio_set_af(struct gpio_dev *dev, uint8 bit, gpio_af af);
 
 
 #ifdef __cplusplus

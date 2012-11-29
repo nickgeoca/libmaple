@@ -43,8 +43,24 @@ extern "C"{
 #include <libmaple/rcc.h>
 #include <libmaple/nvic.h>
 #include <libmaple/ring_buffer.h>
-#include <series/usart.h>
+#include <libmaple/xbar.h>
+#include <libmaple/gpio.h>
 
+#include <series/usart.h>
+/** USART device type */
+typedef struct usart_dev {
+    usart_reg_map *regs;             /**< Register map */
+    ring_buffer *rb;                 /**< RX ring buffer */
+    uint32 max_baud;                 /**< @brief Deprecated.
+                                      * Maximum baud rate. */
+    uint8 rx_buf[64];               /**< @brief Deprecated.
+                                      * Actual RX buffer used by rb.
+                                      * This field will be removed in
+                                      * a future release. */ // todo silabs: rx_buf size
+    clk_dev_id clk_id;               /**< RCC clock information */
+    xbar_dev_id xbar_id;
+    nvic_irq_num irq_num;            /**< USART NVIC interrupt */
+} usart_dev;
 
 /*
  * Register bit definitions
@@ -64,6 +80,8 @@ void usart_init(usart_dev *dev);
 
 struct gpio_dev;                /* forward declaration */
 /* FIXME [PRE 0.0.13] decide if flags are necessary */
+
+#define REG_CAST_BYTE(n) (((volatile uint8 *)&(n))[0])
 /**
  * @brief Configure GPIOs for use as USART TX/RX.
  * @param udev USART device to use

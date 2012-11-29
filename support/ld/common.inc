@@ -156,6 +156,12 @@ SECTIONS
         . = ALIGN(4);
         _lm_rom_img_cfgp = .;
         LONG(LOADADDR(.data));
+
+        _lm_heap_start = DEFINED(_lm_heap_start) ? _lm_heap_start : _end;
+        _lm_heap_end   = DEFINED(_lm_heap_end) ? _lm_heap_end : __msp_init;
+      } > REGION_RODATA
+
+
         /*
          * Heap: Linker scripts may choose a custom heap by overriding
          * _lm_heap_start and _lm_heap_end. Otherwise, the heap is in
@@ -165,10 +171,6 @@ SECTIONS
          * I'm shoving these here naively; there's probably a cleaner way
          * to go about this. [mbolivar]
          */
-        _lm_heap_start = DEFINED(_lm_heap_start) ? _lm_heap_start : _end;
-        _lm_heap_end   = DEFINED(_lm_heap_end) ? _lm_heap_end : __msp_init;
-      } > REGION_RODATA
-
     /*
      * .bss
      */

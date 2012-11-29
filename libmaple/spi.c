@@ -34,9 +34,51 @@
 
 #include <libmaple/spi.h>
 #include <libmaple/bitband.h>
+#include "spi_private.h"
 
+static spi_dev spi1 = SPI_DEV(1);
+static spi_dev spi2 = SPI_DEV(2);
+static spi_dev spi3 = SPI_DEV(3);
+
+spi_dev *SPI1 = &spi1;
+spi_dev *SPI2 = &spi2;
+spi_dev *SPI3 = &spi3;
 static void spi_reconfigure(spi_dev *dev, uint32 cr1_config);
+/*
+ * Routines
+ */
 
+void spi_config_gpios(spi_dev *dev,
+                      uint8 as_master,
+                      gpio_dev *nss_dev,
+                      uint8 nss_bit,
+                      gpio_dev *comm_dev,
+                      uint8 sck_bit,
+                      uint8 miso_bit,
+                      uint8 mosi_bit) {
+    if (as_master) {
+        gpio_set_mode(nss_dev, nss_bit, GPIO_DIGITAL_PP);
+        gpio_set_mode(comm_dev, sck_bit, GPIO_DIGITAL_PP);
+        gpio_set_mode(comm_dev, miso_bit, GPIO_DIGITAL_INPUT_PULLUP);
+        gpio_set_mode(comm_dev, mosi_bit, GPIO_DIGITAL_PP);
+    }
+    else {
+        gpio_set_mode(nss_dev, nss_bit, GPIO_DIGITAL_INPUT_PULLUP);
+        gpio_set_mode(comm_dev, sck_bit, GPIO_DIGITAL_INPUT_PULLUP);
+        gpio_set_mode(comm_dev, miso_bit, GPIO_DIGITAL_PP);
+        gpio_set_mode(comm_dev, mosi_bit, GPIO_DIGITAL_INPUT_PULLUP);
+    }
+}
+
+void spi_foreach(void (*fn)(spi_dev*)) {
+    fn(SPI1);
+    fn(SPI2);
+    fn(SPI3);
+}
+
+gpio_af spi_get_af(spi_dev *dev) {
+    return (gpio_af)0;
+}
 
 /*
  * SPI convenience routines

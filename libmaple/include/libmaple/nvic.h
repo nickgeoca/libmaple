@@ -50,41 +50,52 @@
 extern "C"{
 #endif
 
+#include <series/nvic.h>
 #include <libmaple/libmaple_types.h>
 #include <libmaple/util.h>
 #include <libmaple/../arch/arch.h>
 
-/** NVIC register map type. */
-typedef struct nvic_reg_map {
-    __io uint32 ISER[8];      /**< Interrupt Set Enable Registers */
-    /** Reserved */
-    uint32 RESERVED0[24];
+static inline void nvic_irq_disable_all(void) {
+    NVIC_BASE->ICER[0] = 0xFFFFFFFF;
+    NVIC_BASE->ICER[1] = 0xFFFFFFFF;
+    NVIC_BASE->ICER[2] = 0xFFFFFFFF;
+}
 
-    __io uint32 ICER[8];      /**< Interrupt Clear Enable Registers */
-    /** Reserved */
-    uint32 RESERVED1[24];
+typedef struct nvic_irqs_t {
+    uint8 irq_count;
+    nvic_irq_num *irq_array;
+} nvic_irqs_t;
 
-    __io uint32 ISPR[8];      /**< Interrupt Set Pending Registers */
-    /** Reserved */
-    uint32 RESERVED2[24];
+static inline void nvic_irq_disable_dev(nvic_irqs_t *dev_irqs)
+{
+    int32 i = (int32)dev_irqs->irq_count;
+    nvic_irq_num irq_num;
+    while (i-- + 1) {
+        irq_num = dev_irqs->irq_array[i];
+        NVIC_BASE->ICPR[irq_num / 32] = BIT((uint32)irq_num & 0x1F);
+    }
+}
 
-    __io uint32 ICPR[8];      /**< Interrupt Clear Pending Registers */
-    /** Reserved */
-    uint32 RESERVED3[24];
+static inline void nvic_irq_enable_dev(nvic_irqs_t *dev_irqs)
+{
+    int32 i = (int32)dev_irqs->irq_count;
+    nvic_irq_num irq_num;
+    while (i-- + 1) {
+        irq_num = dev_irqs->irq_array[i];
+        NVIC_BASE->ISER[irq_num / 32] = BIT(irq_num % 32);
+    }
+}
 
-    __io uint32 IABR[8];      /**< Interrupt Active bit Registers */
-    /** Reserved */
-    uint32 RESERVED4[56];
+static inline void nvic_clr_pending_dev(nvic_irqs_t *dev_irqs) {
+    int32 i = (int32)dev_irqs->irq_count;
+    nvic_irq_num irq_num;
+    while (i-- + 1) {
+        irq_num = dev_irqs->irq_array[i];
+        NVIC_BASE->ICPR[irq_num / 32] = BIT((uint32)irq_num & 0x1F);
+    }
+}
 
-    __io uint8  IP[240];      /**< Interrupt Priority Registers */
-    /** Reserved */
-    uint32 RESERVED5[644];
 
-    __io uint32 STIR;         /**< Software Trigger Interrupt Registers */
-} nvic_reg_map;
-
-/** NVIC register map base pointer. */
-#define NVIC_BASE                       ((struct nvic_reg_map*)0xE000E100)
 
 /*
  * Note: The series header must define enum nvic_irq_num, which gives

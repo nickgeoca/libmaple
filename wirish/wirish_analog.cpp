@@ -33,6 +33,7 @@
 #include <wirish/io.h>
 #include <libmaple/adc.h>
 #include <wirish/boards.h>
+#include <wirish/pwm.h>
 
 /* Unlike Wiring and Arduino, this assumes that the pin's mode is set
  * to INPUT_ANALOG. That's faster, but it does require some extra work
@@ -44,4 +45,9 @@ uint16 analogRead(uint8 pin) {
     }
 
     return adc_read(dev, PIN_MAP[pin].adc_channel);
+}
+
+
+void analogWrite(uint8 pin, uint8 value) {
+    pwmWrite(pin, (uint16)(value * 256));
 }

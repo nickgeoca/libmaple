@@ -36,7 +36,7 @@
 
 #if STM32_HAVE_DAC
 dac_dev dac = {
-    .regs = DAC_BASE,
+    .tmp = 0,
 };
 const dac_dev *DAC = &dac;
 #endif

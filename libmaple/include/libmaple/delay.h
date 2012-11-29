@@ -39,6 +39,7 @@ extern "C" {
 
 #include <libmaple/libmaple_types.h>
 #include <libmaple/stm32.h>
+#include <libmaple/xbar.h>
 
 /**
  * @brief Delay the given number of microseconds.

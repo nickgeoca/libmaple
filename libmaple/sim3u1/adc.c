@@ -30,48 +30,5 @@
  */
 
 #include <libmaple/adc.h>
-#include <libmaple/gpio.h>
 
-/*
- * Devices
- */
 
-static adc_dev adc1 = {
-    .regs   = ADC1_BASE,
-    .clk_id = CLK_SARADC1,
-    .irq_num = NVIC_SARADC1
-};
-/** ADC1 device. */
-const adc_dev *ADC1 = &adc1;
-
-static adc_dev adc2 = {
-    .regs   = ADC2_BASE,
-    .clk_id = CLK_SARADC2,
-    .irq_num = NVIC_SARADC2
-};
-/** ADC1 device. */
-const adc_dev *ADC2 = &adc2;
-
-/*
- * Common routines
- */
-
-void adc_set_prescaler(adc_prescaler pre) {
-
-}
-
-void adc_foreach(void (*fn)(const adc_dev*)) {
-    fn(ADC1);
-    fn(ADC2);
-}
-
-void adc_config_gpio(const adc_dev *ignored, gpio_dev *gdev, uint8 bit) {
-}
-
-void adc_enable_single_swstart(const adc_dev *dev) {
-    adc_init(dev);
-    //adc_set_extsel(dev, ADC_SWSTART);
-    //adc_set_exttrig(dev, 1);
-    adc_enable(dev);
-
-}

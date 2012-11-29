@@ -30,15 +30,16 @@
  * @brief STM32F2 DMA series header
  */
 
-#ifndef _LIBMAPLE_STM32F2_DMA_H_
-#define _LIBMAPLE_STM32F2_DMA_H_
+#ifndef _LIBMAPLE_SIM3U1_DMA_H_
+#define _LIBMAPLE_SIM3U1_DMA_H_
+
+#include <stdint.h>
 
 #ifdef __cplusplus
-extern "C"{
+extern "C" {
 #endif
 #if 0
-#include <libmaple/dma_common.h>
-#include <libmaple/libmaple_types.h>
+
 
 /*
  * Register map and base pointers

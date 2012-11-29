@@ -33,11 +33,3 @@
 #include <libmaple/fsmc.h>
 #include <libmaple/gpio.h>
 
-#define CONFIG_GPIO(dev, bit)                                           \
-    do {                                                                \
-        gpio_set_modef(dev, bit, GPIO_MODE_AF, GPIO_MODEF_SPEED_HIGH);  \
-        gpio_set_af(dev, bit, GPIO_AF_FSMC_SDIO_OTG_FS);                \
-    } while (0)
-void fsmc_sram_init_gpios(void) {
-
-}

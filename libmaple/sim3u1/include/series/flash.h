@@ -33,14 +33,14 @@
  * series-specific configuration values.
  */
 
-#ifndef _LIBMAPLE_STM32F2_FLASH_H_
-#define _LIBMAPLE_STM32F2_FLASH_H_
+#ifndef _LIBMAPLE_SIM3U1_FLASH_H_
+#define _LIBMAPLE_SIM3U1_FLASH_H_
+
+#include <stdint.h>
 
 #ifdef __cplusplus
-extern "C"{
+extern "C" {
 #endif
-
-#include <libmaple/libmaple_types.h>
 
 /*
  * Register map
@@ -173,55 +173,6 @@ enum {
     FLASH_DCACHE   = FLASH_CFGR_DPFEN_EN,
 };
 
-/**
- * @brief Enable Flash memory features
- *
- * If the target MCU doesn't provide a feature (e.g. instruction and
- * data caches on the STM32F1), the flag will be ignored. This allows
- * using these flags unconditionally, with the desired effect taking
- * place on targets that support them.
- *
- * @param feature_flags Bitwise OR of the following:
- *                      FLASH_PREFETCH (turns on prefetcher),
- *                      FLASH_ICACHE (turns on instruction cache),
- *                      FLASH_DCACHE (turns on data cache).
- */
-static inline void flash_enable_features(uint32 feature_flags) {
-    FLASH_BASE->CFGR |= feature_flags;
-}
-
-/**
- * @brief Set flash wait states
- *
- * Note that not all wait states are available on every MCU. See the
- * Flash programming manual for your MCU for restrictions on the
- * allowed value of wait_states for a given system clock (SYSCLK)
- * frequency.
- *
- * @param wait_states number of wait states (one of
- *                    FLASH_WAIT_STATE_0, FLASH_WAIT_STATE_1,
- *                    ..., FLASH_WAIT_STATE_7).
- */
-static inline void flash_set_latency(uint32 ahb_freq) {
-    uint32 spd_md = 3;
-    if (ahb_freq <= 26000000) {
-        spd_md = 0;
-    }
-    else if (ahb_freq <= 53000000) {
-        spd_md = 1;
-    }
-    else if (ahb_freq <= 80000000) {
-        spd_md = 2;
-    }
-    REG_SET_CLR(FLASH_BASE->CFGR, 0, FLASH_CFGR_SPMD_MASK);
-    REG_SET_CLR(FLASH_BASE->CFGR, 1, spd_md << FLASH_CFGR_SPMD_BIT);
-}
-
-// Erase a page at address
-void flash_erase_page(uint32 address);
-
-// Writes 16 bits to flash
-void flash_write_data(uint32 address, uint16 data[], int32 count);
 
 #ifdef __cplusplus
 }

@@ -240,4 +240,7 @@ static __always_inline void dispatch_single_exti(uint32 exti) {
 
     handler(exti_channels[exti].arg);
 }
+void exti_select(exti_num num, exti_cfg cfg) {
+
+}
 

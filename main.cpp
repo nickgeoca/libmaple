@@ -43,11 +43,12 @@ void initTimer(void)
     // Set prescalers and overflows
     for (int i = 0; i < 5; i++) {
         timerArray[i]->pause();
-        timerArray[i]->setPrescaleFactor(1);
-        timerArray[i]->setOverflow(10000);
+        timerArray[i]->setPrescaleFactor(16);
+        timerArray[i]->setOverflow(65535);
         timerArray[i]->resume();
     }
 
+    /*
     // Set compares and channel modes
     for (int i = 1; i <= 6; i++) {
         timerArray[0]->setCompare(i, 4000);
@@ -60,15 +61,17 @@ void initTimer(void)
     timerArray[3]->setCompare(1, 30000);
     timerArray[4]->setCompare(1, 30000);
 
+
     // Set timer channels to PWM
-    // for (int i = 1; i <= 6; i++) timerArray[0]->setMode(i, TIMER_PWM);
-    // for (int i = 1; i <= 2; i++) timerArray[1]->setMode(i, TIMER_PWM);
-    // for (int i = 1; i <= 1; i++) timerArray[2]->setMode(i, TIMER_PWM);
-    // timerArray[3]->setMode(1, TIMER_PWM);
-    // timerArray[4]->setMode(1, TIMER_PWM);
+    for (int i = 1; i <= 6; i++) timerArray[0]->setMode(i, TIMER_PWM);
+    for (int i = 1; i <= 2; i++) timerArray[1]->setMode(i, TIMER_PWM);
+    for (int i = 1; i <= 1; i++) timerArray[2]->setMode(i, TIMER_PWM);
+    timerArray[3]->setMode(1, TIMER_PWM);
+    timerArray[4]->setMode(1, TIMER_PWM);
 
     // Set GPIO pins to PWM
-    // for (int i = 0; i < BOARD_NR_PWM_PINS; i++) pinMode(boardPWMPins[i], PWM);
+    for (int i = 0; i < BOARD_NR_PWM_PINS; i++) pinMode(boardPWMPins[i], PWM);
+    */
 }
 
 void initSPI(void)

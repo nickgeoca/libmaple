@@ -29,17 +29,74 @@
  * @brief STM32F2 external interrupts
  */
 
-#ifndef _LIBMAPLE_STM32F2_EXTI_H_
-#define _LIBMAPLE_STM32F2_EXTI_H_
+#ifndef _LIBMAPLE_SIM3U1_EXTI_H_
+#define _LIBMAPLE_SIM3U1_EXTI_H_
 
-#ifdef __cpluspus
+#include <stdint.h>
+
+#ifdef __cplusplus
 extern "C" {
 #endif
 
-struct exti_reg_map;
-#define EXTI_BASE ((struct exti_reg_map*)0x4002A000)
+/*
+ * Register map and base pointer.
+ */
 
-#ifdef __cpluspus
+/** EXTI register map type */
+typedef struct exti_reg_map {
+    volatile uint32_t CONTROL0; // Base Address + 0x0
+    volatile uint32_t CONTROL0_SET;
+    volatile uint32_t CONTROL0_CLR;
+} exti_reg_map;
+#define EXTI_BASE ((struct exti_reg_map*)0x4002A000)
+/*
+ * Types: exti_num, exti_cfg, exti_trigger_mode.
+ *
+ * A combination of these three specifies an external interrupt
+ * configuration (see exti_attach_interrupt()).
+ */
+
+/** EXTI line. */
+typedef enum exti_num {
+    EXTI0,    /**< EXTI line 0 */
+    EXTI1,    /**< EXTI line 1 */
+} exti_num;
+
+/**
+ * @brief EXTI port configuration
+ *
+ * These specify which GPIO pin an external interrupt trigger should be
+ * connected to.
+ */
+typedef enum exti_cfg {
+    EXTIx_TRIG0,  /**< Pin: PC0  */
+    EXTIx_TRIG1,  /**< Pin: PC1  */
+    EXTIx_TRIG2,  /**< Pin: PC2  */
+    EXTIx_TRIG3,  /**< Pin: PC3  */
+    EXTIx_TRIG4,  /**< Pin: PC4  */
+    EXTIx_TRIG5,  /**< Pin: PC5  */
+    EXTIx_TRIG6,  /**< Pin: PC6  */
+    EXTIx_TRIG7,  /**< Pin: PC7  */
+    EXTIx_TRIG8,  /**< Pin: PD3  */
+    EXTIx_TRIG9,  /**< Pin: PD4  */
+    EXTIx_TRIG10, /**< Pin: PD5  */
+    EXTIx_TRIG11, /**< Pin: PD6  */
+    EXTIx_TRIG12, /**< Pin: PD7  */
+    EXTIx_TRIG13, /**< Pin: PD8  */
+    EXTIx_TRIG14, /**< Pin: PD9  */
+    EXTIx_TRIG15, /**< Pin: PD10 */
+} exti_cfg;
+
+/** External interrupt trigger mode */
+typedef enum exti_trigger_mode {
+    EXTI_RISING,         /**< Trigger on the rising edge */
+    EXTI_FALLING,        /**< Trigger on the falling edge */
+    EXTI_RISING_FALLING  /**< Trigger on both the rising and falling edges */
+} exti_trigger_mode;
+
+
+
+#ifdef __cplusplus
 }
 #endif
 

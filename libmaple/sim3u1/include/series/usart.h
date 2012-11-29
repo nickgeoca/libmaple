@@ -30,14 +30,14 @@
  * @brief STM32F2 USART support.
  */
 
-#ifndef _LIBMAPLE_STM32F2_USART_H_
-#define _LIBMAPLE_STM32F2_USART_H_
+#ifndef _LIBMAPLE_SIM3U1_USART_H_
+#define _LIBMAPLE_SIM3U1_USART_H_
 
 #ifdef __cplusplus
 extern "C"{
 #endif
 
-#include <libmaple/gpio.h>      /* for gpio_af */
+#include <stdint.h>
 
 /*
  * Register map base pointers.
@@ -50,7 +50,6 @@ struct usart_reg_map;
 #define USART2_BASE                     ((struct usart_reg_map*)0x40003000)
 #define USART3_BASE                     ((struct usart_reg_map*)0x40000000)
 #define USART4_BASE                     ((struct usart_reg_map*)0x40001000)
-
 
 /*
  * F2-only register bit definitions.
@@ -98,54 +97,41 @@ gpio_af usart_get_af(struct usart_dev *dev);
 
 typedef struct usart_reg_map
 {
-    __io uint32  CONFIG; // Base Address + 0x0
-    __io uint32  CONFIG_SET;
-    __io uint32  CONFIG_CLR;
-    uint32       reserved0;
-    __io uint32  MODE; // Base Address + 0x10
-    __io uint32  MODE_SET;
-    __io uint32  MODE_CLR;
-    uint32       reserved1;
-    __io uint32  FLOWCN; // Base Address + 0x20
-    __io uint32  FLOWCN_SET;
-    __io uint32  FLOWCN_CLR;
-    uint32       reserved2;
-    __io uint32  CONTROL; // Base Address + 0x30
-    __io uint32  CONTROL_SET;
-    __io uint32  CONTROL_CLR;
-    uint32       reserved3;
-    __io uint32  IPDELAY; // Base Address + 0x40
-    uint32       reserved4;
-    uint32       reserved5;
-    uint32       reserved6;
-    __io uint32  BAUDRATE; // Base Address + 0x50
-    uint32       reserved7;
-    uint32       reserved8;
-    uint32       reserved9;
-    __io uint32  FIFOCN; // Base Address + 0x60
-    __io uint32  FIFOCN_SET;
-    __io uint32  FIFOCN_CLR;
-    uint32       reserved10;
-    __io uint32  DATA; // Base Address + 0x70
-    uint32       reserved11;
-    uint32       reserved12;
-    uint32       reserved13;
+    volatile uint32_t  CONFIG;  // Base Address + 0x0
+    volatile uint32_t  CONFIG_SET;
+    volatile uint32_t  CONFIG_CLR;
+    uint32_t           reserved0;
+    volatile uint32_t  MODE;    // Base Address + 0x10
+    volatile uint32_t  MODE_SET;
+    volatile uint32_t  MODE_CLR;
+    uint32_t           reserved1;
+    volatile uint32_t  FLOWCN;  // Base Address + 0x20
+    volatile uint32_t  FLOWCN_SET;
+    volatile uint32_t  FLOWCN_CLR;
+    uint32_t           reserved2;
+    volatile uint32_t  CONTROL; // Base Address + 0x30
+    volatile uint32_t  CONTROL_SET;
+    volatile uint32_t  CONTROL_CLR;
+    uint32_t           reserved3;
+    volatile uint32_t  IPDELAY; // Base Address + 0x40
+    uint32_t           reserved4;
+    uint32_t           reserved5;
+    uint32_t           reserved6;
+    volatile uint32_t  BAUDRATE; // Base Address + 0x50
+    uint32_t           reserved7;
+    uint32_t           reserved8;
+    uint32_t           reserved9;
+    volatile uint32_t  FIFOCN;  // Base Address + 0x60
+    volatile uint32_t  FIFOCN_SET;
+    volatile uint32_t  FIFOCN_CLR;
+    uint32_t           reserved10;
+    volatile uint32_t  DATA;    // Base Address + 0x70
+    uint32_t           reserved11;
+    uint32_t           reserved12;
+    uint32_t           reserved13;
 } usart_reg_map;
 
-/** USART device type */
-typedef struct usart_dev {
-    usart_reg_map *regs;             /**< Register map */
-    ring_buffer *rb;                 /**< RX ring buffer */
-    uint32 max_baud;                 /**< @brief Deprecated.
-                                      * Maximum baud rate. */
-    uint8 rx_buf[64];               /**< @brief Deprecated.
-                                      * Actual RX buffer used by rb.
-                                      * This field will be removed in
-                                      * a future release. */ // todo silabs: rx_buf size
-    clk_dev_id clk_id;               /**< RCC clock information */
-    xbar_dev_id xbar_id;
-    nvic_irq_num irq_num;            /**< USART NVIC interrupt */
-} usart_dev;
+
 
 /*
  * UART registers
@@ -170,7 +156,6 @@ typedef struct usart_dev {
 #define UART_CFGR_TSCEN_MASK            0x10000000
 #define UART_CFGR_TIRDAEN_MASK          0x20000000
 #define UART_CFGR_TINVEN_MASK           0x40000000
-
 #define UART_CFGR_RSTRTEN_BIT           0  /* RSTRTEN<0>: Receiver Start Enable.             */
 #define UART_CFGR_RPAREN_BIT            1  /* RPAREN<1>: Receiver Parity Enable.             */
 #define UART_CFGR_RSTPEN_BIT            2  /* RSTPEN<2>: Receiver Stop Enable.               */
@@ -189,7 +174,6 @@ typedef struct usart_dev {
 #define UART_CFGR_TSCEN_BIT             28 /* TSCEN<28>: Transmitter Smartcard Parity Response Enable. */
 #define UART_CFGR_TIRDAEN_BIT           29 /* TIRDAEN<29>: Transmitter IrDA Enable.          */
 #define UART_CFGR_TINVEN_BIT            30 /* TINVEN<30>: Transmitter Invert Enable.         */
-
 #define UART_CFGR_TDATLN_5_BITS         (0 << UART_CFGR_TDATLN_BIT)
 #define UART_CFGR_TDATLN_6_BITS         (1 << UART_CFGR_TDATLN_BIT)
 #define UART_CFGR_TDATLN_7_BITS         (2 << UART_CFGR_TDATLN_BIT)
@@ -248,12 +232,10 @@ typedef struct usart_dev {
 #define UART_MODE_LBMD_MASK             0x000C0000
 #define UART_MODE_DUPLEXMD_MASK         0x08000000
 #define UART_MODE_ITSEN_MASK            0x40000000
-
 #define UART_MODE_DBGMD_BIT             16 /* DBGMD<16>: UART Debug Mode.                    */
 #define UART_MODE_LBMD_BIT              18 /* LBMD<19:18>: Loop Back Mode.                   */
 #define UART_MODE_DUPLEXMD_BIT          27 /* DUPLEXMD<27>: Duplex Mode.                     */
 #define UART_MODE_ITSEN_BIT             30 /* ITSEN<30>: Idle TX Tristate Enable.            */
-
 #define UART_MODE_DBGMD_RUN             (0 << UART_MODE_DBGMD_BIT)
 #define UART_MODE_DBGMD_HALT            (1 << UART_MODE_DBGMD_BIT)
 #define UART_MODE_LBMD_DS               (0 << UART_MODE_LBMD_BIT)
@@ -276,7 +258,6 @@ typedef struct usart_dev {
 #define UART_FLOWCN_CTSINVEN_MASK       0x00200000
 #define UART_FLOWCN_CTSEN_MASK          0x00800000
 #define UART_FLOWCN_TIRDAPW_MASK        0x30000000
-
 #define UART_FLOWCN_RTS_BIT             0  /* RTS<0>: RTS State.                             */
 #define UART_FLOWCN_RX_BIT              1  /* RX<1>: RX Pin Status.                          */
 #define UART_FLOWCN_RTSINVEN_BIT        5  /* RTSINVEN<5>: RTS Invert Enable.                */
@@ -287,7 +268,6 @@ typedef struct usart_dev {
 #define UART_FLOWCN_CTSINVEN_BIT        21 /* CTSINVEN<21>: CTS Invert Enable.               */
 #define UART_FLOWCN_CTSEN_BIT           23 /* CTSEN<23>: CTS Enable.                         */
 #define UART_FLOWCN_TIRDAPW_BIT         28 /* TIRDAPW<29:28>: Transmit IrDA Pulse Width.     */
-
 #define UART_FLOWCN_RTS_LOW             (0 << UART_FLOWCN_RTS_BIT)
 #define UART_FLOWCN_RTS_HIGH            (1 << UART_FLOWCN_RTS_BIT)
 #define UART_FLOWCN_RX_LOW              (0 << UART_FLOWCN_RX_BIT)
@@ -336,7 +316,6 @@ typedef struct usart_dev {
 #define UART_CR_TBIT_MASK               0x10000000
 #define UART_CR_TINH_MASK               0x40000000
 #define UART_CR_TEN_MASK                0x80000000
-
 #define UART_CR_RFRMERI_BIT             0  /* RFRMERI<0>: Receive Frame Error Interrupt Flag. */
 #define UART_CR_RPARERI_BIT             1  /* RPARERI<1>: Receive Parity Error Interrupt Flag. */
 #define UART_CR_ROREI_BIT               2  /* ROREI<2>: Receive Overrun Error Interrupt Flag. */
@@ -361,7 +340,6 @@ typedef struct usart_dev {
 #define UART_CR_TBIT_BIT                28 /* TBIT<28>: Last Transmit Bit.                   */
 #define UART_CR_TINH_BIT                30 /* TINH<30>: Transmit Inhibit.                    */
 #define UART_CR_TEN_BIT                 31 /* TEN<31>: Transmitter Enable.                   */
-
 #define UART_CR_RFRMERI_NOT_SET         (0 << UART_CR_RFRMERI_BIT)
 #define UART_CR_RFRMERI_SET             (1 << UART_CR_RFRMERI_BIT)
 #define UART_CR_RPARERI_NOT_SET         (0 << UART_CR_RPARERI_BIT)
@@ -415,13 +393,11 @@ typedef struct usart_dev {
 
 /* reg */
 #define UART_IPDELAY_MASK               0x00FF0000
-
 #define UART_IPDELAY_BIT                16 /* IPDELAY<23:16>: Inter-Packet Delay.            */
 
 /* reg */
 #define UART_BAUDRATE_RBAUD_MASK        0x0000FFFF
 #define UART_BAUDRATE_TBAUD_MASK        0xFFFF0000
-
 #define UART_BAUDRATE_RBAUD_BIT         0  /* RBAUD<15:0>: Receiver Baud Rate Control.       */
 #define UART_BAUDRATE_TBAUD_BIT         16 /* TBAUD<31:16>: Transmitter Baud Rate Control.   */
 
@@ -436,7 +412,6 @@ typedef struct usart_dev {
 #define UART_FIFOCN_TFIFOFL_MASK        0x01000000
 #define UART_FIFOCN_TFERI_MASK          0x02000000
 #define UART_FIFOCN_TSRFULLF_MASK       0x04000000
-
 #define UART_FIFOCN_RCNT_BIT            0  /* RCNT<2:0>: Receive FIFO Count.                 */
 #define UART_FIFOCN_RFTH_BIT            4  /* RFTH<5:4>: Receive FIFO Threshold.             */
 #define UART_FIFOCN_RFIFOFL_BIT         8  /* RFIFOFL<8>: Receive FIFO Flush.                */
@@ -447,7 +422,6 @@ typedef struct usart_dev {
 #define UART_FIFOCN_TFIFOFL_BIT         24 /* TFIFOFL<24>: Transmit FIFO Flush.              */
 #define UART_FIFOCN_TFERI_BIT           25 /* TFERI<25>: Transmit FIFO Error Interrupt Flag. */
 #define UART_FIFOCN_TSRFULLF_BIT        26 /* TSRFULLF<26>: Transmit Shift Register Full Flag. */
-
 #define UART_FIFOCN_RFTH_ONE            (0 << UART_FIFOCN_RFTH_BIT)
 #define UART_FIFOCN_RFTH_TWO            (1 << UART_FIFOCN_RFTH_BIT)
 #define UART_FIFOCN_RFTH_FOUR           (2 << UART_FIFOCN_RFTH_BIT)
@@ -467,7 +441,6 @@ typedef struct usart_dev {
 
 /* reg */
 #define UART_DATA_MASK                  0xFFFFFFFF
-
 #define UART_DATA_BIT                   0  /* DATA<31:0>: FIFO Data.                         */
 
 
@@ -818,11 +791,9 @@ typedef struct usart_dev {
 #define USART_FIFOCN_TSRFULLF_SET        (1 << USART_FIFOCN_TSRFULLF_BIT)
 
 #define USART_DATA_MASK                  0xFFFFFFFF
-
 #define USART_DATA_BIT                   0  /* DATA<31:0>: FIFO Data.                         */
 
 
-#define REG_CAST_BYTE(n) (((volatile uint8 *)&(n))[0])
 
 #ifdef __cplusplus
 }

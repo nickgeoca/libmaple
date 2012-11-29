@@ -30,9 +30,14 @@
  * @brief STM32F2 Power control (PWR) support.
  */
 
-#ifndef _LIBMAPLE_STM32F2_PWR_H_
-#define _LIBMAPLE_STM32F2_PWR_H_
+#ifndef _LIBMAPLE_SIM3U1_PWR_H_
+#define _LIBMAPLE_SIM3U1_PWR_H_
 
+#include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 /*
  * Additional register bits
  */
@@ -69,5 +74,9 @@
 #define PWR_CSR_BRE                     (1U << PWR_CSR_BRE_BIT)
 /** Backup regulator ready. */
 #define PWR_CSR_BRR                     (1U << PWR_CSR_BRR_BIT)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -39,51 +39,37 @@
 extern "C"{
 #endif
 
-#include <libmaple/libmaple.h>
+#include <libmaple/libmaple_types.h>
 #include <libmaple/bitband.h>
 #include <libmaple/rcc.h>
 #include <libmaple/nvic.h>
-/* We include the series header below, after defining the register map
- * and device structs. */
+#include <libmaple/xbar.h>
 
-/*
- * Register map
- */
-
-
-
-
-
-
-/* Pull in the series header (which may need the above struct
- * definitions).
- *
- * IMPORTANT: The series header must define the following:
- *
- * - enum adc_extsel_event (and typedef to adc_extsel_event): One per
- *   external event used to trigger start of conversion of a regular
- *   group. If two different series support the same event as a
- *   trigger, they must use the same token for the enumerator for that
- *   event. (The value of the enumerator is of course allowed to be
- *   different).
- *
- * - enum adc_smp_rate (and typedef to adc_smp_rate): One per
- *   available sampling time.  These must be in the form ADC_SMPR_X_Y
- *   for X.Y cycles (e.g. ADC_SMPR_1_5 means 1.5 cycles), or
- *   ADC_SMPR_X for X cycles (e.g. ADC_SMPR_3 means 3 cycles).
- *
- * - enum adc_prescaler (and typedef): One per available prescaler,
- *   suitable for adc_set_prescaler. Series which have the same
- *   prescaler dividers (e.g. STM32F1 and STM32F2 both divide PCLK2 by
- *   2, 4, 6, or 8) must provide the same tokens as enumerators, for
- *   portability.
- */
 #include <series/adc.h>
 
-/*
- * Register bit definitions
- */
+/** ADC device type. */
+typedef struct adc_dev {
+    adc_reg_map *regs;      /**< Register map */
+    clk_dev_id clk_id;      /**< Clock information */
+    nvic_irq_num irq_num;   /**< IRQ number */
+} adc_dev;
+extern const struct adc_dev *ADC1;
+extern const struct adc_dev *ADC2;
 
+
+/** SARADC status register */
+#define SARADC_SQ_REG(regs, tslot)      ((tslot) < 4 ? &((regs)->SQ3210) : &((regs)->SQ7654))
+#define SARADC_SQ_TSMUX_BIT(tslot)       (SARADC_SQ3210_TS0MUX_BIT + 8 * ((tslot) % 4))
+#define SARADC_SQ_TSMUX_MASK(tslot)      ((SARADC_SQ3210_TS0MUX_MASK >> SARADC_SQ3210_TS0MUX_BIT) << SARADC_SQ_TSMUX_BIT(tslot))
+#define SARADC_SQ_TSCHR_BIT(tslot)       (SARADC_SQ3210_TS0CHR_BIT + 8 * ((tslot) % 4))
+#define SARADC_SQ_TSCHR_MASK(tslot)      ((SARADC_SQ3210_TS0CHR_MASK >> SARADC_SQ3210_TS0CHR_BIT) << SARADC_SQ_TSCHR_BIT(tslot))
+#define SARADC_CHAR_RSEL_BIT(grp)       (SARADC_CHAR10_CHR0RSEL_BIT + ((grp) & 1) * 16)
+#define SARADC_CHAR_RSEL_MASK(grp)      ((SARADC_CHAR10_CHR0RSEL_MASK >> SARADC_CHAR10_CHR0RSEL_BIT) << SARADC_CHAR_RSEL_BIT(grp))
+#define SARADC_CHAR_RPT_BIT(grp)       (SARADC_CHAR10_CHR0RPT_BIT + ((grp) & 1) * 16)
+#define SARADC_CHAR_RPT_MASK(grp)      ((SARADC_CHAR10_CHR0RPT_MASK >> SARADC_CHAR10_CHR0RPT_BIT) << SARADC_CHAR_RPT_BIT(grp))
+#define SARADC_CHAR_GN_BIT(grp)       (SARADC_CHAR10_CHR0GN_BIT + ((grp) & 1) * 16)
+#define SARADC_CHAR_GN_MASK(grp)      ((SARADC_CHAR10_CHR0GN_MASK >> SARADC_CHAR10_CHR0GN_BIT) << SARADC_CHAR_GN_BIT(grp))
+#define SARADC_CHAR_REG(regs, grp)      ((grp) < 2 ? &((regs)->CHAR10) : &((regs)->CHAR32))
 
 
 /*
@@ -100,13 +86,13 @@ uint16 adc_read(const adc_dev *dev, uint8 channel);
  *
  * This determines the ADC clock for all devices.
  */
-extern void adc_set_prescaler(adc_prescaler pre);
+void adc_set_prescaler(adc_prescaler pre);
 
 /**
  * @brief Call a function on all ADC devices.
  * @param fn Function to call on each ADC device.
  */
-extern void adc_foreach(void (*fn)(const adc_dev*));
+void adc_foreach(void (*fn)(const adc_dev*));
 
 struct gpio_dev;
 /**
@@ -116,7 +102,7 @@ struct gpio_dev;
  * @param gdev GPIO device to configure.
  * @param bit Bit on gdev to configure for ADC conversion.
  */
-extern void adc_config_gpio(const struct adc_dev *dev,
+void adc_config_gpio(const struct adc_dev *dev,
                             struct gpio_dev *gdev,
                             uint8 bit);
 
@@ -130,7 +116,7 @@ extern void adc_config_gpio(const struct adc_dev *dev,
  * @param dev Device to enable.
  * @see adc_read()
  */
-extern void adc_enable_single_swstart(const adc_dev* dev);
+void adc_enable_single_swstart(const adc_dev* dev);
 
 /**
  * @brief Set the regular channel sequence length.

@@ -41,10 +41,12 @@ extern "C"{
  * Note: Series header must define:
  * - enum gpio_pin_mode (TODO think harder about portability here)
  */
-#include <series/gpio.h>
 #include <libmaple/libmaple_types.h>
 #include <libmaple/rcc.h>
 #include <libmaple/exti.h>
+#include <libmaple/xbar.h>
+
+#include <series/gpio.h>
 
 /*
  * Device type
@@ -56,10 +58,42 @@ typedef struct gpio_dev {
     clk_dev_id    clk_id;       /**< RCC clock information */
 } gpio_dev;
 
+extern struct gpio_dev* const GPIOA;
+extern struct gpio_dev gpioa;
+extern struct gpio_dev* const GPIOB;
+extern struct gpio_dev gpiob;
+extern struct gpio_dev* const GPIOC;
+extern struct gpio_dev gpioc;
+extern struct gpio_dev* const GPIOD;
+extern struct gpio_dev gpiod;
+extern struct gpio_dev* const GPIOE;
+extern struct gpio_dev gpioe;
 /*
  * Portable routines
  */
 
+void gpio_set_af(struct gpio_dev *dev, uint8 bit, gpio_af af);
+void gpio_set_modef(struct gpio_dev *dev,
+                    uint8 bit,
+                    gpio_pin_mode mode,
+                    unsigned flags);
+
+/**
+ * @brief Set the mode of a GPIO pin.
+ *
+ * Calling this function is equivalent to calling gpio_set_modef(dev,
+ * pin, mode, GPIO_MODE_SPEED_HIGH). Note that this overrides the
+ * default speed.
+ *
+ * @param dev GPIO device.
+ * @param bit Bit on the device whose mode to set, 0--15.
+ * @param mode Mode to set the pin to.
+ */
+static inline void gpio_set_mode(struct gpio_dev *dev,
+                                 uint8 bit,
+                                 gpio_pin_mode mode) {
+    gpio_set_modef(dev, bit, mode, GPIO_DRIVE_WEAK);
+}
 void gpio_init(gpio_dev *dev);
 void gpio_init_all(void);
 /* TODO flags argument version? */
@@ -108,8 +142,6 @@ static inline uint32 gpio_read_bit(gpio_dev *dev, uint8 pin) {
 static inline void gpio_toggle_bit(gpio_dev *dev, uint8 pin) {
     dev->regs->PB_MSK =  ((1 << pin) << 16) | (~dev->regs->PB & 0xFFFF);
 }
-
-#include <series/xbar.h>
 
 #ifdef __cplusplus
 }

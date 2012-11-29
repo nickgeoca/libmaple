@@ -29,14 +29,40 @@
  * @brief STM32F2 reset and clock control (RCC) support.
  */
 
-#ifndef _LIBMAPLE_STM32F2_RCC_H_
-#define _LIBMAPLE_STM32F2_RCC_H_
+#ifndef _LIBMAPLE_SIM3U1_RCC_H_
+#define _LIBMAPLE_SIM3U1_RCC_H_
 
 #ifdef __cplusplus
 extern "C"{
 #endif
 
-#include <libmaple/libmaple_types.h>
+#include <stdint.h>
+
+typedef struct clk_reg_map
+{
+    volatile uint32_t CONTROL; // Base Address + 0x0
+    uint32_t          reserved0;
+    uint32_t          reserved1;
+    uint32_t          reserved2;
+    volatile uint32_t AHBCLKG; // Base Address + 0x10
+    volatile uint32_t AHBCLKG_SET;
+    volatile uint32_t AHBCLKG_CLR;
+    uint32_t          reserved3;
+    volatile uint32_t APBCLKG0; // Base Address + 0x20
+    volatile uint32_t APBCLKG0_SET;
+    volatile uint32_t APBCLKG0_CLR;
+    uint32_t          reserved4;
+    volatile uint32_t APBCLKG1; // Base Address + 0x30
+    volatile uint32_t APBCLKG1_SET;
+    volatile uint32_t APBCLKG1_CLR;
+    uint32_t          reserved5;
+    volatile uint32_t PM3CN; // Base Address + 0x40
+    uint32_t          reserved6;
+    uint32_t          reserved7;
+    uint32_t          reserved8;
+} clk_reg_map;
+
+#define CLK_BASE  ((clk_reg_map*)0x4002D000)
 
 /*
  * Register map
@@ -87,31 +113,6 @@ extern "C"{
 #define CLKCTRL_PM3CN_PM3CEN_DS          (0 << CLKCTRL_PM3CN_PM3CEN_BIT)
 #define CLKCTRL_PM3CN_PM3CEN_EN          (1 << CLKCTRL_PM3CN_PM3CEN_BIT)
 
-typedef struct clk_reg_map
-{
-   __io uint32 CONTROL; // Base Address + 0x0
-   uint32      reserved0;
-   uint32      reserved1;
-   uint32      reserved2;
-   __io uint32 AHBCLKG; // Base Address + 0x10
-   __io uint32 AHBCLKG_SET;
-   __io uint32 AHBCLKG_CLR;
-   uint32      reserved3;
-   __io uint32 APBCLKG0; // Base Address + 0x20
-   __io uint32 APBCLKG0_SET;
-   __io uint32 APBCLKG0_CLR;
-   uint32      reserved4;
-   __io uint32 APBCLKG1; // Base Address + 0x30
-   __io uint32 APBCLKG1_SET;
-   __io uint32 APBCLKG1_CLR;
-   uint32      reserved5;
-   __io uint32 PM3CN; // Base Address + 0x40
-   uint32      reserved6;
-   uint32      reserved7;
-   uint32      reserved8;
-} clk_reg_map;
-
-#define CLK_BASE  ((clk_reg_map*)0x4002D000)
 
 /*
  * Clock sources, domains, and peripheral clock IDs.
@@ -233,25 +234,25 @@ void clk_set_clk_variable(uint32 sys_clk);
 
 typedef struct pll_reg_map
 {
-   __io uint32 DIVIDER; // Base Address + 0x0
-   uint32      reserved0;
-   uint32      reserved1;
-   uint32      reserved2;
-   __io uint32 CONTROL; // Base Address + 0x10
-   __io uint32 CONTROL_SET;
-   __io uint32 CONTROL_CLR;
-   uint32      reserved3;
-   __io uint32 SSPR; // Base Address + 0x20
-   uint32      reserved4;
-   uint32      reserved5;
-   uint32      reserved6;
-   __io uint32 CALCONFIG; // Base Address + 0x30
-   uint32      reserved7;
-   uint32      reserved8;
-   uint32      reserved9;
-   uint32      reserved10[4];
-   uint32      reserved11[4];
-   uint32      reserved12[4];
+    volatile uint32_t DIVIDER; // Base Address + 0x0
+    uint32_t          reserved0;
+    uint32_t          reserved1;
+    uint32_t          reserved2;
+    volatile uint32_t CONTROL; // Base Address + 0x10
+    volatile uint32_t CONTROL_SET;
+    volatile uint32_t CONTROL_CLR;
+    uint32_t          reserved3;
+    volatile uint32_t SSPR; // Base Address + 0x20
+    uint32_t          reserved4;
+    uint32_t          reserved5;
+    uint32_t          reserved6;
+    volatile uint32_t CALCONFIG; // Base Address + 0x30
+    uint32_t          reserved7;
+    uint32_t          reserved8;
+    uint32_t          reserved9;
+    uint32_t          reserved10[4];
+    uint32_t          reserved11[4];
+    uint32_t          reserved12[4];
 } pll_reg_map;
 
 #define PLL_BASE            ((pll_reg_map *)0x4003B000)
@@ -355,13 +356,7 @@ typedef struct pll_cfg {
     void       *data;
 } pll_cfg;
 
-/*
- * Returns the actual frequency output by the PLL
- */
-static inline uint32 pll_get_actl_freq(uint32 src_freq, uint32 targ_freq)
-{
-    return src_freq * (uint32)(targ_freq / src_freq);
-}
+
 
 
 #ifdef __cplusplus

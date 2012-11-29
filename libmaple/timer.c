@@ -47,6 +47,41 @@ static inline void enable_irq(timer_dev *dev, uint8 interrupt);
  *
  * Defer to the timer_private API for declaring these.
  */
+void __irq_epca1(void) {
+    dispatch_adv(TIMER1);
+    return;
+}
+
+void __irq_pca1(void) {
+    dispatch_general(TIMER2);
+    return;
+}
+
+void __irq_pca2(void) {
+    dispatch_general(TIMER3);
+    return;
+}
+
+void __irq_tim1_low(void) {
+    //dispatch_basic_low(TIMER4);
+    return;
+}
+
+void __irq_tim1_high(void) {
+    dispatch_basic_high(TIMER4);
+    return;
+}
+
+void __irq_tim2_low(void) {
+    //dispatch_basic_low(TIMER5);
+    return;
+}
+
+void __irq_tim2_high(void) {
+    dispatch_basic_high(TIMER5);
+    return;
+}
+
 
 static const nvic_irq_num timer1_irqs[1] = {NVIC_EPCA1};
 static const timer_chnl_reg_map *t1_chnl_regs[6] = {TIMER1_CH0, TIMER1_CH1, TIMER1_CH2,

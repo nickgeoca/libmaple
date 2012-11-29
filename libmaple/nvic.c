@@ -95,7 +95,5 @@ void nvic_set_vector_table(uint32 address, uint32 offset) {
  * Resets all major system components, excluding debug.
  */
 void nvic_sys_reset() {
-    void nvic_set_vector_table(uint32 address, uint32 offset) {
-        SCB_BASE->VTOR = address | (offset & 0x1FFFFF80);
-    }
+
 }

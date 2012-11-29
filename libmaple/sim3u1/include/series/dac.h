@@ -29,63 +29,21 @@
  * @brief STM32F2 DAC support
  */
 
-#ifndef _LIBMAPLE_STM32F2_DAC_H_
-#define _LIBMAPLE_STM32F2_DAC_H_
+#ifndef _LIBMAPLE_SIM3U1_DAC_H_
+#define _LIBMAPLE_SIM3U1_DAC_H_
+
+#include <stdint.h>
 
 #ifdef __cplusplus
-extern "C"{
+extern "C" {
 #endif
 
-#include <libmaple/libmaple_types.h>
 
-/*
- * Register map type
- */
+//#define DAC_BASE                ((struct dac_reg_map*)0x40007400)
 
-/** STM32F2 DAC register map type. */
-typedef struct dac_reg_map {
-    __io uint32 CR;      /**< Control register */
-    __io uint32 SWTRIGR; /**< Software trigger register */
-    __io uint32 DHR12R1; /**< Channel 1 12-bit right-aligned data
-                              holding register */
-    __io uint32 DHR12L1; /**< Channel 1 12-bit left-aligned data
-                              holding register */
-    __io uint32 DHR8R1;  /**< Channel 1 8-bit left-aligned data
-                              holding register */
-    __io uint32 DHR12R2; /**< Channel 2 12-bit right-aligned data
-                              holding register */
-    __io uint32 DHR12L2; /**< Channel 2 12-bit left-aligned data
-                              holding register */
-    __io uint32 DHR8R2;  /**< Channel 2 8-bit left-aligned data
-                              holding register */
-    __io uint32 DHR12RD; /**< Dual DAC 12-bit right-aligned data
-                              holding register */
-    __io uint32 DHR12LD; /**< Dual DAC 12-bit left-aligned data
-                              holding register */
-    __io uint32 DHR8RD;  /**< Dual DAC 8-bit right-aligned data holding
-                              register */
-    __io uint32 DOR1;    /**< Channel 1 data output register */
-    __io uint32 DOR2;    /**< Channel 2 data output register */
-    __io uint32 SR;      /**< Status register */
-} dac_reg_map;
 
-/*
- * Register bit definitions
- */
 
-/* Control register */
 
-#define DAC_CR_DMAUDRIE1            (1U << 13) /* Channel 1 DMA underrun
-                                                * interrupt enable */
-#define DAC_CR_DMAUDRIE2            (1U << 29) /* Channel 2 DMA underrun
-                                                * interrupt enable */
-
-/* Status register */
-
-#define DAC_SR_DMAUDR1              (1U << 13) /* Channel 1 DMA underrun
-                                                * occurred */
-#define DAC_SR_DMAUDR2              (1U << 29) /* Channel 2 DMA underrun
-                                                * ocurred */
 
 #ifdef __cplusplus
 }

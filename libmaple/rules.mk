@@ -27,7 +27,12 @@ cSRCS_$(d) += timer.c
 cSRCS_$(d) += usart.c
 cSRCS_$(d) += usart_private.c
 cSRCS_$(d) += util.c
+cSRCS_$(d) += xbar.c
+
 sSRCS_$(d) := exc.S
+sSRCS_$(d) += isrs.S
+sSRCS_$(d) += vector_table.S
+
 # I2C support must be ported to F2:
 ifeq ($(MCU_SERIES),stm32f1)
 cSRCS_$(d) += i2c.c
